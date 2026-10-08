@@ -30,6 +30,17 @@ function useChargeMutation<T>(fn: (slug: string, v: T) => Promise<unknown>, mess
 }
 
 export const useCreateChargeType = () => useChargeMutation((s, v: ChargeTypeInput) => billingApi.createChargeType(s, v), 'Charge added');
+export const useEnableChargeType = () => useChargeMutation((s, code: string) => billingApi.enableChargeType(s, code), 'Charge added from the catalogue');
+
+/** Standard charges not yet added (only fetched while the catalogue sheet is open). */
+export function useChargeCatalogue(open: boolean) {
+  const slug = useSlug();
+  return useQuery({
+    queryKey: [...qk.charges(slug), 'catalogue'],
+    queryFn: () => billingApi.chargeCatalogue(slug).then((r) => r.data ?? []),
+    enabled: open,
+  });
+}
 export const useUpdateChargeType = () =>
   useChargeMutation((s, v: { id: string; body: ChargeTypeInput }) => billingApi.updateChargeType(s, v.id, v.body), 'Charge updated');
 
@@ -41,7 +52,6 @@ export function useUpdateFund() {
     onSuccess: () => { toast.success('Fund saved'); void qc.invalidateQueries({ queryKey: qk.funds(slug) }); },
   });
 }
-export const useEnableChargeType = () => useChargeMutation((s, code: string) => billingApi.enableChargeType(s, code), 'Charge switched on');
 export const useAddRate = () =>
   useChargeMutation((s, v: { chargeTypeId: string; rate: RateInput }) => billingApi.addRate(s, v.chargeTypeId, v.rate), 'Rate saved');
 

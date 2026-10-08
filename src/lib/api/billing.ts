@@ -25,7 +25,20 @@ export interface ChargeTypeInput {
   vat_rate?: number;
   tax_exempt?: boolean;
   tariff_kind?: 'flat' | 'block';
+  proration?: string;
+  allocation_priority?: number;
   active?: boolean;
+}
+
+/** A standard platform charge the estate has not added yet (GET /charge-types/catalogue). */
+export interface CatalogueCharge {
+  code: string;
+  name: string;
+  charge_group: string;
+  basis: string;
+  frequency: string;
+  bill_to: string;
+  fund_code: string;
 }
 
 export interface FundInput {
@@ -54,6 +67,7 @@ export const billingApi = {
   chargeTypes: (slug: string, all = true) => apiClient.get<{ data: ChargeType[] }>(`${t(slug)}/charge-types`, { all }),
   createChargeType: (slug: string, body: ChargeTypeInput) => apiClient.post<ChargeType>(`${t(slug)}/charge-types`, body),
   enableChargeType: (slug: string, code: string) => apiClient.post(`${t(slug)}/charge-types/enable`, { code }),
+  chargeCatalogue: (slug: string) => apiClient.get<{ data: CatalogueCharge[] }>(`${t(slug)}/charge-types/catalogue`),
   updateChargeType: (slug: string, id: string, body: ChargeTypeInput) =>
     apiClient.patch<ChargeType>(`${t(slug)}/charge-types/${id}`, body),
   addRate: (slug: string, chargeTypeId: string, body: RateInput) =>

@@ -8,7 +8,7 @@ import { usePathname, useRouter, useSearchParams } from 'next/navigation';
  * reloaded and reached from the sidebar. `allowed` guards against a stale or hand-typed value.
  * Setting a value replaces the history entry and keeps every other parameter.
  */
-export function useUrlParam<T extends string>(name: string, fallback: T, allowed?: readonly T[]): [T, (v: T | '', extra?: Record<string, string | null>) => void] {
+export function useUrlParam<T extends string = string>(name: string, fallback: NoInfer<T>, allowed?: readonly T[]): [T, (v: T | '', extra?: Record<string, string | null>) => void] {
   const router = useRouter();
   const pathname = usePathname();
   const params = useSearchParams();

@@ -17,7 +17,9 @@
 - [x] Billing runs: wizard with preview, issue, live progress, retry failed
 - [x] Unit accounts and statements (live from treasury); staff collect payment via TreasuryPaymentModal
 - [x] Collections: unmatched paybill payments with assign, arrears list
-- [x] Reading round (phone-first, required photo resized to JPEG, instant warnings, accept) and water balance
+- [x] Reading round (phone-first, optional photo resized to JPEG, instant warnings, accept) and water balance
+- [x] Charges and funds rebuilt: charge types, rates and funds tabs with filters, catalogue sheet, charge form (2026-10-08)
+- [ ] Collections, meter readings and water balance redesign with filters and drill-downs
 - [x] Portal pay (pending intent, gateway chosen in the modal, paybill fallback) and statement
 - [ ] Statement PDF and CSV export (API not built yet)
 

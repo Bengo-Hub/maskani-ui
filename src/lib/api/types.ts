@@ -761,15 +761,32 @@ export interface StaffAssignment {
   assigned_at?: string;
 }
 
+/** A role as this estate uses it (GET /roles): its own customised copy replaces the default. */
 export interface Role {
   id: string;
-  tenant_id?: string | null;
-  role_code: string;
+  code: string;
   name: string;
   description?: string;
-  is_system_role?: boolean;
-  is_customer_role?: boolean;
-  edges?: { permissions?: { permission_code: string; name: string; module: string }[] };
+  /** A default role shared by every estate; customise it to change it here. */
+  is_system_role: boolean;
+  /** Portal roles (owner, occupant, vendor supervisor, guard), never staff. */
+  is_customer_role: boolean;
+  /** Created by this estate (not a customised default). */
+  is_custom: boolean;
+  cloned_from_role_id?: string;
+  permissions: string[];
+  /** Staff holding it. */
+  holders: number;
+  /** Tenant administrator: always every permission. */
+  locked: boolean;
+}
+
+/** One entry of the permission catalogue (GET /permissions). */
+export interface Permission {
+  code: string;
+  name: string;
+  module: string;
+  action: string;
 }
 
 export interface ModulesState {

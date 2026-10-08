@@ -1,5 +1,47 @@
 /** Display labels for API enum values, in one place so every screen words them the same way. */
 
+export const CHARGE_BASIS: Record<string, string> = {
+  fixed: 'Fixed per unit',
+  per_unit_type: 'By unit type',
+  per_sqm: 'Per m2',
+  entitlement: 'By entitlement',
+  metered: 'Metered',
+  percentage: 'Percentage',
+  one_off: 'One off',
+};
+
+export const CHARGE_GROUP: Record<string, string> = {
+  occupancy: 'Occupancy',
+  services: 'Services',
+  utilities: 'Utilities',
+  reserves: 'Reserves',
+  amenities: 'Amenities',
+  recoveries: 'Recoveries',
+  sales: 'Sales',
+};
+
+export const CHARGE_FREQUENCY: Record<string, string> = {
+  monthly: 'Monthly',
+  quarterly: 'Quarterly',
+  half_yearly: 'Every six months',
+  annual: 'Yearly',
+  on_event: 'On an event',
+  one_off: 'One off',
+};
+
+export const BILL_TO: Record<string, string> = {
+  owner: 'Owner',
+  occupant: 'Occupant',
+  buyer: 'Buyer',
+};
+
+export const RATE_SCOPE: Record<string, string> = {
+  tenant: 'All units',
+  property: 'One property',
+  unit_type: 'One unit type',
+  unit: 'One unit',
+};
+
 export const SALE_STATUS: Record<string, string> = {
   not_for_sale: 'Not for sale',
   available: 'Available',

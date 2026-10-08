@@ -28,6 +28,12 @@ As of 2026-10-08.
 - [x] Landing page
 - [x] Dockerfile, `build.sh`, deploy workflow, repo `Bengo-Hub/maskani-ui` (CI green 2026-10-08)
 - [x] devops-k8s `apps/maskani-ui` pushed (`b3846451`) and ArgoCD app applied; 2 pods ready
+- [x] Public pages redesigned: landing, nav with the Marketplace link, sign-in on `AuthShell` (`25c5467`)
+- [x] White-labelling: the tenant's SSO colours drive `--primary` (readable text from shared-ui-lib v0.1.105); light sidebar like pos-ui and library-ui with the tenant logo, foldable groups and nested children (`7af613d`)
+- [x] base-ui 1.8 orientation fix in Tabs, Separator, ToggleGroup and ScrollArea (`data-orientation`, not `data-horizontal`) (`7af613d`)
+- [x] Every dropdown on the shared-ui-lib SearchableCombobox (through `NativeSelect`); open lists creatable with `CatalogueCombobox`; long text on the shared rich text editor (`7af613d`)
+- [x] Settings on a URL-driven section rail: General, Branding, Modules, Lists (`7af613d`)
+- [x] Staff page with S2S invite and suspend; Roles and permissions matrix (2026-10-08)
 
 ## Rules to apply
 

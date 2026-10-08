@@ -4,7 +4,7 @@ import type {
   AvailabilityUnit, ContractInput, Dashboard, GateDevice, GateEvent, Incident, MediaUpload, Meter, MeterReading,
   Notice, NoticeDelivery, Page, PassInput, PriceList, PriceListItem, ReadingRound, Reservation, SaleContract,
   SalesPosition, Vendor, VendorDocument, VendorPersonnel, VisitorPass, WaterBalanceRow, WorkAction, WorkOrder,
-  WorkPriority, CatalogEntry, StaffUser, Role, ModulesState,
+  WorkPriority, CatalogEntry, StaffUser, Role, Permission, ModulesState,
 } from './types';
 
 export const utilitiesApi = {
@@ -133,8 +133,25 @@ export const settingsApi = {
     apiClient.put<{ data: CatalogEntry[] }>(`${t(slug)}/catalogues/${kind}/${encodeURIComponent(code)}`, body),
   users: (slug: string, kind?: string) => apiClient.get<{ data: StaffUser[] }>(`${t(slug)}/users`, { kind }),
   roles: (slug: string) => apiClient.get<{ data: Role[] }>(`${t(slug)}/roles`),
+  permissions: (slug: string) => apiClient.get<{ data: Permission[] }>(`${t(slug)}/permissions`),
   setUserRoles: (slug: string, id: string, roles: string[]) => apiClient.put(`${t(slug)}/users/${id}/roles`, { roles }),
+  setUserStatus: (slug: string, id: string, status: 'active' | 'suspended') => apiClient.put<StaffUser>(`${t(slug)}/users/${id}/status`, { status }),
+  /** Adds the person in Codevertex accounts (S2S) and gives them Maskani roles; temp_password only for a new account. */
+  inviteStaff: (slug: string, body: StaffInviteInput) =>
+    apiClient.post<{ user: StaffUser; auth_user_id: string; new_account: boolean; temp_password?: string }>(`${t(slug)}/users/invite`, body),
+  createRole: (slug: string, body: { code: string; name: string; description?: string; permissions: string[] }) => apiClient.post<Role>(`${t(slug)}/roles`, body),
+  customizeRole: (slug: string, code: string) => apiClient.post<{ id: string }>(`${t(slug)}/roles/customize`, { code }),
+  updateRole: (slug: string, id: string, body: { name?: string; description?: string; permissions?: string[] }) => apiClient.put(`${t(slug)}/roles/${id}`, body),
+  deleteRole: (slug: string, id: string) => apiClient.delete(`${t(slug)}/roles/${id}`),
 };
+
+export interface StaffInviteInput {
+  email: string;
+  name?: string;
+  phone?: string;
+  roles: string[];
+  property_ids?: string[];
+}
 
 export const mediaApi = {
   upload: (slug: string, file: Blob, kind: string, filename = 'photo.jpg') => {
