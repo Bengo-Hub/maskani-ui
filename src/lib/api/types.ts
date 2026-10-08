@@ -450,36 +450,43 @@ export type ContractStatus =
 
 export interface Instalment extends Base {
   contract_id: string;
-  kind: string;
-  label?: string;
-  seq?: number;
+  schedule_id?: string;
+  kind: 'reservation' | 'deposit' | 'instalment' | 'milestone' | 'balance' | 'financier';
+  milestone_label?: string;
+  seq: number;
   due_date: string;
   amount: Money;
-  amount_paid?: Money;
+  paid_amount?: Money;
+  paid_at?: string | null;
   status: 'scheduled' | 'invoiced' | 'partially_paid' | 'paid' | 'overdue' | 'waived';
-  invoice_id?: string | null;
+  treasury_invoice_id?: string | null;
+  invoice_number?: string;
 }
 
 export interface SaleContract extends Base {
+  contract_number: string;
+  property_id: string;
   unit_id: string;
-  buyer_id: string;
-  contract_number?: string;
+  primary_buyer_id: string;
+  reservation_id?: string | null;
   price: Money;
   discount?: Money;
-  net_price?: Money;
+  discount_reason?: string;
+  net_price: Money;
+  reservation_credit?: Money;
   deposit_amount?: Money;
   payment_option: 'outright' | 'instalments' | 'milestone' | 'financed';
   frequency?: string;
   term_months?: number;
   status: ContractStatus;
   signed_at?: string | null;
+  invoiced_total?: Money;
+  paid_total?: Money;
+  unit_account_id?: string | null;
+  /** Detail view only (GET /sale-contracts/{id}, /me/purchase). */
   instalments?: Instalment[];
   next_due?: Instalment | null;
   balance?: Money;
-  paid?: Money;
-  unit_code?: string;
-  buyer_name?: string;
-  edges?: { unit?: Unit; buyer?: Party };
 }
 
 export interface ContractInput {
@@ -759,7 +766,8 @@ export interface PortalUnit {
   link: UnitParty;
   unit: Unit;
   property: Property;
-  accounts: (UnitAccount & { fund_name?: string; paybill_shortcode?: string })[];
+  /** Each account carries its fund (name, paybill) under edges.fund. */
+  accounts: UnitAccount[];
 }
 
 export interface MediaUpload {
