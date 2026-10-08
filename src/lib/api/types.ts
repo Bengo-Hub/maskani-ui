@@ -150,7 +150,10 @@ export type UnitPartyView = UnitParty;
 // ---- billing --------------------------------------------------------------
 
 export interface Fund extends Base {
+  /** Billing runs and charge types reference the fund by this code (for example "estate"). */
   code?: string;
+  /** estate, sales, deposits, client_rent, reserve, other. */
+  kind?: string;
   name: string;
   paybill_shortcode?: string;
   account_prefix?: string;
@@ -171,18 +174,24 @@ export interface ChargeRate extends Base {
   notes?: string;
 }
 
+export type ChargeBasis = 'fixed' | 'per_unit_type' | 'per_sqm' | 'entitlement' | 'metered' | 'percentage' | 'one_off';
+
 export interface ChargeType extends Base {
   code: string;
   name: string;
-  charge_group?: string;
-  basis: string;
+  description?: string;
+  charge_group: string;
+  basis: ChargeBasis;
   frequency?: string;
-  applies_to?: string;
   bill_to?: string;
   fund_code?: string;
-  vat_rate?: Money;
-  enabled?: boolean;
-  status?: string;
+  vat_rate?: number;
+  tax_exempt?: boolean;
+  proration?: string;
+  tariff_kind?: 'flat' | 'block';
+  allocation_priority?: number;
+  seeded_from?: string;
+  active: boolean;
   rates?: ChargeRate[];
 }
 
@@ -243,7 +252,7 @@ export interface PreviewLine {
   account_ref?: string;
   customer_name?: string;
   party_id?: string;
-  lines: { code: string; name: string; quantity?: Money; rate?: Money; amount: Money; tax?: Money }[];
+  lines: { charge_code: string; description: string; quantity?: Money; rate?: Money; amount: Money; tax_rate?: number; tax?: Money }[];
   subtotal: Money;
   tax: Money;
   total: Money;
@@ -265,9 +274,12 @@ export type RunStatus = 'draft' | 'issuing' | 'issued' | 'partially_failed' | 'c
 
 export interface BillingRun extends Base {
   property_id: string;
-  fund?: string;
+  fund_id: string;
   period: string;
+  run_kind?: 'regular' | 'adhoc';
   status: RunStatus;
+  invoice_date?: string;
+  due_date?: string;
   unit_count?: number;
   line_count?: number;
   total_amount?: Money;
@@ -281,12 +293,19 @@ export interface BillingRun extends Base {
 export interface BillingRunLine extends Base {
   run_id: string;
   unit_id: string;
-  unit_code?: string;
-  account_ref?: string;
-  total?: Money;
+  unit_account_id: string;
+  party_id?: string | null;
+  unit_code: string;
+  lines?: PreviewLine['lines'];
+  subtotal?: Money;
+  tax_total?: Money;
+  total: Money;
   status: 'pending' | 'issued' | 'failed' | 'skipped';
-  invoice_id?: string | null;
-  error?: string;
+  skip_reason?: string;
+  treasury_invoice_id?: string | null;
+  invoice_number?: string;
+  attempts?: number;
+  last_error?: string;
 }
 
 export interface SuspenseRow {

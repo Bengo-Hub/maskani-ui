@@ -14,13 +14,25 @@ export interface RunInput {
 }
 
 export interface ChargeTypeInput {
-  code: string;
-  name: string;
-  basis: string;
+  code?: string;
+  name?: string;
+  description?: string;
+  charge_group?: string;
+  basis?: string;
   frequency?: string;
   fund_code?: string;
   bill_to?: string;
   vat_rate?: number;
+  tax_exempt?: boolean;
+  tariff_kind?: 'flat' | 'block';
+  active?: boolean;
+}
+
+export interface FundInput {
+  name?: string;
+  paybill_shortcode?: string;
+  account_prefix?: string;
+  cost_center_code?: string;
 }
 
 export interface RateInput {
@@ -37,12 +49,12 @@ export interface RateInput {
 
 export const billingApi = {
   funds: (slug: string) => apiClient.get<{ data: Fund[] }>(`${t(slug)}/funds`),
-  updateFund: (slug: string, id: string, body: Partial<Fund>) => apiClient.patch<Fund>(`${t(slug)}/funds/${id}`, body),
+  updateFund: (slug: string, id: string, body: FundInput) => apiClient.patch<Fund>(`${t(slug)}/funds/${id}`, body),
 
   chargeTypes: (slug: string, all = true) => apiClient.get<{ data: ChargeType[] }>(`${t(slug)}/charge-types`, { all }),
   createChargeType: (slug: string, body: ChargeTypeInput) => apiClient.post<ChargeType>(`${t(slug)}/charge-types`, body),
   enableChargeType: (slug: string, code: string) => apiClient.post(`${t(slug)}/charge-types/enable`, { code }),
-  updateChargeType: (slug: string, id: string, body: Partial<ChargeTypeInput> & { status?: string }) =>
+  updateChargeType: (slug: string, id: string, body: ChargeTypeInput) =>
     apiClient.patch<ChargeType>(`${t(slug)}/charge-types/${id}`, body),
   addRate: (slug: string, chargeTypeId: string, body: RateInput) =>
     apiClient.post<ChargeRate>(`${t(slug)}/charge-types/${chargeTypeId}/rates`, body),
