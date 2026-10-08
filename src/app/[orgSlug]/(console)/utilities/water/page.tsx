@@ -1,62 +1,84 @@
 'use client';
 
-import { Droplets } from 'lucide-react';
-import { Card, CardContent } from '@/components/ui/card';
+import { useMemo } from 'react';
+import Link from 'next/link';
+import { useQuery } from '@tanstack/react-query';
+import { AlertTriangle, Droplets, Gauge, TrendingDown } from 'lucide-react';
+import type { DataTableColumn } from '@bengo-hub/shared-ui-lib/data-table';
+import { DataTable } from '@bengo-hub/shared-ui-lib/data-table';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
 import { EmptyState } from '@/components/common/empty-state';
 import { PageHeader } from '@/components/common/page-header';
 import { PropertyRequired, usePropertyOrSingle } from '@/components/common/property-required';
+import { StatTile } from '@/components/common/stat-tile';
+import { ToneBadge } from '@/components/common/status-badge';
+import { WaterBalanceChart } from '@/components/utilities/water-balance-chart';
+import { useSlug } from '@/hooks/use-access';
 import { useWaterBalance } from '@/hooks/use-utilities';
+import { settingsApi } from '@/lib/api/operations';
+import type { WaterBalanceRow } from '@/lib/api/types';
+import { qk } from '@/lib/query-keys';
 import { num, periodLabel } from '@/lib/utils';
 
 /** Supplied (bulk meters) against billed (unit meters) and common use; the gap is unaccounted water. */
 export default function WaterBalancePage() {
+  const slug = useSlug();
   const propertyId = usePropertyOrSingle();
   const { data = [], isLoading } = useWaterBalance(propertyId);
-  if (!propertyId) return <div className="mx-auto max-w-4xl"><PageHeader title="Water balance" /><PropertyRequired what="Water balances" /></div>;
-  const max = Math.max(1, ...data.map((r) => num(r.supplied_m3)));
+  // The alert threshold is the estate's own setting (Settings, General, Meter readings).
+  const { data: settings } = useQuery({ queryKey: qk.settings(slug), queryFn: () => settingsApi.settings(slug) as Promise<{ water_loss_alert_pct?: number }> });
+  const limit = settings?.water_loss_alert_pct ?? 15;
+
+  const summary = useMemo(() => {
+    const withLoss = data.filter((r) => r.loss_pct != null);
+    const avg = withLoss.length ? withLoss.reduce((s, r) => s + num(r.loss_pct), 0) / withLoss.length : null;
+    const over = withLoss.filter((r) => num(r.loss_pct) > limit).length;
+    const unaccounted = data.reduce((s, r) => s + num(r.unaccounted_m3), 0);
+    return { latest: data[0], avg, over, unaccounted };
+  }, [data, limit]);
+
+  const columns = useMemo<DataTableColumn<WaterBalanceRow>[]>(() => [
+    {
+      key: 'month', header: 'Month', primary: true, accessor: (r) => r.period,
+      render: (r) => <div><p className="font-medium">{periodLabel(r.period)}</p>{(r.estimated_readings ?? 0) > 0 && <p className="text-xs text-muted-foreground">{r.estimated_readings} estimated readings</p>}</div>,
+    },
+    { key: 'supplied', header: 'Supplied m3', align: 'right', accessor: (r) => num(r.supplied_m3), render: (r) => <span className="tabular">{num(r.supplied_m3).toFixed(1)}</span> },
+    { key: 'billed', header: 'Billed m3', align: 'right', accessor: (r) => num(r.billed_m3), render: (r) => <span className="tabular">{num(r.billed_m3).toFixed(1)}</span> },
+    { key: 'common', header: 'Common m3', align: 'right', hideBelow: 'md', accessor: (r) => num(r.common_m3), render: (r) => <span className="tabular">{num(r.common_m3).toFixed(1)}</span> },
+    { key: 'gap', header: 'Unaccounted m3', align: 'right', hideBelow: 'md', accessor: (r) => num(r.unaccounted_m3), render: (r) => <span className="tabular">{num(r.unaccounted_m3).toFixed(1)}</span> },
+    {
+      key: 'loss', header: 'Loss', align: 'right', mobileAction: true, accessor: (r) => (r.loss_pct == null ? -1 : num(r.loss_pct)),
+      render: (r) => r.loss_pct == null ? <span className="text-muted-foreground">n/a</span>
+        : <ToneBadge tone={num(r.loss_pct) > limit ? 'danger' : 'success'}>{num(r.loss_pct).toFixed(1)}%</ToneBadge>,
+    },
+  ], [limit]);
+
+  if (!propertyId) return <div className="mx-auto max-w-6xl"><PageHeader title="Water balance" /><PropertyRequired what="Water balances" /></div>;
 
   return (
-    <div className="mx-auto max-w-4xl">
-      <PageHeader title="Water balance" subtitle="Water supplied against water billed, month by month" />
+    <div className="mx-auto max-w-6xl space-y-5">
+      <PageHeader
+        title="Water balance"
+        subtitle={<>Water supplied against water billed, month by month. Losses above {limit}% are flagged (<Link href={`/${slug}/settings?tab=general`} className="text-primary underline">change</Link>).</>}
+      />
       {isLoading ? <Skeleton className="h-64" /> : data.length === 0 ? (
         <EmptyState icon={Droplets} title="No balance yet" description="Needs bulk or borehole meter readings and unit readings for the same month." />
       ) : (
-        <Card>
-          <CardContent className="p-0">
-            <div className="overflow-x-auto">
-              <table className="w-full min-w-[560px] text-sm">
-                <thead className="bg-muted/50 text-left text-xs text-muted-foreground">
-                  <tr><th className="px-4 py-2">Month</th><th className="px-4 py-2 text-right">Supplied m3</th><th className="px-4 py-2 text-right">Billed m3</th><th className="px-4 py-2 text-right">Common m3</th><th className="px-4 py-2 text-right">Unaccounted</th><th className="px-4 py-2 w-40">Loss</th></tr>
-                </thead>
-                <tbody className="divide-y">
-                  {data.map((r) => {
-                    const loss = r.loss_pct == null ? null : num(r.loss_pct);
-                    return (
-                      <tr key={r.period}>
-                        <td className="px-4 py-2 font-medium">{periodLabel(r.period)}{(r.estimated_readings ?? 0) > 0 && <span className="block text-xs text-muted-foreground">{r.estimated_readings} estimated</span>}</td>
-                        <td className="px-4 py-2 text-right tabular">{num(r.supplied_m3).toFixed(1)}</td>
-                        <td className="px-4 py-2 text-right tabular">{num(r.billed_m3).toFixed(1)}</td>
-                        <td className="px-4 py-2 text-right tabular">{num(r.common_m3).toFixed(1)}</td>
-                        <td className="px-4 py-2 text-right tabular">{num(r.unaccounted_m3).toFixed(1)}</td>
-                        <td className="px-4 py-2">
-                          {loss == null ? <span className="text-muted-foreground">n/a</span> : (
-                            <div className="flex items-center gap-2">
-                              <div className="h-2 flex-1 overflow-hidden rounded-full bg-muted">
-                                <div className={loss > 15 ? 'h-full rounded-full bg-destructive' : 'h-full rounded-full bg-chart-1'} style={{ width: `${Math.min(100, (num(r.unaccounted_m3) / max) * 100)}%` }} />
-                              </div>
-                              <span className={loss > 15 ? 'font-semibold text-destructive tabular' : 'tabular'}>{loss.toFixed(1)}%</span>
-                            </div>
-                          )}
-                        </td>
-                      </tr>
-                    );
-                  })}
-                </tbody>
-              </table>
-            </div>
-          </CardContent>
-        </Card>
+        <>
+          <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
+            <StatTile icon={Gauge} label={`Loss, ${periodLabel(summary.latest.period)}`} value={summary.latest.loss_pct == null ? 'n/a' : `${num(summary.latest.loss_pct).toFixed(1)}%`}
+              tone={summary.latest.loss_pct != null && num(summary.latest.loss_pct) > limit ? 'danger' : 'default'} />
+            <StatTile icon={TrendingDown} label="Average loss" value={summary.avg == null ? 'n/a' : `${summary.avg.toFixed(1)}%`} detail={`over ${data.length} months`} />
+            <StatTile icon={AlertTriangle} label="Months over the limit" value={summary.over} tone={summary.over ? 'warning' : 'default'} />
+            <StatTile icon={Droplets} label="Unaccounted water" value={`${summary.unaccounted.toFixed(0)} m3`} detail="all months shown" />
+          </div>
+          <Card>
+            <CardHeader><CardTitle>Supplied and billed</CardTitle></CardHeader>
+            <CardContent><WaterBalanceChart rows={data} /></CardContent>
+          </Card>
+          <DataTable columns={columns} rows={data} rowKey={(r) => r.period} emptyText="No months yet." storageKey="maskani-water" />
+        </>
       )}
     </div>
   );
