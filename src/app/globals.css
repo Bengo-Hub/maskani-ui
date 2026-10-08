@@ -68,6 +68,10 @@
     from { opacity: 0; transform: translateY(6px); }
     to { opacity: 1; transform: translateY(0); }
   }
+  @keyframes rise {
+    from { opacity: 0; transform: translateY(18px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
   @keyframes shake {
     0%, 100% { transform: translateX(0); }
     20% { transform: translateX(-8px); }
@@ -104,6 +108,49 @@
   &::-webkit-scrollbar {
     display: none;
   }
+}
+
+/* Public pages (landing, sign-in). Soft, photo-led, no gradients or glows. */
+@utility font-serif-soft {
+  font-family: var(--font-fraunces), Georgia, serif;
+  font-variation-settings: "SOFT" 100, "WONK" 0;
+  letter-spacing: -0.015em;
+}
+@utility shadow-soft {
+  box-shadow: 0 1px 2px hsl(314 30% 13% / 0.04), 0 8px 24px -6px hsl(314 30% 13% / 0.08);
+}
+@utility shadow-lift {
+  box-shadow: 0 2px 4px hsl(314 30% 13% / 0.04), 0 24px 48px -12px hsl(314 30% 13% / 0.16);
+}
+@utility photo-zoom {
+  overflow: hidden;
+  & img {
+    transition: transform 900ms cubic-bezier(0.22, 1, 0.36, 1);
+  }
+  &:hover img {
+    transform: scale(1.035);
+  }
+}
+/* Reveal on scroll: the Reveal component sets data-shown once the block enters the viewport. */
+@utility reveal {
+  transition: opacity 700ms cubic-bezier(0.22, 1, 0.36, 1), transform 700ms cubic-bezier(0.22, 1, 0.36, 1);
+  transition-delay: var(--reveal-delay, 0ms);
+  &[data-shown="false"] {
+    opacity: 0;
+    transform: translateY(14px);
+  }
+}
+@utility bg-paper {
+  background-color: hsl(30 33% 97.5%);
+}
+@utility animate-rise {
+  animation: rise 900ms cubic-bezier(0.22, 1, 0.36, 1) both;
+  animation-delay: var(--rise-delay, 0ms);
+}
+@media (prefers-reduced-motion: reduce) {
+  .reveal { opacity: 1; transform: none; transition: none; }
+  .photo-zoom img { transition: none; }
+  .animate-rise { animation: none; }
 }
 
 :root {

@@ -2,9 +2,10 @@
 
 import { Suspense, useMemo, useState } from 'react';
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
-import { Plus } from 'lucide-react';
+import Link from 'next/link';
+import { FileUp, Plus } from 'lucide-react';
 import type { DataTableColumn } from '@bengo-hub/shared-ui-lib/data-table';
-import { Button } from '@/components/ui/button';
+import { Button, buttonVariants } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
 import { NativeSelect } from '@/components/common/field';
 import { KeysetTable } from '@/components/common/keyset-table';
@@ -75,7 +76,14 @@ function Units() {
       <PageHeader
         title="Units"
         subtitle={property ? property.name : 'All properties'}
-        actions={can('units.manage') ? <Button onClick={() => setOpen(true)}><Plus /> New unit</Button> : undefined}
+        actions={can('units.manage') ? (
+          <>
+            {can('parties.manage') && (
+              <Link href={`/${slug}/units/import`} className={buttonVariants({ variant: 'outline' })}><FileUp /> Import CSV</Link>
+            )}
+            <Button onClick={() => setOpen(true)}><Plus /> New unit</Button>
+          </>
+        ) : undefined}
       />
       <div className="mb-3 flex flex-col gap-2 sm:flex-row sm:flex-wrap sm:items-center">
         <SearchInput value={filters.q} onSearch={(q) => setFilter('q', q)} placeholder="Unit code" />

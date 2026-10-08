@@ -1,16 +1,16 @@
 'use client';
 
 import { Suspense, useEffect, useRef, useState } from 'react';
-import Image from 'next/image';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { ArrowLeft, MessageCircle } from 'lucide-react';
+import { ArrowLeft, Mail, MessageCircle } from 'lucide-react';
 import { useTenantBranding } from '@bengo-hub/shared-ui-lib/tenant';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { AuthShell } from '@/components/auth/auth-shell';
 import { AppSplash } from '@/components/layout/app-splash';
 import { Field } from '@/components/common/field';
 import { useSlug } from '@/hooks/use-access';
-import { AuthHttpError, normalisePhone, requestPhoneCode, verifyPhoneCode } from '@/lib/auth/api';
+import { AuthHttpError, normalisePhone, requestPhoneCode, verifyPhoneCode, type CodeChannel } from '@/lib/auth/api';
 import { useAuthStore } from '@/store/auth';
 
 export default function PortalSignInPage() {
@@ -42,6 +42,7 @@ function PortalSignIn() {
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState('');
   const [resendIn, setResendIn] = useState(0);
+  const [sentBy, setSentBy] = useState<CodeChannel>('auto');
   const codeRef = useRef<HTMLInputElement>(null);
 
   // Deep links (walk-in approval, purchase plan) come back to their own path after sign-in.
@@ -60,11 +61,13 @@ function PortalSignIn() {
     return () => clearTimeout(t);
   }, [resendIn]);
 
-  const send = async () => {
+  const send = async (channel: CodeChannel = 'auto') => {
     setError('');
     setBusy(true);
     try {
-      await requestPhoneCode(slug, normalisePhone(phone));
+      await requestPhoneCode(slug, normalisePhone(phone), channel);
+      setSentBy(channel);
+      setCode('');
       setStep('code');
       setResendIn(45);
       setTimeout(() => codeRef.current?.focus(), 50);
@@ -96,62 +99,71 @@ function PortalSignIn() {
     }
   };
 
-  return (
-    <main className="flex min-h-dvh flex-col bg-background px-4 pb-safe pt-safe">
-      <div className="mx-auto flex w-full max-w-sm flex-1 flex-col justify-center gap-8 py-10">
-        <div className="flex flex-col items-center gap-3 text-center">
-          {tenant?.logoUrl ? (
-            // eslint-disable-next-line @next/next/no-img-element
-            <img src={tenant.logoUrl} alt={tenant.orgName} className="h-16 max-w-[70%] object-contain" />
-          ) : (
-            <Image src="/brand/maskani-logo-stacked.svg" alt="Maskani" width={128} height={97} priority />
-          )}
-          <h1 className="font-display text-xl font-semibold">{tenant?.orgName ? `${tenant.orgName} residents` : 'Residents sign in'}</h1>
-          <p className="text-sm text-muted-foreground">
-            {step === 'phone' ? 'Use the phone number the estate office has for you.' : `We sent a 6-digit code to ${normalisePhone(phone)} on WhatsApp.`}
-          </p>
-        </div>
+  // The answer never says which channel was used (that would reveal whether the phone has an
+  // account), so the copy covers both: email when the office has one, WhatsApp otherwise.
+  const sentTo = sentBy === 'whatsapp'
+    ? <>We sent a 6-digit code to <span className="font-medium text-foreground">{normalisePhone(phone)}</span> on WhatsApp.</>
+    : <>We sent a 6-digit code to the email the estate office has for you. No email on file? It went to <span className="font-medium text-foreground">{normalisePhone(phone)}</span> on WhatsApp.</>;
 
-        {step === 'phone' ? (
-          <form className="space-y-4" onSubmit={(e) => { e.preventDefault(); void send(); }}>
-            <Field label="Phone number" htmlFor="ph" error={error || undefined}>
-              <Input id="ph" type="tel" inputMode="tel" autoComplete="tel" value={phone} onChange={(e) => setPhone(e.target.value)} placeholder="0712 345 678" className="h-12 text-lg" autoFocus />
-            </Field>
-            <Button type="submit" size="lg" className="h-12 w-full text-base" disabled={busy || phone.replace(/\D/g, '').length < 9}>
-              <MessageCircle /> {busy ? 'Sending...' : 'Send me a code'}
-            </Button>
-          </form>
-        ) : (
-          <form className="space-y-4" onSubmit={(e) => { e.preventDefault(); void verify(); }}>
-            <Field label="Code" htmlFor="code" error={error || undefined}>
-              <Input
-                id="code"
-                ref={codeRef}
-                inputMode="numeric"
-                autoComplete="one-time-code"
-                maxLength={6}
-                value={code}
-                onChange={(e) => {
-                  const v = e.target.value.replace(/\D/g, '').slice(0, 6);
-                  setCode(v);
-                  if (v.length === 6) void verify(v);
-                }}
-                className="h-14 text-center font-mono text-2xl tracking-[0.5em]"
-              />
-            </Field>
-            <Button type="submit" size="lg" className="h-12 w-full text-base" disabled={busy || code.length < 6}>{busy ? 'Checking...' : 'Sign in'}</Button>
-            <div className="flex items-center justify-between text-sm">
-              <button type="button" className="inline-flex items-center gap-1 text-muted-foreground" onClick={() => { setStep('phone'); setCode(''); setError(''); }}>
-                <ArrowLeft className="h-4 w-4" /> Change number
-              </button>
-              <button type="button" className="font-medium text-primary disabled:text-muted-foreground" disabled={resendIn > 0 || busy} onClick={() => void send()}>
-                {resendIn > 0 ? `Resend in ${resendIn}s` : 'Resend code'}
+  return (
+    <AuthShell
+      logoUrl={tenant?.logoUrl}
+      orgName={tenant?.orgName}
+      title={step === 'phone' ? 'Sign in to your home' : 'Check for your code'}
+      subtitle={step === 'phone' ? 'Use the phone number the estate office has for you. We will send you a one-time code.' : sentTo}
+      back={step === 'phone' ? { href: `/${slug}`, label: 'Back' } : undefined}
+    >
+      {step === 'phone' ? (
+        <form className="space-y-4" onSubmit={(e) => { e.preventDefault(); void send(); }}>
+          <Field label="Phone number" htmlFor="ph" error={error || undefined}>
+            <Input id="ph" type="tel" inputMode="tel" autoComplete="tel" value={phone} onChange={(e) => setPhone(e.target.value)} placeholder="0712 345 678" className="h-12 rounded-xl bg-card px-4 text-lg" autoFocus />
+          </Field>
+          <Button type="submit" size="lg" className="h-12 w-full rounded-full text-base" disabled={busy || phone.replace(/\D/g, '').length < 9}>
+            <Mail /> {busy ? 'Sending...' : 'Send me a code'}
+          </Button>
+        </form>
+      ) : (
+        <form className="space-y-4" onSubmit={(e) => { e.preventDefault(); void verify(); }}>
+          <Field label="6-digit code" htmlFor="code" error={error || undefined}>
+            <Input
+              id="code"
+              ref={codeRef}
+              inputMode="numeric"
+              autoComplete="one-time-code"
+              maxLength={6}
+              value={code}
+              onChange={(e) => {
+                const v = e.target.value.replace(/\D/g, '').slice(0, 6);
+                setCode(v);
+                if (v.length === 6) void verify(v);
+              }}
+              className="h-14 rounded-xl bg-card text-center font-mono text-2xl tracking-[0.5em]"
+            />
+          </Field>
+          <Button type="submit" size="lg" className="h-12 w-full rounded-full text-base" disabled={busy || code.length < 6}>{busy ? 'Checking...' : 'Sign in'}</Button>
+          <div className="flex items-center justify-between text-sm">
+            <button type="button" className="inline-flex items-center gap-1 text-muted-foreground hover:text-foreground" onClick={() => { setStep('phone'); setCode(''); setError(''); }}>
+              <ArrowLeft className="h-4 w-4" /> Change number
+            </button>
+            <button type="button" className="font-medium text-primary disabled:text-muted-foreground" disabled={resendIn > 0 || busy} onClick={() => void send(sentBy)}>
+              {resendIn > 0 ? `Resend in ${resendIn}s` : 'Resend code'}
+            </button>
+          </div>
+          {sentBy !== 'whatsapp' && (
+            <div className="rounded-2xl border border-border/70 bg-card p-4 text-sm">
+              <p className="text-muted-foreground">Nothing in your inbox or spam folder?</p>
+              <button
+                type="button"
+                className="mt-2 inline-flex items-center gap-2 font-medium text-primary disabled:text-muted-foreground"
+                disabled={resendIn > 0 || busy}
+                onClick={() => void send('whatsapp')}
+              >
+                <MessageCircle className="h-4 w-4" /> {resendIn > 0 ? `Send on WhatsApp in ${resendIn}s` : 'Send it on WhatsApp instead'}
               </button>
             </div>
-          </form>
-        )}
-      </div>
-      <p className="pb-4 text-center text-xs text-muted-foreground">Maskani by Codevertex</p>
-    </main>
+          )}
+        </form>
+      )}
+    </AuthShell>
   );
 }

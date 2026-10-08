@@ -4,6 +4,8 @@
  */
 export const qk = {
   me: (slug: string) => [slug, 'me'] as const,
+  imports: (slug: string) => [slug, 'imports'] as const,
+  importJob: (slug: string, id: string) => [slug, 'imports', id] as const,
 
   properties: (slug: string) => [slug, 'properties'] as const,
   property: (slug: string, id: string) => [slug, 'properties', id] as const,

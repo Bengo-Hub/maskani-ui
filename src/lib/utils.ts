@@ -106,3 +106,9 @@ export function titleCase(v?: string | null): string {
   if (!v) return '';
   return v.replace(/_/g, ' ').replace(/\b\w/g, (c) => c.toUpperCase());
 }
+
+/** An estate's display name: a tenant registered with its slug as the name ("shaba-village") reads "Shaba Village". */
+export function estateName(v?: string | null): string | undefined {
+  if (!v) return undefined;
+  return /^[a-z0-9]+(-[a-z0-9]+)+$/.test(v) ? titleCase(v.replace(/-/g, ' ')) : v;
+}

@@ -120,6 +120,29 @@ class ApiClient {
       .post<T>(url, form, { headers: { 'Content-Type': 'multipart/form-data' }, timeout: 60000 })
       .then((r) => r.data);
   }
+  /**
+   * Downloads a file (CSV template, PDF) as a Blob with its server file name, read from
+   * Content-Disposition (the fleet getBlob pattern; feeds downloadBlob or the shared PdfPreview).
+   */
+  getBlob(url: string, fallbackName: string, params?: Record<string, unknown>): Promise<{ blob: Blob; fileName: string }> {
+    return this.instance.get<Blob>(url, { params: clean(params), responseType: 'blob', timeout: 60000 }).then((r) => {
+      const cd = String(r.headers['content-disposition'] ?? '');
+      const m = /filename\*?=(?:UTF-8'')?"?([^";]+)"?/i.exec(cd);
+      return { blob: r.data, fileName: m ? decodeURIComponent(m[1]) : fallbackName };
+    });
+  }
+}
+
+/** Saves a Blob through a temporary link (works on desktop and mobile browsers). */
+export function downloadBlob(blob: Blob, fileName: string): void {
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = fileName;
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+  setTimeout(() => URL.revokeObjectURL(url), 1000);
 }
 
 /** Drops undefined, null and empty-string params so the API never sees `?status=`. */

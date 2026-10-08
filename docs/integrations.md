@@ -23,7 +23,10 @@
   permissions, properties and modules. Logout posts `/api/v1/auth/logout` through
   `revokeServerSession`, then redirects to `accounts.../login?return_to=`.
 - **Portal and vendor users:** `POST {SSO}/api/v1/auth/phone/otp/request` then `/verify` with
-  `tenant_slug`, `phone`, `client_id`; same token storage and refresh as staff.
+  `tenant_slug`, `phone`, `client_id`; same token storage and refresh as staff. The code goes to
+  the member's email when they have one, otherwise WhatsApp. The code screen offers "Send it on
+  WhatsApp instead", which requests again with `channel: "whatsapp"`. The copy names both
+  channels because the API never says which one it used (that would reveal the account).
 - **Gate tablet:** registered device key (stored on the device after registration by a manager) plus
   guard PIN; one silent `prompt=none` SSO probe per session is allowed, never a loop.
 - Token refresh tolerates transient failures; only a real 401 logs out.

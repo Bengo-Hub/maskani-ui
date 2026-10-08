@@ -91,12 +91,17 @@ export async function refreshTokens(refreshToken: string): Promise<TokenPair> {
   return res.json();
 }
 
-/** Asks auth-api to send a sign-in code by WhatsApp. Never reveals whether the phone exists. */
-export async function requestPhoneCode(tenantSlug: string, phone: string): Promise<{ sent: boolean; expires_in: number }> {
+export type CodeChannel = 'auto' | 'whatsapp';
+
+/**
+ * Asks auth-api for a sign-in code. "auto" sends it to the member's email when there is one and to
+ * WhatsApp otherwise; "whatsapp" forces WhatsApp. Never reveals whether the phone exists.
+ */
+export async function requestPhoneCode(tenantSlug: string, phone: string, channel: CodeChannel = 'auto'): Promise<{ sent: boolean; expires_in: number }> {
   const res = await fetchWithTimeout(`${SSO_URL}/api/v1/auth/phone/otp/request`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ tenant_slug: tenantSlug, phone }),
+    body: JSON.stringify({ tenant_slug: tenantSlug, phone, ...(channel === 'whatsapp' ? { channel } : {}) }),
   });
   if (!res.ok) return failFrom(res, 'Could not send a code. Please try again.');
   return res.json();

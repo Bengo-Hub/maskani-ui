@@ -31,7 +31,8 @@ Assets from `shared-docs/brand/maskani/assets` are copied into `public/brand/`.
 
 `--primary` maps to plum; tenant branding from auth-api (`TenantBrandingProvider`) overrides primary
 for tenant-branded surfaces (portal, gate), while the console keeps Maskani plum in the app chrome.
-Fonts: Outfit (headings), DM Sans (body), JetBrains Mono (codes, amounts in tables). Light theme by
+Fonts: Outfit (headings), DM Sans (body), JetBrains Mono (codes, amounts in tables), and Fraunces
+for public-page headlines only (see Public pages). Light theme by
 default (`defaultTheme="light"`, `enableSystem={false}`); a dark toggle is available.
 
 | File | Use |
@@ -41,6 +42,32 @@ default (`defaultTheme="light"`, `enableSystem={false}`); a dark toggle is avail
 | `maskani-icon.svg` | Collapsed sidebar |
 | `maskani-icon-192.png`, `maskani-icon-512.png`, `maskani-icon-app.svg` | PWA manifest |
 | `apple-touch-icon.png`, `favicon.svg`, `favicon-32.png` | Browser and iOS |
+
+## Public pages (landing and sign-in)
+
+Redesigned on 2026-10-08 to feel soft and photo-led, like the better real estate sites, while
+keeping the console plain and dense. maskani-commerce follows the same rules.
+
+- **Type.** Headlines on public pages use Fraunces with its soft axis (`font-serif-soft`), loaded
+  only by those pages through `src/lib/fonts.ts`, so the console never downloads it. Body text
+  stays DM Sans; the console keeps Outfit headings.
+- **Surfaces.** A warm paper background (`bg-paper`), white cards with large radii (24 to 32 px),
+  hairline borders and two soft shadows (`shadow-soft`, `shadow-lift`). No gradients, glows,
+  sparkle icons or glassy colour washes. The only blur is the sticky nav once scrolled.
+- **Motion.** Hero content rises on load (`animate-rise` with `--rise-delay`); sections below the
+  fold fade up as they scroll in (`Reveal`, which leaves server-rendered content visible and only
+  hides blocks that start off screen). Photos zoom 3.5 percent on hover (`photo-zoom`). All of it
+  switches off under reduced motion.
+- **Photos.** Optimised WebP masters in `public/images/`, served through next/image. Sources and
+  rules are in `docs/image-credits.md`; a stock photo never stands in for a real estate.
+- **Illustration.** `EstateMap` draws who works from the one estate record (office, owners,
+  caretakers, guards, vendors, M-Pesa) as an SVG map on wide screens and a list on phones.
+- **Navigation.** The public nav links the sections, the Marketplace (`MARKETPLACE_URL`, shown on
+  phones too) and Sign in (the estate launcher).
+- **Sign-in.** `AuthShell` puts the form beside a photo panel (a photo band on phones) with the
+  estate's logo and name. A tenant whose stored name is its slug shows as a title (`estateName`).
+- **Copy.** Plain sentences that say what the product does today. No invented figures,
+  testimonials or features that are still being built.
 
 ## Shell
 
