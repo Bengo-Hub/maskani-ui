@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Textarea } from '@/components/ui/textarea';
+import { RichTextField } from '@/components/common/rich-text';
 import { Field, NativeSelect } from '@/components/common/field';
 import { FormSheet } from '@/components/common/form-sheet';
 import { PhotoPicker, type PickedPhoto } from '@/components/common/photo-picker';
@@ -77,7 +77,7 @@ export function WorkActionSheet({ workOrderId, action, onClose }: { workOrderId:
             <Field label="Photos after the work" className="sm:col-span-2"><PhotoPicker slug={slug} kind="works" value={photos} onChange={setPhotos} /></Field>
           </>
         )}
-        <Field label="Note" htmlFor="wa-note" className="sm:col-span-2"><Textarea id="wa-note" value={note} onChange={(e) => setNote(e.target.value)} rows={3} /></Field>
+        <Field label="Note" htmlFor="wa-note" className="sm:col-span-2"><RichTextField id="wa-note" value={note} onChange={setNote} /></Field>
       </div>
     </FormSheet>
   );

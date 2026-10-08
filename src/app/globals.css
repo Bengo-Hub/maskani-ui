@@ -203,12 +203,13 @@
     --chart-3: 223 7% 55%;
     --chart-4: 314 30% 62%;
     --radius: 0.75rem;
-    /* Solid deep-plum sidebar (no gradient) */
-    --sidebar: 314 63% 19%;
-    --sidebar-foreground: 320 30% 96%;
-    --sidebar-muted: 314 20% 74%;
-    --sidebar-accent: 314 50% 26%;
-    --sidebar-border: 314 45% 25%;
+    /* Light sidebar like pos-ui and library-ui; the active item takes the tenant's primary colour
+       (TenantBrandingProvider writes --primary from the tenant's SSO branding). */
+    --sidebar: 30 20% 98.5%;
+    --sidebar-foreground: 314 30% 13%;
+    --sidebar-muted: 223 7% 42%;
+    --sidebar-accent: 314 14% 93.5%;
+    --sidebar-border: 314 12% 90%;
   }
 
   .dark {

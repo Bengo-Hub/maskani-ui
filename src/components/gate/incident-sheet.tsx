@@ -4,7 +4,7 @@ import { useState } from 'react';
 import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Textarea } from '@/components/ui/textarea';
+import { RichTextField } from '@/components/common/rich-text';
 import { Field, NativeSelect } from '@/components/common/field';
 import { FormSheet } from '@/components/common/form-sheet';
 import { apiErrorMessage } from '@/lib/api/errors';
@@ -57,7 +57,7 @@ export function IncidentSheet({ open, onOpenChange, device }: { open: boolean; o
           </NativeSelect>
         </Field>
         <Field label="Short title" htmlFor="i-title" required className="sm:col-span-2"><Input id="i-title" value={f.title} onChange={(e) => setF({ ...f, title: e.target.value })} className="h-12" /></Field>
-        <Field label="Details" htmlFor="i-desc" className="sm:col-span-2"><Textarea id="i-desc" value={f.description} onChange={(e) => setF({ ...f, description: e.target.value })} rows={4} /></Field>
+        <Field label="Details" htmlFor="i-desc" className="sm:col-span-2"><RichTextField id="i-desc" value={f.description} onChange={(v) => setF({ ...f, description: v })} /></Field>
       </div>
     </FormSheet>
   );

@@ -4,11 +4,11 @@ import { useEffect, useState } from 'react';
 import { Plus, Trash2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { CatalogueCombobox } from '@/components/common/catalogue-combobox';
 import { Field, NativeSelect } from '@/components/common/field';
 import { FormSheet } from '@/components/common/form-sheet';
 import { useAddRate } from '@/hooks/use-billing';
 import { useProperties } from '@/hooks/use-register';
-import { useCatalogue } from '@/hooks/use-settings';
 import type { RateInput } from '@/lib/api/billing';
 import type { ChargeType } from '@/lib/api/types';
 import { apiDate, todayInput } from '@/lib/utils';
@@ -23,7 +23,6 @@ interface Block { from: string; to: string; rate: string }
 export function RateForm({ charge, onClose }: { charge: ChargeType | null; onClose: () => void }) {
   const add = useAddRate();
   const { data: properties = [] } = useProperties();
-  const { data: unitTypes = [] } = useCatalogue('unit_type');
   const [scope, setScope] = useState<RateInput['scope']>('tenant');
   const [propertyId, setPropertyId] = useState('');
   const [unitType, setUnitType] = useState('');
@@ -89,10 +88,7 @@ export function RateForm({ charge, onClose }: { charge: ChargeType | null; onClo
         )}
         {scope === 'unit_type' && (
           <Field label="Unit type" htmlFor="rt-ut" required>
-            <NativeSelect id="rt-ut" value={unitType} onChange={(e) => setUnitType(e.target.value)}>
-              <option value="">Choose a unit type</option>
-              {unitTypes.map((u) => <option key={u.code} value={u.code}>{u.name}</option>)}
-            </NativeSelect>
+            <CatalogueCombobox id="rt-ut" kind="unit_type" value={unitType} onChange={setUnitType} placeholder="Choose a unit type" />
           </Field>
         )}
         <Field label="Effective from" htmlFor="rt-from" required>

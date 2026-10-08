@@ -6,7 +6,7 @@ import { Plus } from 'lucide-react';
 import type { DataTableColumn } from '@bengo-hub/shared-ui-lib/data-table';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Textarea } from '@/components/ui/textarea';
+import { RichTextField } from '@/components/common/rich-text';
 import { Field, NativeSelect } from '@/components/common/field';
 import { FormSheet } from '@/components/common/form-sheet';
 import { KeysetTable } from '@/components/common/keyset-table';
@@ -81,7 +81,7 @@ export default function IncidentsPage() {
             </NativeSelect>
           </Field>
           <Field label="Title" htmlFor="ic-title" required className="sm:col-span-2"><Input id="ic-title" value={f.title} onChange={(e) => setF({ ...f, title: e.target.value })} /></Field>
-          <Field label="Details" htmlFor="ic-desc" className="sm:col-span-2"><Textarea id="ic-desc" value={f.description} onChange={(e) => setF({ ...f, description: e.target.value })} rows={4} /></Field>
+          <Field label="Details" htmlFor="ic-desc" className="sm:col-span-2"><RichTextField id="ic-desc" value={f.description} onChange={(v) => setF({ ...f, description: v })} /></Field>
         </div>
       </FormSheet>
     </div>

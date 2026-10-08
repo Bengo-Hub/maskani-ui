@@ -8,7 +8,7 @@ import type { DataTableColumn } from '@bengo-hub/shared-ui-lib/data-table';
 import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Input } from '@/components/ui/input';
-import { Textarea } from '@/components/ui/textarea';
+import { RichTextField, toPlainText } from '@/components/common/rich-text';
 import { ConfirmDialog } from '@/components/common/confirm-dialog';
 import { Field } from '@/components/common/field';
 import { FormSheet } from '@/components/common/form-sheet';
@@ -56,7 +56,7 @@ export default function NoticesPage() {
   });
 
   const columns = useMemo<DataTableColumn<Notice>[]>(() => [
-    { key: 'title', header: 'Notice', primary: true, accessor: (n) => n.title, render: (n) => <div><p className="font-medium">{n.title}</p><p className="line-clamp-1 text-xs text-muted-foreground">{n.body}</p></div> },
+    { key: 'title', header: 'Notice', primary: true, accessor: (n) => n.title, render: (n) => <div><p className="font-medium">{n.title}</p><p className="line-clamp-1 text-xs text-muted-foreground">{toPlainText(n.body)}</p></div> },
     { key: 'pri', header: 'Priority', hideBelow: 'md', accessor: (n) => n.priority, render: (n) => (n.priority === 'emergency' ? <ToneBadge tone="danger">Emergency</ToneBadge> : <ToneBadge>Routine</ToneBadge>) },
     { key: 'when', header: 'Sent', hideBelow: 'md', accessor: (n) => n.sent_at ?? '', render: (n) => fmtDateTime(n.sent_at) || '' },
     { key: 'status', header: 'Status', mobileAction: true, accessor: (n) => n.status, render: (n) => <StatusBadge status={n.status} /> },
@@ -96,7 +96,9 @@ export default function NoticesPage() {
       >
         <div className="space-y-4">
           <Field label="Title" htmlFor="nt-title" required><Input id="nt-title" value={f.title} onChange={(e) => setF({ ...f, title: e.target.value })} /></Field>
-          <Field label="Message" htmlFor="nt-body" required><Textarea id="nt-body" value={f.body} onChange={(e) => setF({ ...f, body: e.target.value })} rows={5} /></Field>
+          <Field label="Message" htmlFor="nt-body" required hint="Email shows the text with its paragraphs and lists; WhatsApp gets it on one line, without links">
+            <RichTextField id="nt-body" value={f.body} onChange={(v) => setF({ ...f, body: v })} placeholder="What residents need to know" />
+          </Field>
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
             <fieldset className="space-y-2">
               <legend className="text-sm font-medium">Who</legend>

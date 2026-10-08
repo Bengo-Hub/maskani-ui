@@ -5,6 +5,7 @@ import { useQuery } from '@tanstack/react-query';
 import { Card, CardContent } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
 import { PageHeader } from '@/components/common/page-header';
+import { RichTextView } from '@/components/common/rich-text';
 import { StatusBadge, ToneBadge } from '@/components/common/status-badge';
 import { useSlug } from '@/hooks/use-access';
 import { gateApi, mediaApi } from '@/lib/api/operations';
@@ -34,7 +35,7 @@ export default function IncidentDetailPage({ params }: { params: Promise<{ id: s
       <Card>
         <CardContent className="space-y-4">
           <p className="text-sm text-muted-foreground">Happened {fmtDateTime(inc.occurred_at)}</p>
-          {inc.description && <p className="whitespace-pre-line">{inc.description}</p>}
+          <RichTextView value={inc.description} />
           {photos.length > 0 && (
             <div className="grid grid-cols-2 gap-2 sm:grid-cols-3">
               {/* eslint-disable-next-line @next/next/no-img-element */}

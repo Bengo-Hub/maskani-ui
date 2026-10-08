@@ -6,7 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Skeleton } from '@/components/ui/skeleton';
-import { Textarea } from '@/components/ui/textarea';
+import { RichTextField } from '@/components/common/rich-text';
 import { EmptyState } from '@/components/common/empty-state';
 import { Field, NativeSelect } from '@/components/common/field';
 import { FormSheet } from '@/components/common/form-sheet';
@@ -92,7 +92,7 @@ export default function PortalRequestsPage() {
             </Field>
           )}
           <Field label="Short title" htmlFor="rq-title" required><Input id="rq-title" value={f.title} onChange={(e) => setF({ ...f, title: e.target.value })} placeholder="Kitchen sink leaking" /></Field>
-          <Field label="Details" htmlFor="rq-desc"><Textarea id="rq-desc" value={f.description} onChange={(e) => setF({ ...f, description: e.target.value })} rows={3} /></Field>
+          <Field label="Details" htmlFor="rq-desc"><RichTextField id="rq-desc" value={f.description} onChange={(v) => setF({ ...f, description: v })} placeholder="What needs fixing, and where" /></Field>
           <Field label="Photos"><PhotoPicker slug={slug} kind="works" value={photos} onChange={setPhotos} /></Field>
           <label className="flex items-center gap-2 text-sm">
             <input type="checkbox" checked={f.urgent} onChange={(e) => setF({ ...f, urgent: e.target.checked })} className="h-4 w-4 accent-[hsl(var(--primary))]" />

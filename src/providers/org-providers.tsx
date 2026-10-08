@@ -101,7 +101,10 @@ export function OrgProviders({ children }: { children: ReactNode }) {
 
   return (
     <QueryClientProvider client={queryClient}>
-      <TenantBrandingProvider slug={slug} authApiBase={SSO_URL} defaultPrimaryColor="#6E1A5A" applyCssVariables={false}>
+      {/* White-labelling: the tenant's SSO brand colours drive --primary, --ring and the brand tokens
+          (logo and name are read by the sidebar, header and sign-in screens). Maskani plum is only the
+          fallback while the tenant resolves or when it set no colours. */}
+      <TenantBrandingProvider slug={slug} authApiBase={SSO_URL} defaultPrimaryColor="#6E1A5A" defaultSecondaryColor="#C8963E">
         <TooltipProvider>
           <MaskaniSubscriptionProvider>
             <StaleChunkRecovery />

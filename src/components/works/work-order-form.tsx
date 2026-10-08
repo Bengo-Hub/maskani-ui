@@ -4,7 +4,8 @@ import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Textarea } from '@/components/ui/textarea';
+import { RichTextField } from '@/components/common/rich-text';
+import { CatalogueCombobox } from '@/components/common/catalogue-combobox';
 import { Field, NativeSelect } from '@/components/common/field';
 import { FormSheet } from '@/components/common/form-sheet';
 import { PhotoPicker, type PickedPhoto } from '@/components/common/photo-picker';
@@ -60,10 +61,7 @@ export function WorkOrderForm({ open, onOpenChange }: { open: boolean; onOpenCha
           </NativeSelect>
         </Field>
         <Field label="Category" htmlFor="wo-cat" required>
-          <NativeSelect id="wo-cat" value={f.category} onChange={(e) => setF({ ...f, category: e.target.value })}>
-            <option value="">Choose</option>
-            {categories.map((c) => <option key={c.code} value={c.code}>{c.name}</option>)}
-          </NativeSelect>
+          <CatalogueCombobox id="wo-cat" kind="wo_category" value={f.category} onChange={(v) => setF({ ...f, category: v })} placeholder="Choose" />
         </Field>
         <Field label="Unit" hint="Leave empty for a common area" className="sm:col-span-2">
           <div className="space-y-2">
@@ -86,7 +84,7 @@ export function WorkOrderForm({ open, onOpenChange }: { open: boolean; onOpenCha
           </NativeSelect>
         </Field>
         <Field label="Title" htmlFor="wo-title" required className="sm:col-span-2"><Input id="wo-title" value={f.title} onChange={(e) => setF({ ...f, title: e.target.value })} /></Field>
-        <Field label="Details" htmlFor="wo-desc" className="sm:col-span-2"><Textarea id="wo-desc" value={f.description} onChange={(e) => setF({ ...f, description: e.target.value })} rows={3} /></Field>
+        <Field label="Details" htmlFor="wo-desc" className="sm:col-span-2"><RichTextField id="wo-desc" value={f.description} onChange={(v) => setF({ ...f, description: v })} /></Field>
         <Field label="Photos" className="sm:col-span-2"><PhotoPicker slug={slug} kind="works" value={photos} onChange={setPhotos} /></Field>
       </div>
     </FormSheet>

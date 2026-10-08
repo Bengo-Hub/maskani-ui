@@ -55,8 +55,8 @@ export default function ImportUnitsPage() {
     }
   }, [status, qc, slug]);
 
-  if (!can('units.manage') || !can('parties.manage')) {
-    return <p className="text-sm text-muted-foreground">You need permission to manage units and owners to import a register.</p>;
+  if (!can('imports.run')) {
+    return <p className="text-sm text-muted-foreground">You need the data import permission to load a register.</p>;
   }
   if (properties.length === 0) return <PropertyRequired what="import units and owners" />;
 

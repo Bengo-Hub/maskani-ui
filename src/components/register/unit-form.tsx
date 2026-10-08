@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { CatalogueCombobox } from '@/components/common/catalogue-combobox';
 import { Field, NativeSelect } from '@/components/common/field';
 import { FormSheet } from '@/components/common/form-sheet';
 import { useAccess } from '@/hooks/use-access';
@@ -53,8 +54,10 @@ export function UnitForm({ open, onOpenChange, unit, propertyId, onSaved }: {
   const set = (k: keyof FormState, v: string) => setF((s) => ({ ...s, [k]: v }));
   const onType = (code: string) => {
     const t = types.find((x) => x.code === code);
-    const beds = t?.attrs?.bedrooms;
-    setF((s) => ({ ...s, unit_type: code, bedrooms: s.bedrooms || (typeof beds === 'number' ? String(beds) : s.bedrooms) }));
+    // Bedrooms from the type's attributes, or from a typed name such as "5 bedroom" or "4br_maisonette".
+    const fromName = /^(\d+)\s*_?(br|bed)/i.exec(code)?.[1];
+    const beds = typeof t?.attrs?.bedrooms === 'number' ? String(t.attrs.bedrooms) : fromName;
+    setF((s) => ({ ...s, unit_type: code, bedrooms: s.bedrooms || beds || s.bedrooms }));
   };
   const valid = f.property_id && f.code.trim();
 
@@ -96,11 +99,8 @@ export function UnitForm({ open, onOpenChange, unit, propertyId, onSaved }: {
         <Field label="Unit code" htmlFor="u-code" required hint="Also the paybill account number, e.g. B07">
           <Input id="u-code" value={f.code} onChange={(e) => set('code', e.target.value)} disabled={!!unit} className="uppercase" />
         </Field>
-        <Field label="Unit type" htmlFor="u-type">
-          <NativeSelect id="u-type" value={f.unit_type} onChange={(e) => onType(e.target.value)}>
-            <option value="">Not set</option>
-            {types.map((t) => <option key={t.code} value={t.code}>{t.name}</option>)}
-          </NativeSelect>
+        <Field label="Unit type" htmlFor="u-type" hint="Type to add a new one, such as 5 bedroom maisonette">
+          <CatalogueCombobox id="u-type" kind="unit_type" value={f.unit_type} onChange={onType} placeholder="Not set" />
         </Field>
         <Field label="Use" htmlFor="u-use">
           <NativeSelect id="u-use" value={f.use} onChange={(e) => set('use', e.target.value)}>

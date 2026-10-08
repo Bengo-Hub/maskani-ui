@@ -1,4 +1,7 @@
+'use client';
+
 import * as React from 'react';
+import { SearchableCombobox, type ComboboxOption } from '@bengo-hub/shared-ui-lib/combobox';
 import { Label } from '@/components/ui/label';
 import { cn } from '@/lib/utils';
 
@@ -36,22 +39,75 @@ export function Field({
   );
 }
 
-/** Native select styled like shadcn inputs: the OS picker is the most reliable control on phones. */
-export function NativeSelect({ className, children, ...props }: React.ComponentProps<'select'>) {
+type OptionEl = React.ReactElement<{ value?: string | number; children?: React.ReactNode; disabled?: boolean }>;
+
+/** Plain text of an option's children (options are usually strings, sometimes small fragments). */
+function textOf(node: React.ReactNode): string {
+  if (node == null || typeof node === 'boolean') return '';
+  if (typeof node === 'string' || typeof node === 'number') return String(node);
+  if (Array.isArray(node)) return node.map(textOf).join('');
+  if (React.isValidElement<{ children?: React.ReactNode }>(node)) return textOf(node.props.children);
+  return '';
+}
+
+export interface SelectProps {
+  value?: string | number | readonly string[];
+  /** Starting value when the parent does not control `value`. */
+  defaultValue?: string | number | readonly string[];
+  onChange?: (e: React.ChangeEvent<HTMLSelectElement>) => void;
+  children?: React.ReactNode;
+  id?: string;
+  className?: string;
+  disabled?: boolean;
+  'aria-label'?: string;
+  /** Search box placeholder; the list is always searchable. */
+  searchPlaceholder?: string;
+}
+
+/**
+ * The app's dropdown: the shared-ui-lib SearchableCombobox (searchable, keyboard friendly, the same
+ * control in every Codevertex app) behind the `<select>`-style API every form already uses:
+ * `<option>` children, `value`, and `onChange(e)` reading `e.target.value`. A first option with an
+ * empty value becomes the placeholder and makes the field clearable. For lists the estate edits
+ * (unit types, categories) use CatalogueCombobox, which can also add entries.
+ */
+export function NativeSelect({ value, defaultValue, onChange, children, id, className, disabled, searchPlaceholder, ...rest }: SelectProps) {
+  const [own, setOwn] = React.useState(defaultValue == null ? '' : String(defaultValue));
+  const controlled = value !== undefined;
+  const options: ComboboxOption[] = [];
+  let placeholder = 'Choose...';
+  let clearable = false;
+  for (const child of React.Children.toArray(children)) {
+    if (!React.isValidElement(child)) continue;
+    const o = child as OptionEl;
+    if (o.props.disabled) continue;
+    const v = o.props.value != null ? String(o.props.value) : textOf(o.props.children);
+    const label = textOf(o.props.children) || v;
+    if (v === '') {
+      placeholder = label;
+      clearable = true;
+      continue;
+    }
+    options.push({ value: v, label });
+  }
+  const current = controlled ? (value == null ? '' : String(value)) : own;
+  const emit = (v: string) => {
+    if (!controlled) setOwn(v);
+    // Shaped like a change event so existing `(e) => set(e.target.value)` handlers keep working.
+    const target = { value: v } as HTMLSelectElement;
+    onChange?.({ target, currentTarget: target } as React.ChangeEvent<HTMLSelectElement>);
+  };
   return (
-    <select
-      data-slot="native-select"
-      className={cn(
-        'h-10 w-full min-w-0 appearance-none rounded-lg border border-input bg-background bg-[length:16px] bg-[right_0.6rem_center] bg-no-repeat px-3 pr-8 text-sm outline-none focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/30 disabled:opacity-50',
-        className,
-      )}
-      style={{
-        backgroundImage:
-          "url(\"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%236A6E78' stroke-width='2'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' d='m6 9 6 6 6-6'/%3E%3C/svg%3E\")",
-      }}
-      {...props}
-    >
-      {children}
-    </select>
+    <div id={id} data-slot="select" role="group" aria-label={rest['aria-label']} className={cn('min-w-0', className)}>
+      <SearchableCombobox
+        options={options}
+        value={current}
+        onChange={(v) => emit(v)}
+        placeholder={placeholder}
+        searchPlaceholder={searchPlaceholder ?? 'Search'}
+        clearable={clearable}
+        disabled={disabled}
+      />
+    </div>
   );
 }

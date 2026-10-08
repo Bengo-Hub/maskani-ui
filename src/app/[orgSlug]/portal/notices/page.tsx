@@ -5,6 +5,7 @@ import { Card } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
 import { EmptyState } from '@/components/common/empty-state';
 import { PageHeader } from '@/components/common/page-header';
+import { RichTextView } from '@/components/common/rich-text';
 import { ToneBadge } from '@/components/common/status-badge';
 import { usePortalNotices } from '@/hooks/use-portal';
 import { fmtDate } from '@/lib/utils';
@@ -23,7 +24,7 @@ export default function PortalNoticesPage() {
               <p className="font-medium">{n.title}</p>
               {n.priority === 'emergency' && <ToneBadge tone="danger">Urgent</ToneBadge>}
             </div>
-            <p className="whitespace-pre-line text-sm text-muted-foreground">{n.body}</p>
+            <RichTextView value={n.body} className="text-muted-foreground" />
             <p className="text-xs text-muted-foreground">{fmtDate(n.sent_at ?? n.created_at)}</p>
           </Card>
         ))}

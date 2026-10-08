@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
 import { PageHeader } from '@/components/common/page-header';
+import { RichTextView } from '@/components/common/rich-text';
 import { StatusBadge } from '@/components/common/status-badge';
 import { WorkActionSheet } from '@/components/works/work-action-sheet';
 import { useAccess, useSlug } from '@/hooks/use-access';
@@ -70,7 +71,7 @@ export default function WorkOrderPage({ params }: { params: Promise<{ id: string
         <Card>
           <CardHeader><CardTitle>Details</CardTitle></CardHeader>
           <CardContent className="space-y-4 text-sm">
-            {wo.description && <p className="whitespace-pre-line">{wo.description}</p>}
+            <RichTextView value={wo.description} />
             <dl className="grid grid-cols-2 gap-3">
               <div><dt className="text-xs text-muted-foreground">Category</dt><dd>{titleCase(wo.category)}</dd></div>
               <div><dt className="text-xs text-muted-foreground">Where</dt><dd>{wo.area || (wo.unit_id ? 'Unit' : 'Common area')}</dd></div>
@@ -96,7 +97,7 @@ export default function WorkOrderPage({ params }: { params: Promise<{ id: string
                 <li key={e.id} className="relative text-sm">
                   <span className="absolute -left-[21px] top-1.5 h-2 w-2 rounded-full bg-primary" />
                   <p className="font-medium">{e.to_status ? label(WORK_STATUS, e.to_status) : titleCase(e.kind)}</p>
-                  {e.note && <p className="text-muted-foreground">{e.note}</p>}
+                  <RichTextView value={e.note} className="text-muted-foreground" />
                   <p className="text-xs text-muted-foreground">{fmtDateTime(e.created_at)}{e.actor_kind ? ` · ${e.actor_kind}` : ''}</p>
                 </li>
               ))}

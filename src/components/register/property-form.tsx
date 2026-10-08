@@ -3,11 +3,12 @@
 import { useEffect, useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Textarea } from '@/components/ui/textarea';
+import { RichTextField } from '@/components/common/rich-text';
+import { CatalogueCombobox } from '@/components/common/catalogue-combobox';
 import { Field, NativeSelect } from '@/components/common/field';
 import { FormSheet } from '@/components/common/form-sheet';
 import { useSaveProperty } from '@/hooks/use-register';
-import { USE_CASES, useCatalogue } from '@/hooks/use-settings';
+import { USE_CASES } from '@/hooks/use-settings';
 import type { PropertyInput } from '@/lib/api/register';
 import type { Property } from '@/lib/api/types';
 
@@ -21,7 +22,6 @@ export function PropertyForm({ open, onOpenChange, property, onSaved }: {
 }) {
   const [form, setForm] = useState<PropertyInput>(EMPTY);
   const save = useSaveProperty(property?.id);
-  const { data: types = [] } = useCatalogue('property_type');
 
   useEffect(() => {
     if (!open) return;
@@ -61,9 +61,7 @@ export function PropertyForm({ open, onOpenChange, property, onSaved }: {
           <Input id="p-code" value={form.code} onChange={(e) => set('code', e.target.value)} disabled={!!property} className="uppercase" />
         </Field>
         <Field label="Type" htmlFor="p-type">
-          <NativeSelect id="p-type" value={form.property_type} onChange={(e) => set('property_type', e.target.value)}>
-            {(types.length ? types : [{ code: 'estate', name: 'Estate' }]).map((t) => <option key={t.code} value={t.code}>{t.name}</option>)}
-          </NativeSelect>
+          <CatalogueCombobox id="p-type" kind="property_type" value={form.property_type} onChange={(v) => set('property_type', v)} placeholder="Estate" />
         </Field>
         <Field label="How it is run" htmlFor="p-use">
           <NativeSelect id="p-use" value={form.use_case} onChange={(e) => set('use_case', e.target.value)}>
@@ -83,7 +81,7 @@ export function PropertyForm({ open, onOpenChange, property, onSaved }: {
           <Input id="p-address" value={form.address} onChange={(e) => set('address', e.target.value)} />
         </Field>
         <Field label="Description" htmlFor="p-desc" className="sm:col-span-2">
-          <Textarea id="p-desc" value={form.description} onChange={(e) => set('description', e.target.value)} rows={3} />
+          <RichTextField id="p-desc" value={form.description ?? ''} onChange={(v) => set('description', v)} placeholder="Shown on the marketplace listing as plain text" />
         </Field>
       </div>
     </FormSheet>

@@ -78,7 +78,7 @@ function Units() {
         subtitle={property ? property.name : 'All properties'}
         actions={can('units.manage') ? (
           <>
-            {can('parties.manage') && (
+            {can('imports.run') && (
               <Link href={`/${slug}/units/import`} className={buttonVariants({ variant: 'outline' })}><FileUp /> Import CSV</Link>
             )}
             <Button onClick={() => setOpen(true)}><Plus /> New unit</Button>
