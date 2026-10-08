@@ -50,6 +50,9 @@ class ApiClient {
   private handleError = async (error: any) => {
     const status: number | undefined = error?.response?.status;
     const config = error?.config;
+    // Gate tablet calls carry a device key, not the user's session: a 401 there (wrong guard PIN,
+    // revoked tablet) must never refresh or end a staff session on the same browser.
+    if (config?.headers?.['X-Device-Key']) return Promise.reject(error);
 
     if (status === 401 && this.accessToken && config && !config._retried) {
       const { refreshAccessToken } = await import('@/lib/auth/token-refresh');

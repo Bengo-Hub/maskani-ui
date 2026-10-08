@@ -94,6 +94,7 @@ export const gateApi = {
   incidents: (slug: string, params: { property_id: string; open?: boolean; cursor?: string; limit?: number }) =>
     apiClient.get<Page<Incident>>(`${t(slug)}/incidents`, params),
   createIncident: (slug: string, body: Partial<Incident>) => apiClient.post<Incident>(`${t(slug)}/incidents`, body),
+  incident: (slug: string, id: string) => apiClient.get<Incident>(`${t(slug)}/incidents/${id}`),
 };
 
 export interface NoticeInput {

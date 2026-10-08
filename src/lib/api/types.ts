@@ -519,27 +519,46 @@ export type WorkStatus =
 export type WorkAction =
   | 'assign' | 'quote' | 'approve_quote' | 'start' | 'complete' | 'confirm' | 'reopen' | 'cancel' | 'close';
 
+export interface WorkOrderEvent {
+  id: string;
+  kind: string;
+  from_status?: string;
+  to_status?: string;
+  note?: string;
+  actor_kind?: string;
+  created_at: string;
+}
+
 export interface WorkOrder extends Base {
+  number: string;
   property_id: string;
   unit_id?: string | null;
-  number?: string;
   area?: string;
-  category?: string;
+  category: string;
   priority: WorkPriority;
-  status: WorkStatus;
   title: string;
   description?: string;
-  photos?: string[];
+  source?: 'resident' | 'staff' | 'schedule' | 'inspection' | 'gate';
+  assignee_kind?: 'vendor' | 'staff' | 'none';
   vendor_id?: string | null;
+  erp_employee_id?: string;
   assigned_user_id?: string | null;
-  erp_employee_id?: string | null;
-  quote_amount?: Money | null;
-  cost_amount?: Money | null;
-  sla_due_at?: string | null;
+  response_due_at?: string | null;
+  resolution_due_at?: string | null;
+  responded_at?: string | null;
   completed_at?: string | null;
-  unit_code?: string;
-  vendor_name?: string;
-  events?: { id: string; action: string; note?: string; created_at: string; actor_name?: string }[];
+  confirmed_at?: string | null;
+  reopened_count?: number;
+  sla_breached?: boolean;
+  quote_amount?: Money | null;
+  quote_status?: 'none' | 'pending' | 'approved' | 'rejected';
+  cost_amount?: Money;
+  recharge?: boolean;
+  photos_before?: string[];
+  photos_after?: string[];
+  minutes_on_site?: number;
+  status: WorkStatus;
+  edges?: { events?: WorkOrderEvent[] };
 }
 
 export interface VendorDocument extends Base {
