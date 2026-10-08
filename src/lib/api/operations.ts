@@ -99,7 +99,9 @@ export const gateApi = {
 
 export interface NoticeInput {
   property_id?: string;
-  audience: { scope: 'estate' | 'block' | 'owners' | 'occupants'; block_id?: string };
+  /** roles: owner, occupant (default both); narrow with block_ids or unit_ids. */
+  audience: { scope?: 'estate'; roles?: ('owner' | 'occupant')[]; block_ids?: string[]; unit_ids?: string[] };
+  /** Active channels only: WhatsApp and email (SMS is not an active channel). */
   channels: string[];
   category?: string;
   priority: 'routine' | 'emergency';

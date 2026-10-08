@@ -492,7 +492,7 @@ export interface SaleContract extends Base {
 export interface ContractInput {
   unit_id: string;
   buyer_id: string;
-  buyers?: string[];
+  buyers?: { party_id: string; share?: number }[];
   reservation_id?: string;
   price: number;
   discount?: number;
@@ -504,9 +504,9 @@ export interface ContractInput {
   interest_rate?: number;
   grace_days?: number;
   milestones?: { label: string; pct: number }[];
-  financier?: string;
-  buyer_advocate?: string;
-  seller_advocate?: string;
+  financier?: Record<string, unknown>;
+  buyer_advocate?: { name?: string; firm?: string; phone?: string };
+  seller_advocate?: { name?: string; firm?: string; phone?: string };
   notes?: string;
 }
 
@@ -775,7 +775,8 @@ export interface Role {
 export interface ModulesState {
   enabled: string[];
   presets: Record<string, string[]>;
-  released?: string[];
+  /** Module code to released flag (a JSON object, from Go map[string]bool). */
+  released?: Record<string, boolean>;
   dependencies?: Record<string, string[]>;
 }
 

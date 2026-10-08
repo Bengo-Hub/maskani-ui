@@ -19,21 +19,23 @@ export const TERMS_VERSION = '2026-10';
 export function TermsGate() {
   const slug = useSlug();
   const userId = useAuthStore((s) => s.me?.id ?? '');
+  // The estate sets its terms version in settings; a new version asks residents again.
+  const version = useAuthStore((s) => (s.me?.settings?.terms_version as string | undefined) || TERMS_VERSION);
   const key = `maskani-terms:${slug}:${userId}`;
   const [open, setOpen] = useState(false);
   const [agree, setAgree] = useState(false);
   const accept = useMutation({
-    mutationFn: () => portalApi.acceptTerms(slug, TERMS_VERSION),
+    mutationFn: () => portalApi.acceptTerms(slug, version),
     onSuccess: () => {
-      try { localStorage.setItem(key, TERMS_VERSION); } catch { /* storage blocked */ }
+      try { localStorage.setItem(key, version); } catch { /* storage blocked */ }
       setOpen(false);
     },
   });
 
   useEffect(() => {
     if (!userId) return;
-    try { setOpen(localStorage.getItem(key) !== TERMS_VERSION); } catch { setOpen(true); }
-  }, [key, userId]);
+    try { setOpen(localStorage.getItem(key) !== version); } catch { setOpen(true); }
+  }, [key, userId, version]);
 
   return (
     <FormSheet
