@@ -12,6 +12,9 @@ core of sprints 1 to 4 forward.
 | S4 | [sprint-04-works-vendors-gate.md](sprint-04-works-vendors-gate.md) |
 | S5 | [sprint-05-reports-documents.md](sprint-05-reports-documents.md) |
 | S6 | [sprint-06-hardening.md](sprint-06-hardening.md) |
+| S7 (R2) | [sprint-07-r2-leasing.md](sprint-07-r2-leasing.md) |
+| S8 (R3) | [sprint-08-r3-listings.md](sprint-08-r3-listings.md) (public site in maskani-commerce) |
+| S9 (R4) | [sprint-09-r4-extensions.md](sprint-09-r4-extensions.md) |
 
 ## Definition of done
 

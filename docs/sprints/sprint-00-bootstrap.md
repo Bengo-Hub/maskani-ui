@@ -27,7 +27,7 @@ As of 2026-10-08.
 - [x] Subscription gate (fail open; shared SubscriptionProvider, LimitReachedModal)
 - [x] Landing page
 - [x] Dockerfile, `build.sh`, deploy workflow, repo `Bengo-Hub/maskani-ui` (CI green 2026-10-08)
-- [ ] devops-k8s `apps/maskani-ui` pushed and ArgoCD app applied (user)
+- [x] devops-k8s `apps/maskani-ui` pushed (`b3846451`) and ArgoCD app applied; 2 pods ready
 
 ## Rules to apply
 
