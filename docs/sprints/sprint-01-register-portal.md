@@ -11,7 +11,13 @@
 
 ## Progress
 
-- [ ] Screens not started (2026-10-08). The API for this sprint is mostly done; see maskani-api `docs/sprints/sprint-01-register-parties-portal.md`.
+- [x] Properties: list, create and edit, detail with blocks and staff assignments
+- [x] Units: keyset DataTable with URL filters, create and edit sheet, detail with people and accounts
+- [x] Owners and residents: list, add or edit (encrypted ID and KRA PIN shown masked), detail, invite to portal
+- [x] Link a person to a unit with role, start date and bill-to charges; end a link
+- [ ] CSV import (API not built yet)
+- [x] Settings: general, modules with presets, catalogue lists, users and roles
+- [x] Portal sign-in by WhatsApp code (no phone enumeration), terms acceptance by tenant version, home with units and balances
 
 ## Rules to apply
 

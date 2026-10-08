@@ -13,7 +13,11 @@
 
 ## Progress
 
-- [ ] Screens not started (2026-10-08). The API for this sprint is mostly done; see maskani-api `docs/sprints/sprint-03-sales-instalments.md`.
+- [x] Availability board by block with sales position
+- [x] Reservations with a buyer and hold days
+- [x] Contract wizard (price, discount, deposit, payment option, term) and contract page with activation and schedule
+- [x] Portal purchase plan and schedule
+- [ ] Price list editor (seeded for the demo), restructure, handover and title (after demo)
 
 ## Rules to apply
 

@@ -11,7 +11,12 @@
 
 ## Progress
 
-- [ ] Screens and gate tablet app not started (2026-10-08). The API is mostly done; see maskani-api `docs/sprints/sprint-04-providers-works-gate.md`.
+- [x] Work orders: list, create with photos, detail with history and status actions; mobile quick create
+- [x] Vendors: documents with expiry badges, personnel with gate PINs
+- [x] Gate tablet: device setup, guard sign-on, keypad and QR verify, encrypted offline cache, queued entries, walk-in with host approval and countdown, exit, incident
+- [x] Console passes, gate log, incidents with detail (alert deep link)
+- [x] Portal visitor passes (code and QR shown once, WhatsApp share button), requests with photos, walk-in decision page
+- [ ] Patrols and guard posts (API planned)
 
 ## Rules to apply
 

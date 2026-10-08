@@ -13,7 +13,13 @@
 
 ## Progress
 
-- [ ] Screens not started (2026-10-08). The API for this sprint is mostly done; see maskani-api `docs/sprints/sprint-02-billing-utilities-collections.md`.
+- [x] Funds (paybill, account prefix) and charge catalogue (switch on or off, dated rates by scope, block water tariffs)
+- [x] Billing runs: wizard with preview, issue, live progress, retry failed
+- [x] Unit accounts and statements (live from treasury); staff collect payment via TreasuryPaymentModal
+- [x] Collections: unmatched paybill payments with assign, arrears list
+- [x] Reading round (phone-first, required photo resized to JPEG, instant warnings, accept) and water balance
+- [x] Portal pay (pending intent, gateway chosen in the modal, paybill fallback) and statement
+- [ ] Statement PDF and CSV export (API not built yet)
 
 ## Rules to apply
 
