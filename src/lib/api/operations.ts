@@ -12,7 +12,7 @@ export const utilitiesApi = {
   createMeter: (slug: string, body: Partial<Meter>) => apiClient.post<Meter>(`${t(slug)}/meters`, body),
   round: (slug: string, period: string, propertyId: string) =>
     apiClient.get<ReadingRound>(`${t(slug)}/reading-rounds/${period}`, { property_id: propertyId }),
-  saveReading: (slug: string, meterId: string, body: { period: string; reading: number; photo_key: string; read_at?: string; notes?: string }) =>
+  saveReading: (slug: string, meterId: string, body: { period: string; reading: number; photo_key?: string; read_at?: string; notes?: string }) =>
     apiClient.post<MeterReading>(`${t(slug)}/meters/${meterId}/readings`, body),
   estimate: (slug: string, meterId: string, period: string) =>
     apiClient.post<MeterReading>(`${t(slug)}/meters/${meterId}/estimate`, { period }),

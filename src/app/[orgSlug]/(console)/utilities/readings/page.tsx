@@ -44,7 +44,7 @@ export default function ReadingRoundPage() {
 
   return (
     <div className="mx-auto max-w-4xl">
-      <PageHeader title="Meter readings" subtitle="Walk the round on your phone; each reading needs a photo" actions={<PeriodPicker value={period} onChange={setPeriod} />} />
+      <PageHeader title="Meter readings" subtitle="Walk the round on your phone; add a meter photo where you can" actions={<PeriodPicker value={period} onChange={setPeriod} />} />
       {isLoading ? <Skeleton className="h-64" /> : !round || total === 0 ? (
         <EmptyState icon={Droplets} title="No meters" description="Add water meters to units before the first reading round." />
       ) : (

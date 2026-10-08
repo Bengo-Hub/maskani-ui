@@ -30,12 +30,14 @@ export function ReadingCapture({ row, propertyId, period, onDone }: { row: Round
   const reading = value === '' ? null : Number(value);
   const used = prev != null && reading != null ? reading - prev : null;
   const warning = used == null ? null : used < 0 ? 'Lower than last month' : prev != null && prev > 0 && used > Math.max(30, prev * 0.5) ? 'Much higher than usual' : null;
-  const ready = reading != null && Number.isFinite(reading) && reading >= 0 && photos.length === 1;
+  // The photo is optional (user decision 2026-10-08): it settles disputes, but a failed camera or
+  // upload must never block a reading.
+  const ready = reading != null && Number.isFinite(reading) && reading >= 0;
 
   const submit = () => {
     if (!ready || reading == null) return;
     if (warning && !confirmOdd) { setConfirmOdd(true); return; }
-    save.mutate({ meterId: row.meter_id, reading, photoKey: photos[0].key }, { onSuccess: onDone });
+    save.mutate({ meterId: row.meter_id, reading, photoKey: photos[0]?.key }, { onSuccess: onDone });
   };
 
   return (
@@ -62,8 +64,8 @@ export function ReadingCapture({ row, propertyId, period, onDone }: { row: Round
             <AlertTriangle className="h-4 w-4 shrink-0" /> {warning}. Check the meter again{confirmOdd ? ', then save anyway if it is right.' : '.'}
           </p>
         )}
-        <Field label="Photo of the meter (required)">
-          <PhotoPicker slug={slug} kind="readings" value={photos} onChange={setPhotos} max={1} required label="Take photo" />
+        <Field label="Photo of the meter" hint="Optional, but it helps if the owner queries the bill">
+          <PhotoPicker slug={slug} kind="readings" value={photos} onChange={setPhotos} max={1} label="Take photo" />
         </Field>
       </div>
     </FormSheet>

@@ -19,7 +19,7 @@ export function useSaveReading(propertyId: string, period: string) {
   const slug = useSlug();
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: (v: { meterId: string; reading: number; photoKey: string; notes?: string }) =>
+    mutationFn: (v: { meterId: string; reading: number; photoKey?: string; notes?: string }) =>
       utilitiesApi.saveReading(slug, v.meterId, { period, reading: v.reading, photo_key: v.photoKey, read_at: new Date().toISOString(), notes: v.notes }),
     onSuccess: () => void qc.invalidateQueries({ queryKey: qk.round(slug, propertyId, period) }),
   });
