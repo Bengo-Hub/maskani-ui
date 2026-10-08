@@ -1,0 +1,48 @@
+FROM node:20-alpine AS base
+
+FROM base AS deps
+RUN apk add --no-cache libc6-compat
+WORKDIR /app
+RUN npm install -g pnpm@10
+COPY package.json pnpm-lock.yaml* .npmrc* ./
+RUN pnpm install --shamefully-hoist --frozen-lockfile
+
+FROM base AS builder
+WORKDIR /app
+RUN npm install -g pnpm@10
+COPY --from=deps /app/node_modules ./node_modules
+COPY . .
+
+# Public values only; they are baked into the client bundle. Secrets never go here.
+ARG NEXT_PUBLIC_API_URL=https://maskaniapi.codevertexafrica.com
+ARG NEXT_PUBLIC_SSO_URL=https://sso.codevertexafrica.com
+ARG NEXT_PUBLIC_SSO_CLIENT_ID=maskani-ui
+ARG NEXT_PUBLIC_AUTH_UI_URL=https://accounts.codevertexafrica.com
+ARG NEXT_PUBLIC_TREASURY_API_URL=https://booksapi.codevertexafrica.com
+ARG NEXT_PUBLIC_TREASURY_UI_URL=https://books.codevertexafrica.com
+ARG NEXT_PUBLIC_SUBSCRIPTIONS_UI_URL=https://pricing.codevertexafrica.com
+ARG NEXT_PUBLIC_APP_URL=https://maskaniapp.codevertexafrica.com
+ENV NEXT_PUBLIC_API_URL=$NEXT_PUBLIC_API_URL \
+    NEXT_PUBLIC_SSO_URL=$NEXT_PUBLIC_SSO_URL \
+    NEXT_PUBLIC_SSO_CLIENT_ID=$NEXT_PUBLIC_SSO_CLIENT_ID \
+    NEXT_PUBLIC_AUTH_UI_URL=$NEXT_PUBLIC_AUTH_UI_URL \
+    NEXT_PUBLIC_TREASURY_API_URL=$NEXT_PUBLIC_TREASURY_API_URL \
+    NEXT_PUBLIC_TREASURY_UI_URL=$NEXT_PUBLIC_TREASURY_UI_URL \
+    NEXT_PUBLIC_SUBSCRIPTIONS_UI_URL=$NEXT_PUBLIC_SUBSCRIPTIONS_UI_URL \
+    NEXT_PUBLIC_APP_URL=$NEXT_PUBLIC_APP_URL \
+    NEXT_TELEMETRY_DISABLED=1
+
+RUN pnpm build
+
+FROM base AS runner
+WORKDIR /app
+ENV NODE_ENV=production NEXT_TELEMETRY_DISABLED=1
+RUN addgroup --system --gid 1001 nodejs && adduser --system --uid 1001 nextjs
+COPY --from=builder /app/public ./public
+RUN mkdir -p .next && chown nextjs:nodejs .next
+COPY --from=builder --chown=nextjs:nodejs /app/.next/standalone ./
+COPY --from=builder --chown=nextjs:nodejs /app/.next/static ./.next/static
+USER nextjs
+EXPOSE 3000
+ENV PORT=3000 HOSTNAME="0.0.0.0"
+CMD ["node", "server.js"]
