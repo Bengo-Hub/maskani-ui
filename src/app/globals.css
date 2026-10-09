@@ -147,6 +147,35 @@
   animation: rise 900ms cubic-bezier(0.22, 1, 0.36, 1) both;
   animation-delay: var(--rise-delay, 0ms);
 }
+/* Owner portal: soft glass surfaces over a calm tinted canvas (user request 2026-10-09). Glass is
+   kept for surfaces that sit over the canvas (sidebar, header, cards); text on it stays at full
+   contrast. Browsers without backdrop-filter get the near-opaque fill, which still reads. */
+@utility glass {
+  background-color: hsl(var(--card) / 0.72);
+  backdrop-filter: blur(18px) saturate(150%);
+  -webkit-backdrop-filter: blur(18px) saturate(150%);
+  border: 1px solid hsl(0 0% 100% / 0.65);
+  box-shadow: 0 1px 2px hsl(314 30% 13% / 0.04), 0 12px 32px -14px hsl(314 30% 13% / 0.14);
+}
+@utility glass-strong {
+  background-color: hsl(var(--card) / 0.86);
+  backdrop-filter: blur(22px) saturate(160%);
+  -webkit-backdrop-filter: blur(22px) saturate(160%);
+  border: 1px solid hsl(0 0% 100% / 0.7);
+  box-shadow: 0 1px 2px hsl(314 30% 13% / 0.05), 0 16px 40px -16px hsl(314 30% 13% / 0.18);
+}
+.dark .glass, .dark .glass-strong { border-color: hsl(0 0% 100% / 0.08); }
+/* Cards on portal pages take the glass surface without each page restyling them. */
+.portal-surface [data-slot="card"] {
+  background-color: hsl(var(--card) / 0.72);
+  backdrop-filter: blur(18px) saturate(150%);
+  -webkit-backdrop-filter: blur(18px) saturate(150%);
+  border-color: hsl(0 0% 100% / 0.65);
+  border-radius: 1.25rem;
+  box-shadow: 0 1px 2px hsl(314 30% 13% / 0.04), 0 12px 32px -14px hsl(314 30% 13% / 0.14);
+}
+.dark .portal-surface [data-slot="card"] { border-color: hsl(0 0% 100% / 0.08); }
+
 @media (prefers-reduced-motion: reduce) {
   .reveal { opacity: 1; transform: none; transition: none; }
   .photo-zoom img { transition: none; }

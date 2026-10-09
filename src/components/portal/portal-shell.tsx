@@ -1,18 +1,25 @@
 'use client';
 
-import { useEffect, useState, type ReactNode } from 'react';
-import Image from 'next/image';
+import { useEffect, type ReactNode } from 'react';
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
-import { Bell, Home, LogOut, ShieldCheck, Wrench } from 'lucide-react';
+import { Bell, Home, ShieldCheck, Wrench } from 'lucide-react';
 import { MobileBottomNav, type MobileNavTab } from '@bengo-hub/shared-ui-lib/navigation';
 import { useTenantBranding } from '@bengo-hub/shared-ui-lib/tenant';
-import { Button } from '@/components/ui/button';
 import { AppSplash } from '@/components/layout/app-splash';
 import { useSlug } from '@/hooks/use-access';
 import { useAuthStore } from '@/store/auth';
+import { AccountCard, AccountMenu, PortalBrand, PortalSideNav, type PortalTab } from './portal-nav';
 import { TermsGate } from './terms-gate';
 
+/** Width of the desktop sidebar column; the content area starts after it. */
+const SIDE = 'lg:pl-[18.5rem]';
+
+/**
+ * The owner and resident portal. From 1024px a floating glass sidebar carries the estate's logo,
+ * the pages and the account; the content uses the width beside it. On phones a glass header keeps
+ * the logo and account menu, and the shared bottom tabs carry the pages.
+ */
 export function PortalShell({ children }: { children: ReactNode }) {
   const slug = useSlug();
   const router = useRouter();
@@ -22,7 +29,6 @@ export function PortalShell({ children }: { children: ReactNode }) {
   const me = useAuthStore((s) => s.me);
   const restore = useAuthStore((s) => s.restore);
   const logout = useAuthStore((s) => s.logout);
-  const [moreOpen, setMoreOpen] = useState(false);
   const signInPage = pathname.endsWith('/portal/sign-in');
 
   useEffect(() => {
@@ -40,51 +46,67 @@ export function PortalShell({ children }: { children: ReactNode }) {
   if (status !== 'authenticated' || !me?.is_portal_user) return <AppSplash />;
 
   const base = `/${slug}/portal`;
-  const tabs: MobileNavTab[] = [
-    { key: 'home', label: 'Home', href: base, icon: Home, active: pathname === base || pathname.startsWith(`${base}/statement`) || pathname.startsWith(`${base}/purchase`) },
-    { key: 'visitors', label: 'Visitors', href: `${base}/visitors`, icon: ShieldCheck, active: pathname.startsWith(`${base}/visitors`) || pathname.startsWith(`${base}/walk-ins`) },
-    { key: 'requests', label: 'Requests', href: `${base}/requests`, icon: Wrench, active: pathname.startsWith(`${base}/requests`) },
-    { key: 'notices', label: 'Notices', href: `${base}/notices`, icon: Bell, active: pathname.startsWith(`${base}/notices`) },
+  const tabs: PortalTab[] = [
+    { key: 'home', label: 'Home', hint: 'What you owe and pay', href: base, icon: Home,
+      active: pathname === base || pathname.startsWith(`${base}/statement`) || pathname.startsWith(`${base}/purchase`) },
+    { key: 'visitors', label: 'Visitors', hint: 'Passes for guests', href: `${base}/visitors`, icon: ShieldCheck,
+      active: pathname.startsWith(`${base}/visitors`) || pathname.startsWith(`${base}/walk-ins`) },
+    { key: 'requests', label: 'Requests', hint: 'Repairs and problems', href: `${base}/requests`, icon: Wrench, active: pathname.startsWith(`${base}/requests`) },
+    { key: 'notices', label: 'Notices', hint: 'News from the estate', href: `${base}/notices`, icon: Bell, active: pathname.startsWith(`${base}/notices`) },
   ];
+  const mobileTabs: MobileNavTab[] = tabs.map(({ key, label, href, icon, active }) => ({ key, label, href, icon, active }));
+  const person = { name: me.user?.name, contact: me.email || me.user?.email || me.user?.phone };
+  const signOut = () => void logout(slug);
 
   return (
-    <div className="min-h-dvh bg-background">
-      <header className="sticky top-0 z-30 border-b bg-card pt-safe">
-        <div className="mx-auto flex h-14 max-w-3xl items-center justify-between gap-3 px-4">
-          <Link href={base} className="flex min-w-0 items-center gap-2">
-            {tenant?.logoUrl ? (
-              // eslint-disable-next-line @next/next/no-img-element
-              <img src={tenant.logoUrl} alt="" className="h-8 w-8 rounded-md object-contain" />
-            ) : (
-              <Image src="/brand/maskani-icon.svg" alt="" width={28} height={28} />
-            )}
-            <span className="truncate font-display font-semibold">{tenant?.orgName ?? 'Maskani'}</span>
-          </Link>
-          {/* The shared bottom bar is hidden from lg up, so wide screens get the same tabs here. */}
-          <nav className="hidden items-center gap-1 lg:flex">
-            {tabs.map((t) => (
-              <Link
-                key={t.key}
-                href={t.href}
-                className={`flex h-9 items-center gap-2 rounded-lg px-3 text-sm ${t.active ? 'bg-primary/10 font-semibold text-primary' : 'text-muted-foreground hover:bg-muted'}`}
-              >
-                <t.icon className="h-4 w-4" /> {t.label}
-              </Link>
-            ))}
-          </nav>
-          <Button variant="ghost" size="sm" onClick={() => setMoreOpen((v) => !v)} aria-expanded={moreOpen}>
-            {me.user?.name?.split(' ')[0] || 'Account'}
-          </Button>
-        </div>
-        {moreOpen && (
-          <div className="mx-auto flex max-w-3xl justify-end px-4 pb-3">
-            <Button variant="outline" size="sm" onClick={() => void logout(slug)}><LogOut /> Sign out</Button>
+    <div className="portal-surface relative min-h-dvh bg-background">
+      <PortalCanvas />
+
+      <a href="#portal-main" className="sr-only focus:not-sr-only focus:fixed focus:left-4 focus:top-4 focus:z-50 focus:rounded-xl focus:bg-card focus:px-4 focus:py-2">
+        Skip to content
+      </a>
+
+      <aside className="fixed inset-y-0 left-0 z-30 hidden w-[18.5rem] p-4 lg:block">
+        <div className="glass flex h-full flex-col rounded-[1.75rem] p-5">
+          <PortalBrand logoUrl={tenant?.logoUrl} orgName={tenant?.orgName} href={base} />
+          <div className="mt-8 flex-1 overflow-y-auto">
+            <PortalSideNav tabs={tabs} />
           </div>
-        )}
+          <AccountCard person={person} onSignOut={signOut} />
+        </div>
+      </aside>
+
+      <header className="sticky top-0 z-30 px-3 pt-[calc(env(safe-area-inset-top)+0.5rem)] lg:hidden">
+        <div className="glass-strong flex h-16 items-center justify-between gap-3 rounded-2xl px-3">
+          <PortalBrand logoUrl={tenant?.logoUrl} orgName={tenant?.orgName} href={base} compact />
+          <AccountMenu person={person} onSignOut={signOut} />
+        </div>
       </header>
-      <main className="mx-auto max-w-3xl px-4 py-5 pb-[calc(5.5rem+env(safe-area-inset-bottom))] sm:py-6 lg:pb-8">{children}</main>
-      <MobileBottomNav tabs={tabs} LinkComponent={Link} onOpenMore={() => setMoreOpen(true)} moreLabel="Account" />
+
+      <main id="portal-main" className={`relative ${SIDE}`}>
+        <div className="mx-auto w-full max-w-6xl px-4 pb-[calc(6rem+env(safe-area-inset-bottom))] pt-5 sm:px-6 lg:px-10 lg:pb-12 lg:pt-8">
+          {children}
+        </div>
+      </main>
+
+      <div className="lg:hidden">
+        <MobileBottomNav tabs={mobileTabs} LinkComponent={Link} />
+      </div>
       <TermsGate />
+    </div>
+  );
+}
+
+/**
+ * The calm canvas the glass sits on: the page tone with two large, very faint blurred shapes in the
+ * brand plum and gold. Decorative only, fixed so it never scrolls or shifts layout.
+ */
+function PortalCanvas() {
+  return (
+    <div aria-hidden className="pointer-events-none fixed inset-0 -z-0 overflow-hidden">
+      <div className="absolute -left-40 -top-40 h-[34rem] w-[34rem] rounded-full bg-primary/12 blur-3xl" />
+      <div className="absolute -bottom-48 right-[-10rem] h-[36rem] w-[36rem] rounded-full bg-gold/14 blur-3xl" />
+      <div className="absolute left-1/2 top-1/3 h-[22rem] w-[22rem] rounded-full bg-primary/6 blur-3xl" />
     </div>
   );
 }
