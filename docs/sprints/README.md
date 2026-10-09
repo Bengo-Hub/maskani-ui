@@ -30,7 +30,7 @@ file points here. Every UI call matches a real API route; the gaps are below.
 - [x] Arrears search and minimum balance run on the API (`q`, `min`), so they reach accounts beyond the loaded page (api `e166219`, ui `3cfabe7`). Suspense total stays client side: it sums one bounded window of treasury's unmatched list
 - [x] Water loss average is volume weighted (`3cfabe7`)
 - [x] Users list: kept client side on purpose (staff capped by plan at 100, list capped at 500, tiles need the whole set); the API now also takes `q` (`e166219`)
-- [ ] Statement view promises a running balance and computes none; the API returns it
+- [x] Statement shows the balance after every entry, worked back from today's position (balance less credit); treasury sends the latest 50 bills and 50 payments, so when a list is full the older entries are left out and the card says so, keeping every balance exact. Full history comes with the statement download (wave 2.1)
 - [ ] Sales availability grouped client side and unpaginated; server-grouped endpoint
 - [x] `payment.applied` refreshes arrears (`3cfabe7`)
 - [x] Terms acceptance follows `/auth/me` `terms_accepted_version` (api `4d05518`, ui `3cfabe7`)
