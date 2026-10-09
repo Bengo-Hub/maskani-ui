@@ -24,16 +24,18 @@ file points here. Every UI call matches a real API route; the gaps are below.
 **Bugs and rule breaks (wave 1c)**
 - [x] Render loops: the work order, billing run and unit sheets now reset only when opened and fill defaults from primitive values; refetches no longer wipe what was typed (`13826ed`)
 - [x] `AnchoredPortal` reads `onClose` through a ref, so inline closures no longer re-bind its listeners (`13826ed`)
-- [ ] Inline `useQuery`/`useMutation` or effect fetches move into `src/hooks`: notices, incident detail, water balance, general and catalogue settings, property staff, terms gate, walk-in decide, media signing (work order and incident detail), gate walk-in and incident sheets, portal pay, catalogue combobox
-- [ ] `enabled` gating on imports, notices, water balance and settings queries
-- [ ] Collections arrears search and minimum balance filter only the loaded pages; they move to API query params. Suspense total from the API
-- [ ] Water loss is a plain mean; the API returns the volume-weighted figure
-- [ ] Users list filtered and counted in the browser; server search and paging
+- [x] Notices, water balance, general and catalogue settings and terms moved into hooks (`3cfabe7`)
+- [ ] Still inline: incident detail, property staff, walk-in decide, media signing (work order and incident detail), gate walk-in and incident sheets, portal pay, catalogue combobox
+- [x] `enabled` gating on imports, notices, settings and catalogue queries; water balance takes its threshold from `/auth/me` instead of a settings call (`3cfabe7`)
+- [x] Arrears search and minimum balance run on the API (`q`, `min`), so they reach accounts beyond the loaded page (api `e166219`, ui `3cfabe7`). Suspense total stays client side: it sums one bounded window of treasury's unmatched list
+- [x] Water loss average is volume weighted (`3cfabe7`)
+- [x] Users list: kept client side on purpose (staff capped by plan at 100, list capped at 500, tiles need the whole set); the API now also takes `q` (`e166219`)
 - [ ] Statement view promises a running balance and computes none; the API returns it
 - [ ] Sales availability grouped client side and unpaginated; server-grouped endpoint
-- [ ] `payment.applied` does not invalidate `qk.arrears`
-- [ ] Terms acceptance stored on the device only; read the server version
-- [ ] Route guard uses a local `EmptyState` instead of shared-ui-lib `FeatureLock`
+- [x] `payment.applied` refreshes arrears (`3cfabe7`)
+- [x] Terms acceptance follows `/auth/me` `terms_accepted_version` (api `4d05518`, ui `3cfabe7`)
+- [x] Route guard shows the shared `FeatureLock` upgrade path when the plan is the reason, the plain message otherwise (`3cfabe7`)
+- [ ] Read-only banner for a switched-off module from the API's `X-Module-Read-Only` header (API side done in `3ae57a5`)
 - [ ] Dead code: unused shadcn components (dropdown-menu, popover, scroll-area, select, separator, table, textarea), unused wrappers and query keys (meters, price lists, reservations, addVehicle until their screens land), `TREASURY_API_URL`; the header hardcodes the treasury URL instead of `TREASURY_UI_URL`
 - [ ] `lib/api/types.ts` is 813 lines; split by domain
 - [ ] `typescript.ignoreBuildErrors` turned off once type-check is green
