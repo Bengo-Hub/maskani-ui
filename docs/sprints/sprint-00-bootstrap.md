@@ -2,10 +2,10 @@
 
 | Item | Detail |
 |---|---|
-| Scaffold | Copy of hospital-ui structure: `src/app/[orgSlug]`, `org-shell.tsx`, `lib/api`, `lib/auth`, `store`, `providers`, `components/ui` |
+| Scaffold | pos-ui conventions (the phase 2 plan switched the template from hospital-ui): `src/app/[orgSlug]`, `providers/org-providers.tsx`, `lib/api`, `lib/auth`, `store`, `providers`, `components/ui` |
 | Brand | `public/brand/*` from `shared-docs/brand/maskani/assets`; tokens in `globals.css`; favicon and manifest icons |
 | Auth | PKCE SSO with `maskani-ui` client, callback, refresh, logout standard; maskani `/auth/me` |
-| Navigation | `nav-config.ts` filtered by modules and permissions; sidebar, header with property switcher in `AnchoredPortal`, `MobileBottomNav` |
+| Navigation | `lib/nav.ts` filtered by modules and permissions; sidebar, header with property switcher in `AnchoredPortal`, `MobileBottomNav` |
 | PWA | `public/sw.js`, `OfflineBar`, `StaleChunkRecovery`, tenant manifest route |
 | Subscription | `/api/subscription` proxy (in-cluster), `FeatureGate`, `LimitReachedModal`, toasts |
 | Landing | `/` explains Maskani and links to tenant sign-in (no AI-look hero) |

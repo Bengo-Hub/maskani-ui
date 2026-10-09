@@ -74,7 +74,7 @@ keeping the console plain and dense. maskani-commerce follows the same rules.
 - `src/app/layout.tsx`: fonts, `ThemeProvider`, global `<Toaster richColors position="top-right" closeButton />`.
 - `src/app/[orgSlug]/layout.tsx`: **server component** with `generateMetadata` returning the tenant
   manifest (`/{orgSlug}/manifest.webmanifest`); app name "{tenant first word} Maskani".
-- `src/app/[orgSlug]/org-shell.tsx` (client): QueryClient (no retry on 401, 402, 403), AuthProvider,
+- `src/providers/org-providers.tsx` (client, mounted by the org layout): QueryClient (no retry on 401, 402, 403), AuthProvider,
   BrandingProvider, subscription entitlements; mounts `StaleChunkRecovery`, `OfflineBar registerSW`,
   route guard. Kiosk paths (`/gate`, `/portal/sign-in`) render without console chrome.
 - The shell's `<main>` owns page padding. Pages wrap content in `max-w-7xl mx-auto` (lists and boards)
@@ -82,7 +82,7 @@ keeping the console plain and dense. maskani-commerce follows the same rules.
 - Header: tenant name, property switcher (portalled dropdown via `AnchoredPortal`), app switcher,
   account panel. Any header dropdown goes through `AnchoredPortal`.
 - Sidebar: groups Overview, Register, Money, Operations, Security, Communication, Reports, Settings;
-  collapsible to icons; built from `nav-config.ts` filtered by module and permission.
+  collapsible to icons; built from `src/lib/nav.ts` filtered by module and permission.
 
 ## Deep links (contract with notifications)
 
@@ -152,7 +152,7 @@ actions: Walk-in visitor, Exit, Patrol scan, Incident.
 
 ## Offline gate behaviour
 
-- On sign-on and every 5 minutes online, `POST /gate/sync` returns passes valid for the next 24 hours
+- On sign-on and every 5 minutes online, `GET /gate/sync` returns passes valid for the next 24 hours
   and active badges; stored in IndexedDB (encrypted with a device key held in memory after PIN unlock).
 - Verify checks the cache first when offline; entries are queued in IndexedDB with a
   `client_event_id` and flushed on reconnect; the server deduplicates.

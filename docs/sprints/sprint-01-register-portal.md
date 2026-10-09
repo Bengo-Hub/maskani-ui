@@ -15,9 +15,10 @@
 - [x] Units: keyset DataTable with URL filters, create and edit sheet, detail with people and accounts
 - [x] Owners and residents: list, add or edit (encrypted ID and KRA PIN shown masked), detail, invite to portal
 - [x] Link a person to a unit with role, start date and bill-to charges; end a link
-- [ ] CSV import (API not built yet)
+- [x] CSV import of units and owners with a dry run (`25c5467`)
 - [x] Settings: general, modules with presets, catalogue lists, users and roles
 - [x] Portal sign-in by WhatsApp code (no phone enumeration), terms acceptance by tenant version, home with units and balances
+- [ ] Gaps from the 2026-10-09 audit: see "Gaps found by the 2026-10-09 audit" in [README.md](README.md) (S1 line and wave 1c fixes)
 
 ## Rules to apply
 

@@ -16,6 +16,37 @@ core of sprints 1 to 4 forward.
 | S8 (R3) | [sprint-08-r3-listings.md](sprint-08-r3-listings.md) (public site in maskani-commerce) |
 | S9 (R4) | [sprint-09-r4-extensions.md](sprint-09-r4-extensions.md) |
 
+## Gaps found by the 2026-10-09 audit
+
+Plan: `.claude/plans/maskani-r1-completion-r2-rentals-2026-10-09.md` (wave in brackets). Each sprint
+file points here. Every UI call matches a real API route; the gaps are below.
+
+**Bugs and rule breaks (wave 1c)**
+- [ ] Render loops: `work-order-form.tsx`, `run-wizard.tsx` and `unit-form.tsx` default query data to a new `[]` each render and feed it to a `setState` effect
+- [ ] Inline `onClose` passed to `AnchoredPortal` in `property-switcher.tsx` and `header.tsx` re-attaches listeners every render
+- [ ] Inline `useQuery`/`useMutation` or effect fetches move into `src/hooks`: notices, incident detail, water balance, general and catalogue settings, property staff, terms gate, walk-in decide, media signing (work order and incident detail), gate walk-in and incident sheets, portal pay, catalogue combobox
+- [ ] `enabled` gating on imports, notices, water balance and settings queries
+- [ ] Collections arrears search and minimum balance filter only the loaded pages; they move to API query params. Suspense total from the API
+- [ ] Water loss is a plain mean; the API returns the volume-weighted figure
+- [ ] Users list filtered and counted in the browser; server search and paging
+- [ ] Statement view promises a running balance and computes none; the API returns it
+- [ ] Sales availability grouped client side and unpaginated; server-grouped endpoint
+- [ ] `payment.applied` does not invalidate `qk.arrears`
+- [ ] Terms acceptance stored on the device only; read the server version
+- [ ] Route guard uses a local `EmptyState` instead of shared-ui-lib `FeatureLock`
+- [ ] Dead code: unused shadcn components (dropdown-menu, popover, scroll-area, select, separator, table, textarea), unused wrappers and query keys (meters, price lists, reservations, addVehicle until their screens land), `TREASURY_API_URL`; the header hardcodes the treasury URL instead of `TREASURY_UI_URL`
+- [ ] `lib/api/types.ts` is 813 lines; split by domain
+- [ ] `typescript.ignoreBuildErrors` turned off once type-check is green
+- [x] Docs: the UX spec named `org-shell.tsx` and `nav-config.ts`; corrected to `providers/org-providers.tsx` and `lib/nav.ts`, and `/gate/sync` to `GET` (2026-10-09)
+
+**Screens missing (wave 2, API first)**
+- [ ] S1: unit detail tabs Billing, Utilities, Sales, Works, Documents, Timeline and vehicles; portal household, vehicles and domestic staff; custom fields; privacy requests
+- [ ] S2: statement PDF and spreadsheet through shared-ui-lib `PdfPreview`; meter register and replacement; adjustments and bill queries (console queue and portal submission); payment plans; arrears ladder view
+- [ ] S3: price list editor, reservations list, milestone release, restructure, handover with snag list, title stages, purchase and completion statements
+- [ ] S4: vendor contracts, schedules and visits, preventive maintenance, vendor invoices, vendor portal, ERP staff picker, guard posts and rosters, patrol checkpoints and tablet patrol scan, occurrence book, gate device list and revoke
+- [ ] S5: reports area with charts and export, documents library, budgets and AGM pack, audit log, marketplace enquiries inbox (routes already exist), approval rules and reminder schedules settings
+- [ ] Portal: bottom tabs Home, Pay, Visitors, Requests, More as the spec says (today Home, Visitors, Requests, Notices); last water reading on home; documents page
+
 ## Definition of done
 
 `pnpm type-check` and `pnpm build` both green (`ignoreBuildErrors` means build alone proves nothing

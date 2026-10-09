@@ -11,7 +11,9 @@
 
 ## Progress
 
-- [ ] Screens not started (2026-10-08). API state: maskani-api `docs/sprints/sprint-05-reports-erp-documents.md`.
+- [x] Notices: compose with audience and channels, send, delivery counts (built in round 3, 2026-10-08)
+- [ ] Reports, budgets, documents, privacy and vendor portal screens. API state: maskani-api `docs/sprints/sprint-05-reports-erp-documents.md`
+- [ ] Gaps from the 2026-10-09 audit: see "Gaps found by the 2026-10-09 audit" in [README.md](README.md) (S5 line)
 
 ## Rules to apply
 

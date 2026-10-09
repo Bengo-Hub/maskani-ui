@@ -16,10 +16,11 @@ FR-59.
 | Rent | Rent invoices on the lease schedule in the unit account; `L-` paybill references shown to tenants |
 | Turnover | Make-ready board (repaint, repair, clean as work orders) with ready date |
 | Remittances | Remittance run preview, approval and statement PDF for the landlord |
+| Short stays (user decision 2026-10-09) | Unit setting "Run as short stay" switches the unit to pos-api's hotel engine; the unit page then shows bookings, occupancy and owner income read from pos-api, with a link to manage bookings in pos-ui. No booking screens are built in Maskani |
 
 ## Progress
 
-- [ ] Not started. Planned for March 2027 after the Release 1 launch.
+- [ ] Not started. Built in wave 4 of `.claude/plans/maskani-r1-completion-r2-rentals-2026-10-09.md`, after Release 1 is complete.
 
 ## Rules to apply
 

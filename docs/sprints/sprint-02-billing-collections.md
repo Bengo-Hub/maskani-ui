@@ -22,6 +22,7 @@
 - [x] Collections, meter readings and water balance redesign with filters and drill-downs (2026-10-08): collections stat tiles from the dashboard, unmatched payments table with a lookback window and search, arrears with the shared ageing bars, minimum owing filter and account drill-down; readings with per-block progress, show and block filters, search, estimate, recheck and accept all clean; water balance chart (supplied against billed, one axis), loss against the estate's own alert setting
 - [x] Portal pay (pending intent, gateway chosen in the modal, paybill fallback) and statement
 - [ ] Statement PDF and CSV export (API not built yet)
+- [ ] Gaps from the 2026-10-09 audit: see "Gaps found by the 2026-10-09 audit" in [README.md](README.md) (S2 line and wave 1c fixes)
 
 ## Rules to apply
 

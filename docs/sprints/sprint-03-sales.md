@@ -18,6 +18,7 @@
 - [x] Contract wizard (price, discount, deposit, payment option, term) and contract page with activation and schedule
 - [x] Portal purchase plan and schedule
 - [ ] Price list editor (seeded for the demo), restructure, handover and title (after demo)
+- [ ] Gaps from the 2026-10-09 audit: see "Gaps found by the 2026-10-09 audit" in [README.md](README.md) (S3 line)
 
 ## Rules to apply
 

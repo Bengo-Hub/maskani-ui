@@ -17,6 +17,7 @@
 - [x] Console passes, gate log, incidents with detail (alert deep link)
 - [x] Portal visitor passes (code and QR shown once, WhatsApp share button), requests with photos, walk-in decision page
 - [ ] Patrols and guard posts (API planned)
+- [ ] Gaps from the 2026-10-09 audit: see "Gaps found by the 2026-10-09 audit" in [README.md](README.md) (S4 line and wave 1c fixes)
 
 ## Rules to apply
 
