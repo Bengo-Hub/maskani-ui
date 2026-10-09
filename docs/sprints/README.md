@@ -37,7 +37,7 @@ file points here. Every UI call matches a real API route; the gaps are below.
 - [x] Route guard shows the shared `FeatureLock` upgrade path when the plan is the reason, the plain message otherwise (`3cfabe7`)
 - [x] Switched-off module opens read only (FR-09) instead of "not available": the shell wraps the page in `ModuleReadOnly` (banner, "Switch it back on" for `settings.manage`), and `useAccess().canAll` lets that page's queries run; the API answers the reads and refuses changes (`3ae57a5`). The nav still hides the module, so it is reached by link or bookmark. A plan without the module still shows the `FeatureLock` upgrade path. The UI derives the state from `/auth/me` modules, so it does not read the `X-Module-Read-Only` header; the header stays for other clients
 - [x] Dead code: the seven unused shadcn components removed; `TREASURY_API_URL` removed from config, Dockerfile, `build.sh` and `.env.example` (payments go through maskani-api; shared-ui-lib reads only the treasury UI URL); the header uses `TREASURY_UI_URL` from config. The meter, price list, reservation and vehicle wrappers stay: they match live routes and wave 2 screens use them
-- [ ] `lib/api/types.ts` is 813 lines; split by domain
+- [x] `lib/api/types.ts` (817 lines) split into `lib/api/types/` by domain (common, identity, register, billing, utilities, sales, works, gate, notices, reports, settings, portal) behind an index, so `@/lib/api/types` imports are unchanged; all 73 exports kept
 - [x] `typescript.ignoreBuildErrors` turned off: `next build` now type-checks too
 - [x] Docs: the UX spec named `org-shell.tsx` and `nav-config.ts`; corrected to `providers/org-providers.tsx` and `lib/nav.ts`, and `/gate/sync` to `GET` (2026-10-09)
 
