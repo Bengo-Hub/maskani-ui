@@ -22,8 +22,8 @@ Plan: `.claude/plans/maskani-r1-completion-r2-rentals-2026-10-09.md` (wave in br
 file points here. Every UI call matches a real API route; the gaps are below.
 
 **Bugs and rule breaks (wave 1c)**
-- [ ] Render loops: `work-order-form.tsx`, `run-wizard.tsx` and `unit-form.tsx` default query data to a new `[]` each render and feed it to a `setState` effect
-- [ ] Inline `onClose` passed to `AnchoredPortal` in `property-switcher.tsx` and `header.tsx` re-attaches listeners every render
+- [x] Render loops: the work order, billing run and unit sheets now reset only when opened and fill defaults from primitive values; refetches no longer wipe what was typed (`13826ed`)
+- [x] `AnchoredPortal` reads `onClose` through a ref, so inline closures no longer re-bind its listeners (`13826ed`)
 - [ ] Inline `useQuery`/`useMutation` or effect fetches move into `src/hooks`: notices, incident detail, water balance, general and catalogue settings, property staff, terms gate, walk-in decide, media signing (work order and incident detail), gate walk-in and incident sheets, portal pay, catalogue combobox
 - [ ] `enabled` gating on imports, notices, water balance and settings queries
 - [ ] Collections arrears search and minimum balance filter only the loaded pages; they move to API query params. Suspense total from the API
@@ -46,7 +46,8 @@ file points here. Every UI call matches a real API route; the gaps are below.
 - [ ] S4: vendor contracts, schedules and visits, preventive maintenance, vendor invoices, vendor portal, ERP staff picker, guard posts and rosters, patrol checkpoints and tablet patrol scan, occurrence book, gate device list and revoke
 - [ ] S5: reports area with charts and export, documents library, budgets and AGM pack, audit log, marketplace enquiries inbox (routes already exist), approval rules and reminder schedules settings
 - [ ] Role dashboards (user review 2026-10-09: shallow): a redesigned landing view per console role (tenant admin, property manager, finance, sales or letting, caretaker, security) with the queues, tiles and charts that role acts on, each figure drilling into its records, fed by server-side role summaries; owner portal home rebuilt to the SRDD figure 14 layout (balance per fund with Pay now, purchase progress, last reading, open requests, active passes, notices, household actions)
-- [ ] Combobox panels open away from their field inside dialogs and sheets (Assign staff, user report 2026-10-09): fix in shared-ui-lib (portal to body, anchored, flip and clamp), new tag, audit every dropdown
+- [x] Combobox panels open away from their field inside dialogs and sheets (Assign staff, user report 2026-10-09). Cause: a transformed dialog is the containing block for `position: fixed`. Fixed in shared-ui-lib v0.1.106 (`combobox/fixed-position.ts`, also the multi-select and the data-table popover), not with a portal, which would close base-ui dialogs; maskani-ui pinned to v0.1.106 (`13826ed`)
+- [ ] Fleet apps still pinned below v0.1.106 keep the bug inside dialogs; bump them as each is next touched (recorded in memory)
 - [ ] Staff dashboard as a business intelligence view (user review 2026-10-09): KPIs with month and year comparisons and 12-month trends, cash-in forecast (scheduled instalments plus recurring charges times collection rate), arrears projection, sales run rate and sell-out estimate, cash flow, revenue mix, collection by block, top debtors, budget against actual, sales pipeline, vendor spend and SLA, occupancy trend; filters, drill-downs and export; all computed server side
 - [ ] Portal: bottom tabs Home, Pay, Visitors, Requests, More as the spec says (today Home, Visitors, Requests, Notices); last water reading on home; documents page
 
