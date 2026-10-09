@@ -6,15 +6,16 @@ import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
 import { IconButton } from '@/components/common/icon-button';
 import { enablePush, pushState } from '@/lib/push';
+import { cn } from '@/lib/utils';
 
 const DISMISS_KEY = 'maskani-push-prompt-dismissed';
 
 /**
- * Offers gate alerts on this phone: when a guard rings, the request pops up on screen and opens the
- * answer page in one tap. Hidden once alerts are on, when the browser cannot do push, or after the
- * resident says not now.
+ * Offers alerts on this device. Residents: when a guard rings, the request pops up and opens the
+ * answer page in one tap. Staff (caretakers and managers): a new resident request pops up and opens
+ * the work order. Hidden once alerts are on, when the browser cannot do push, or after "Not now".
  */
-export function PushPrompt({ slug }: { slug: string }) {
+export function PushPrompt({ slug, staff = false, className }: { slug: string; staff?: boolean; className?: string }) {
   const [state, setState] = useState<'on' | 'off' | 'blocked' | 'unsupported' | null>(null);
   const [busy, setBusy] = useState(false);
 
@@ -45,13 +46,14 @@ export function PushPrompt({ slug }: { slug: string }) {
   };
 
   return (
-    <section className="glass flex items-start gap-4 rounded-2xl p-4 sm:items-center">
+    <section className={cn('glass flex items-start gap-4 rounded-2xl p-4 sm:items-center', className)}>
       <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-primary/15 text-primary"><BellRing className="h-5 w-5" /></span>
       <div className="min-w-0 flex-1">
-        <p className="font-medium">Get gate alerts on this phone</p>
+        <p className="font-medium">{staff ? 'Get request alerts on this device' : 'Get gate alerts on this phone'}</p>
         <p className="text-sm text-muted-foreground">
           {state === 'blocked'
             ? 'Notifications are blocked for this site. Allow them in the browser settings, then come back.'
+            : staff ? 'New resident requests for your properties pop up here and open the work order in one tap.'
             : 'When a visitor arrives without a pass, the guard\'s request pops up here and you answer in one tap.'}
         </p>
       </div>

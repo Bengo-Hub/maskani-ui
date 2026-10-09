@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { AlertTriangle, Building2, Droplets, FileSignature, Gauge, Landmark, Truck, Wrench } from 'lucide-react';
 import { EmptyState } from '@/components/common/empty-state';
 import { RoleFocus, rolePanels } from '@/components/dashboard/role-focus';
+import { PushPrompt } from '@/components/portal/push-prompt';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
 import { PageHeader } from '@/components/common/page-header';
@@ -43,6 +44,9 @@ export default function DashboardPage() {
         subtitle={firstName ? `Signed in as ${firstName}` : undefined}
         actions={reports ? <PeriodPicker value={period} onChange={setPeriod} /> : undefined}
       />
+
+      {/* Caretakers and managers get resident requests as phone alerts. */}
+      {can('works.manage') && <PushPrompt slug={slug} staff className="mb-5" />}
 
       <RoleFocus propertyId={propertyId} base={base} />
 
