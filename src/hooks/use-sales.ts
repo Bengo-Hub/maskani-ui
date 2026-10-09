@@ -8,13 +8,15 @@ import { qk } from '@/lib/query-keys';
 import { useAccess, useSlug } from './use-access';
 import { useKeysetList } from './use-keyset-list';
 
-export function useAvailability(propertyId: string) {
+/** The sales board, grouped by block and ordered by the API; `status` narrows it to one sale status. */
+export function useAvailability(propertyId: string, status = '') {
   const slug = useSlug();
   const { canAll } = useAccess();
   return useQuery({
-    queryKey: qk.availability(slug, propertyId),
-    queryFn: () => salesApi.availability(slug, propertyId).then((r) => r.data ?? []),
+    queryKey: [...qk.availability(slug, propertyId), status],
+    queryFn: () => salesApi.availability(slug, propertyId, status || undefined).then((r) => r.groups ?? []),
     enabled: !!propertyId && canAll('sales', 'sales.view'),
+    placeholderData: (prev) => prev,
   });
 }
 

@@ -1,7 +1,7 @@
 import { apiClient } from './client';
 import { tenantBase as t } from '@/lib/config';
 import type {
-  AvailabilityUnit, ContractInput, Dashboard, GateDevice, GateEvent, Incident, MediaUpload, Meter, MeterReading,
+  AvailabilityGroup, ContractInput, Dashboard, GateDevice, GateEvent, Incident, MediaUpload, Meter, MeterReading,
   Notice, NoticeDelivery, Page, PassInput, PriceList, PriceListItem, ReadingRound, Reservation, SaleContract,
   SalesPosition, Vendor, VendorDocument, VendorPersonnel, VisitorPass, WaterBalanceRow, WorkAction, WorkOrder,
   WorkPriority, CatalogEntry, StaffUser, Role, Permission, ModulesState,
@@ -26,8 +26,8 @@ export const salesApi = {
   priceLists: (slug: string, propertyId: string) => apiClient.get<{ data: PriceList[] }>(`${t(slug)}/price-lists`, { property_id: propertyId }),
   createPriceList: (slug: string, body: { property_id: string; name: string; phase?: string; effective_from: string; activate?: boolean; items: PriceListItem[] }) =>
     apiClient.post<PriceList>(`${t(slug)}/price-lists`, body),
-  availability: (slug: string, propertyId: string) =>
-    apiClient.get<{ data: AvailabilityUnit[] }>(`${t(slug)}/availability`, { property_id: propertyId }),
+  availability: (slug: string, propertyId: string, status?: string) =>
+    apiClient.get<{ groups: AvailabilityGroup[] }>(`${t(slug)}/availability`, { property_id: propertyId, status }),
   reservations: (slug: string, params: { property_id?: string; status?: string; cursor?: string }) =>
     apiClient.get<Page<Reservation>>(`${t(slug)}/reservations`, params),
   reserve: (slug: string, body: { unit_id: string; party_id: string; days?: number }) =>

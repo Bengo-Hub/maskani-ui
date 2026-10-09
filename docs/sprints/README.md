@@ -31,7 +31,7 @@ file points here. Every UI call matches a real API route; the gaps are below.
 - [x] Water loss average is volume weighted (`3cfabe7`)
 - [x] Users list: kept client side on purpose (staff capped by plan at 100, list capped at 500, tiles need the whole set); the API now also takes `q` (`e166219`)
 - [x] Statement shows the balance after every entry, worked back from today's position (balance less credit); treasury sends the latest 50 bills and 50 payments, so when a list is full the older entries are left out and the card says so, keeping every balance exact. Full history comes with the statement download (wave 2.1)
-- [ ] Sales availability grouped client side and unpaginated; server-grouped endpoint
+- [x] Sales availability grouped and ordered on the API (api `e0f92e5`): blocks in their set order, units in natural code order, slim tiles, an available count per block, and a status filter (All, Available, Reserved, Under agreement). The board stays unpaged by design: it shows one whole property
 - [x] `payment.applied` refreshes arrears (`3cfabe7`)
 - [x] Terms acceptance follows `/auth/me` `terms_accepted_version` (api `4d05518`, ui `3cfabe7`)
 - [x] Route guard shows the shared `FeatureLock` upgrade path when the plan is the reason, the plain message otherwise (`3cfabe7`)

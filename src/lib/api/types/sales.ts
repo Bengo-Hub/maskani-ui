@@ -1,5 +1,5 @@
 import type { Base, Money } from './common';
-import type { Unit } from './register';
+import type { SaleStatus } from './register';
 
 export interface PriceListItem {
   unit_type?: string;
@@ -20,11 +20,26 @@ export interface PriceList extends Base {
   edges?: { items?: PriceListItem[] };
 }
 
-export interface AvailabilityUnit extends Unit {
+/** One tile of the availability board (GET /availability): only what the tile and its sheet show. */
+export interface AvailabilityUnit {
+  id: string;
+  code: string;
+  unit_type?: string;
+  bedrooms?: number;
+  size_sqm?: Money | null;
+  phase?: string;
+  sale_status: SaleStatus;
   price?: Money | null;
   reservation_fee?: Money | null;
-  deposit_pct?: Money | null;
+  deposit_pct?: Money | number | null;
   price_list_item_id?: string | null;
+}
+
+/** A block of the board (or a phase when units have no block), grouped and ordered by the API. */
+export interface AvailabilityGroup {
+  name: string;
+  available: number;
+  units: AvailabilityUnit[];
 }
 
 export interface Reservation extends Base {

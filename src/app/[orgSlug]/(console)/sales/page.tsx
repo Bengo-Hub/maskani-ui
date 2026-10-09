@@ -1,11 +1,12 @@
 'use client';
 
-import { useMemo, useState } from 'react';
+import { useState } from 'react';
 import { Home } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Skeleton } from '@/components/ui/skeleton';
+import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group';
 import { EmptyState } from '@/components/common/empty-state';
 import { Field } from '@/components/common/field';
 import { FormSheet } from '@/components/common/form-sheet';
@@ -27,10 +28,19 @@ const TILE: Record<string, string> = {
   in_default: 'border-destructive/40 bg-destructive/10',
 };
 
+const FILTERS = [
+  { value: 'all', label: 'All' },
+  { value: 'available', label: 'Available' },
+  { value: 'reserved', label: 'Reserved' },
+  { value: 'under_agreement', label: 'Under agreement' },
+] as const;
+
 export default function AvailabilityPage() {
   const propertyId = usePropertyOrSingle();
   const { can } = useAccess();
-  const { data: units = [], isLoading } = useAvailability(propertyId);
+  const [filter, setFilter] = useState<string>('all');
+  // Grouped by block and in natural code order on the API.
+  const { data: blocks = [], isLoading } = useAvailability(propertyId, filter === 'all' ? '' : filter);
   const { data: position } = useSalesPosition(propertyId);
   const reserve = useReserve(propertyId);
   const [picked, setPicked] = useState<AvailabilityUnit | null>(null);
@@ -39,21 +49,20 @@ export default function AvailabilityPage() {
   const [buyer, setBuyer] = useState<Party | null>(null);
   const [days, setDays] = useState('14');
 
-  const blocks = useMemo(() => {
-    const m = new Map<string, AvailabilityUnit[]>();
-    for (const u of units) {
-      const k = u.edges?.block?.name || u.edges?.block?.code || u.phase || 'Units';
-      m.set(k, [...(m.get(k) ?? []), u]);
-    }
-    return [...m.entries()].map(([k, list]) => [k, list.sort((a, b) => a.code.localeCompare(b.code, undefined, { numeric: true }))] as const);
-  }, [units]);
-
   if (!propertyId) return <div className="mx-auto max-w-7xl"><PageHeader title="Availability" /><PropertyRequired what="Units for sale" /></div>;
   const free = picked?.sale_status === 'available';
 
   return (
     <div className="mx-auto max-w-7xl">
-      <PageHeader title="Availability" subtitle="Tap a unit to reserve it or start a sale" />
+      <PageHeader
+        title="Availability"
+        subtitle="Tap a unit to reserve it or start a sale"
+        actions={
+          <ToggleGroup value={[filter]} onValueChange={(v) => v[0] && setFilter(v[0])} variant="outline" className="flex-wrap">
+            {FILTERS.map((f) => <ToggleGroupItem key={f.value} value={f.value}>{f.label}</ToggleGroupItem>)}
+          </ToggleGroup>
+        }
+      />
       {position && (
         <div className="mb-4 grid grid-cols-2 gap-3 sm:grid-cols-4">
           <Card className="p-4"><p className="text-xs text-muted-foreground">Available</p><p className="font-display text-xl font-semibold tabular">{position.by_status?.available ?? 0}</p></Card>
@@ -62,13 +71,20 @@ export default function AvailabilityPage() {
           <Card className="p-4"><p className="text-xs text-muted-foreground">Collected</p><p className="font-display text-xl font-semibold tabular">{kes(position.collected)}</p></Card>
         </div>
       )}
-      {isLoading ? <Skeleton className="h-64" /> : units.length === 0 ? <EmptyState icon={Home} title="No units" description="Add units and a price list to see availability." /> : (
+      {isLoading ? <Skeleton className="h-64" /> : blocks.length === 0 ? (
+        filter === 'all'
+          ? <EmptyState icon={Home} title="No units" description="Add units and a price list to see availability." />
+          : <EmptyState icon={Home} title="No units with this status" description="Choose All to see the whole board." />
+      ) : (
         <div className="space-y-5">
-          {blocks.map(([block, list]) => (
-            <section key={block}>
-              <h2 className="mb-2 text-sm font-semibold text-muted-foreground">{block}</h2>
+          {blocks.map((g) => (
+            <section key={g.name}>
+              <h2 className="mb-2 flex items-baseline gap-2 text-sm font-semibold text-muted-foreground">
+                {g.name}
+                <span className="text-xs font-normal">{g.available} available of {g.units.length}</span>
+              </h2>
               <div className="grid grid-cols-3 gap-2 sm:grid-cols-5 lg:grid-cols-8">
-                {list.map((u) => (
+                {g.units.map((u) => (
                   <button
                     key={u.id}
                     type="button"
