@@ -60,7 +60,7 @@ export const qk = {
   deliveries: (slug: string, id: string) => [slug, 'notices', id, 'deliveries'] as const,
 
   dashboard: (slug: string) => [slug, 'dashboard'] as const,
-  dashboardFor: (slug: string, propertyId: string | undefined, period: string) => [slug, 'dashboard', propertyId ?? 'all', period] as const,
+  dashboardFor: (slug: string, propertyId: string | undefined, f: string) => [slug, 'dashboard', propertyId ?? 'all', f] as const,
   // Own prefix so gate and reading events refresh the role panels without refetching insights.
   roleSummary: (slug: string) => [slug, 'role-summary'] as const,
   roleSummaryFor: (slug: string, propertyId: string | undefined) => [slug, 'role-summary', propertyId ?? 'all'] as const,

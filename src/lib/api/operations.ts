@@ -1,7 +1,7 @@
 import { apiClient } from './client';
 import { tenantBase as t } from '@/lib/config';
 import type {
-  AvailabilityGroup, ContractInput, Dashboard, ExportFormat, GateDevice, GateDeviceView, GateEvent, GateEventKind, Incident,
+  AvailabilityGroup, ContractInput, Dashboard, DashboardFilters, ExportFormat, GateDevice, GateDeviceView, GateEvent, GateEventKind, Incident,
   InsidePerson, MediaUpload, Meter, MeterReading,
   Notice, NoticeDelivery, Page, PassInput, PriceList, PriceListItem, ReadingRound, Reservation, SaleContract,
   SalesPosition, Vendor, VendorDocument, VendorPersonnel, VisitorPass, WaterBalanceRow, WorkAction, WorkOrder,
@@ -129,8 +129,8 @@ export const noticesApi = {
 };
 
 export const reportsApi = {
-  dashboard: (slug: string, params: { property_id?: string; period?: string }) =>
-    apiClient.get<Dashboard>(`${t(slug)}/reports/dashboard`, params, { suppressErrorToast: true }),
+  dashboard: (slug: string, params: { property_id?: string } & DashboardFilters) =>
+    apiClient.get<Dashboard>(`${t(slug)}/reports/dashboard`, { ...params }, { suppressErrorToast: true }),
 };
 
 export const settingsApi = {

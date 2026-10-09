@@ -4,15 +4,18 @@ import { useQuery } from '@tanstack/react-query';
 import { billingApi } from '@/lib/api/billing';
 import { insightsApi } from '@/lib/api/insights';
 import { reportsApi } from '@/lib/api/operations';
+import type { DashboardFilters } from '@/lib/api/types';
 import { qk } from '@/lib/query-keys';
 import { useAccess, useSlug } from './use-access';
 
-export function useDashboard(propertyId: string, period: string) {
+export function useDashboard(propertyId: string, f: DashboardFilters) {
   const slug = useSlug();
   const { can } = useAccess();
   return useQuery({
-    queryKey: qk.dashboardFor(slug, propertyId || undefined, period),
-    queryFn: () => reportsApi.dashboard(slug, { property_id: propertyId || undefined, period }),
+    queryKey: qk.dashboardFor(slug, propertyId || undefined, `${f.from}..${f.to}:${f.block_id ?? ''}:${f.fund ?? ''}`),
+    queryFn: () => reportsApi.dashboard(slug, {
+      property_id: propertyId || undefined, from: f.from, to: f.to, block_id: f.block_id || undefined, fund: f.fund || undefined,
+    }),
     enabled: can('reports.view'),
     staleTime: 60_000,
     placeholderData: (prev) => prev,

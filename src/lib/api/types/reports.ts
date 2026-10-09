@@ -1,7 +1,12 @@
 import type { Money } from './common';
 
 export interface Dashboard {
+  /** The last month of the range. */
   period: string;
+  from?: string;
+  to?: string;
+  /** "property" when a block or fund is chosen: collections are kept per property, so they ignore those two. */
+  collections_scope?: 'filtered' | 'property';
   billed: Money;
   collected: Money;
   collection_rate?: Money | number | null;
@@ -27,4 +32,12 @@ export interface SalesPosition {
   contract_value: Money;
   collected: Money;
   balance: Money;
+}
+
+/** Dashboard filters: a range of months (at most 12), a block of the selected property and a fund. */
+export interface DashboardFilters {
+  from: string;
+  to: string;
+  block_id?: string;
+  fund?: string;
 }

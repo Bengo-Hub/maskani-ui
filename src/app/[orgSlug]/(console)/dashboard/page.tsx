@@ -1,6 +1,5 @@
 'use client';
 
-import { useState } from 'react';
 import Link from 'next/link';
 import { AlertTriangle, Building2, Droplets, FileSignature, Gauge, Landmark, Truck, Wrench } from 'lucide-react';
 import { EmptyState } from '@/components/common/empty-state';
@@ -9,24 +8,31 @@ import { PushPrompt } from '@/components/portal/push-prompt';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
 import { PageHeader } from '@/components/common/page-header';
-import { PeriodPicker } from '@/components/common/period-picker';
+import { DashboardFilterBar, rangeLabel, useDashboardFilters } from '@/components/dashboard/dashboard-filters';
 import { StatTile } from '@/components/common/stat-tile';
 import { CollectionsChart } from '@/components/dashboard/collections-chart';
 import { ArrearsAgeing } from '@/components/dashboard/arrears-ageing';
 import { PerformanceSection } from '@/components/dashboard/insights/performance-section';
 import { useAccess, useSlug } from '@/hooks/use-access';
 import { useDashboard, useTopArrears } from '@/hooks/use-reports';
-import { currentPeriod, fmtDate, kes, num, periodLabel } from '@/lib/utils';
+import { useProperty } from '@/hooks/use-register';
+import { fmtDate, kes, num, periodLabel } from '@/lib/utils';
 import { useSelectedPropertyId } from '@/store/property';
 import { useAuthStore } from '@/store/auth';
 
 export default function DashboardPage() {
   const slug = useSlug();
   const propertyId = useSelectedPropertyId(slug);
-  const [period, setPeriod] = useState(currentPeriod);
+  const [rawFilters, filterActions] = useDashboardFilters();
+  const { data: property } = useProperty(propertyId);
+  // A block kept in the link from another property does not apply here.
+  const filters = rawFilters.block_id && !property?.edges?.blocks?.some((b) => b.id === rawFilters.block_id)
+    ? { ...rawFilters, block_id: undefined } : rawFilters;
+  const period = filters.to;
+  const range = rangeLabel(filters);
   const { mod, can } = useAccess();
   const me = useAuthStore((s) => s.me);
-  const { data, isLoading } = useDashboard(propertyId, period);
+  const { data, isLoading } = useDashboard(propertyId, filters);
   const { data: arrears = [] } = useTopArrears(propertyId);
   const base = `/${slug}`;
   const reports = can('reports.view');
@@ -35,6 +41,7 @@ export default function DashboardPage() {
   const billed = num(data?.billed);
   const collected = num(data?.collected);
   const month = periodLabel(period).split(' ')[0];
+  const narrowed = data?.collections_scope === 'property';
   const firstName = me?.user?.name?.split(' ')[0];
 
   return (
@@ -42,7 +49,6 @@ export default function DashboardPage() {
       <PageHeader
         title="Dashboard"
         subtitle={firstName ? `Signed in as ${firstName}` : undefined}
-        actions={reports ? <PeriodPicker value={period} onChange={setPeriod} /> : undefined}
       />
 
       {/* Caretakers and managers get resident requests as phone alerts. */}
@@ -51,16 +57,22 @@ export default function DashboardPage() {
       <RoleFocus propertyId={propertyId} base={base} />
 
       {reports ? (<>
-      <h2 className="mb-2 text-sm font-medium text-muted-foreground">{periodLabel(period)} at a glance</h2>
+      <DashboardFilterBar propertyId={propertyId} filters={filters} actions={filterActions} />
+      <h2 className="mb-2 text-sm font-medium text-muted-foreground">{range} at a glance</h2>
+      {narrowed && (
+        <p className="mb-3 rounded-lg bg-muted px-3 py-2 text-xs text-muted-foreground">
+          Collections are recorded per property, so they cover the whole property for these months; billed, arrears, units, work orders and sales follow the block and fund.
+        </p>
+      )}
       <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-3">
         {mod('billing') && (
           <StatTile
             icon={Landmark}
-            label={`${month} collections`}
+            label={filters.from === filters.to ? `${month} collections` : 'Collections'}
             loading={isLoading}
             value={kes(collected)}
-            detail={<>of {kes(billed)} billed{billed > 0 && <> ({Math.round((collected / billed) * 100)}%)</>}</>}
-            progress={billed > 0 ? collected / billed : null}
+            detail={narrowed ? <>{kes(billed)} billed in this block or fund; collections are for the whole property</> : <>of {kes(billed)} billed{billed > 0 && <> ({Math.round((collected / billed) * 100)}%)</>}</>}
+            progress={!narrowed && billed > 0 ? collected / billed : null}
             href={`${base}/billing/accounts`}
           />
         )}
@@ -133,13 +145,13 @@ export default function DashboardPage() {
           <Card>
             <CardHeader>
               <CardTitle>Billed and collected by week</CardTitle>
-              <CardDescription>{periodLabel(period)}</CardDescription>
+              <CardDescription>{range}</CardDescription>
             </CardHeader>
             <CardContent>
               {isLoading ? <Skeleton className="h-64 w-full" /> : data?.collections_by_week?.length ? (
                 <CollectionsChart weeks={data.collections_by_week} />
               ) : (
-                <p className="py-16 text-center text-sm text-muted-foreground">No bills or payments in this month yet.</p>
+                <p className="py-16 text-center text-sm text-muted-foreground">No bills or payments in these months yet.</p>
               )}
             </CardContent>
           </Card>

@@ -47,7 +47,7 @@ function Collections() {
   const [min, setMin] = useUrlParam('min', '');
   const suspense = useSuspense(Number(days));
   const arrears = useArrears(propertyId, { q: tab === 'arrears' ? q : undefined, min });
-  const { data: dash, isLoading: dashLoading } = useDashboard(propertyId, currentPeriod());
+  const { data: dash, isLoading: dashLoading } = useDashboard(propertyId, { from: currentPeriod(), to: currentPeriod() });
   const [assigning, setAssigning] = useState<SuspenseRow | null>(null);
 
   const open = useMemo(() => (suspense.data ?? []).filter((r) => r.status !== 'claimed'), [suspense.data]);
