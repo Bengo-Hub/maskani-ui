@@ -24,11 +24,11 @@ export default function PartyDetailPage({ params }: { params: Promise<{ id: stri
   const [edit, setEdit] = useState(false);
   const invite = useInviteParty();
 
-  if (isLoading || !p) return <div className="mx-auto max-w-4xl space-y-3"><Skeleton className="h-10 w-56" /><Skeleton className="h-40" /></div>;
+  if (isLoading || !p) return <div className="mx-auto max-w-7xl space-y-3"><Skeleton className="h-10 w-56" /><Skeleton className="h-40" /></div>;
 
   const units = p.units ?? [];
   return (
-    <div className="mx-auto max-w-4xl">
+    <div className="mx-auto max-w-7xl">
       <PageHeader
         back={{ href: `/${slug}/parties`, label: 'Owners and residents' }}
         title={partyName(p)}

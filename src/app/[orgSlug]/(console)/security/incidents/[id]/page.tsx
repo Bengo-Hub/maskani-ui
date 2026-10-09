@@ -18,10 +18,10 @@ export default function IncidentDetailPage({ params }: { params: Promise<{ id: s
   const { data: inc, isLoading } = useIncident(id);
   const photos = useSignedMedia(inc?.photos);
 
-  if (isLoading || !inc) return <div className="mx-auto max-w-4xl space-y-3"><Skeleton className="h-10 w-56" /><Skeleton className="h-48" /></div>;
+  if (isLoading || !inc) return <div className="mx-auto max-w-7xl space-y-3"><Skeleton className="h-10 w-56" /><Skeleton className="h-48" /></div>;
 
   return (
-    <div className="mx-auto max-w-4xl">
+    <div className="mx-auto max-w-7xl">
       <PageHeader
         back={{ href: `/${slug}/security/incidents`, label: 'Incidents' }}
         title={inc.title}

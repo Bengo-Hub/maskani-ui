@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
 import { AlertTriangle, CheckCircle2, Download, FileSpreadsheet, Loader2, Upload } from 'lucide-react';
+import { DataTable, type DataTableColumn } from '@bengo-hub/shared-ui-lib/data-table';
 import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
 import { Field, NativeSelect } from '@/components/common/field';
@@ -11,7 +12,7 @@ import { PropertyRequired } from '@/components/common/property-required';
 import { useAccess, useSlug } from '@/hooks/use-access';
 import { useCommitImport, useImportJob, useImports, useValidateImport } from '@/hooks/use-imports';
 import { useProperties } from '@/hooks/use-register';
-import { importsApi, type ImportJob } from '@/lib/api/imports';
+import { importsApi, type ImportJob, type ImportRowError } from '@/lib/api/imports';
 import { apiErrorMessage } from '@/lib/api/errors';
 import { qk } from '@/lib/query-keys';
 import { cn } from '@/lib/utils';
@@ -77,7 +78,7 @@ export default function ImportUnitsPage() {
   };
 
   return (
-    <div className="mx-auto max-w-4xl">
+    <div className="mx-auto max-w-7xl">
       <PageHeader
         title="Import units and owners"
         subtitle="Load the estate register from a spreadsheet. We check every row first and save nothing until you confirm."
@@ -151,6 +152,12 @@ export default function ImportUnitsPage() {
   );
 }
 
+const ERROR_COLUMNS: DataTableColumn<ImportRowError & { key: string }>[] = [
+  { key: 'line', header: 'Line', primary: true, accessor: (e) => e.line, render: (e) => <span className="tabular">Line {e.line}</span> },
+  { key: 'field', header: 'Column', accessor: (e) => e.field ?? '', render: (e) => (e.field ? <span className="font-medium">{e.field}</span> : '') },
+  { key: 'message', header: 'Problem', accessor: (e) => e.message },
+];
+
 const STATUS_LABEL: Record<ImportJob['status'], string> = {
   validating: 'Checking',
   validated: 'Ready to save',
@@ -220,20 +227,21 @@ function ImportReport({ job, committing, onCommit, onReset, error }: {
       </div>
 
       {errors.length > 0 && (
-        <div className="rounded-2xl border bg-card">
-          <p className="border-b px-5 py-3 text-sm font-semibold">
+        <div className="space-y-2">
+          <p className="text-sm font-semibold">
             {done ? 'Rows that could not be saved' : 'Rows to fix'} ({errors.length})
           </p>
-          <ul className="max-h-96 divide-y overflow-auto text-sm">
-            {errors.slice(0, 500).map((e, i) => (
-              <li key={`${e.line}-${e.field ?? ''}-${i}`} className="flex gap-3 px-5 py-2.5">
-                <span className="w-16 shrink-0 tabular text-muted-foreground">Line {e.line}</span>
-                <span>{e.field ? <span className="font-medium">{e.field}: </span> : null}{e.message}</span>
-              </li>
-            ))}
-          </ul>
+          <DataTable
+            columns={ERROR_COLUMNS}
+            rows={errors.slice(0, 500).map((e, i) => ({ ...e, key: `${e.line}-${e.field ?? ''}-${i}` }))}
+            rowKey={(e) => e.key}
+            dense
+            maxBodyHeight="24rem"
+            showExportCsv
+            exportFileName="import-rows-to-fix"
+          />
           {!done && job.rows_valid > 0 && (
-            <p className="border-t px-5 py-3 text-xs text-muted-foreground">Saving now skips these rows. Fix them in the spreadsheet and import it again; rows already saved are updated, never duplicated.</p>
+            <p className="text-xs text-muted-foreground">Saving now skips these rows. Fix them in the spreadsheet and import it again; rows already saved are updated, never duplicated.</p>
           )}
         </div>
       )}

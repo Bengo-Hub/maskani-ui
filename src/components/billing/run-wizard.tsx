@@ -3,6 +3,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { AlertTriangle } from 'lucide-react';
+import { DataTable, type DataTableColumn } from '@bengo-hub/shared-ui-lib/data-table';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Field, NativeSelect } from '@/components/common/field';
@@ -11,9 +12,16 @@ import { PeriodPicker } from '@/components/common/period-picker';
 import { useSlug } from '@/hooks/use-access';
 import { useFunds, useIssueRun, usePreviewRun } from '@/hooks/use-billing';
 import { useProperties } from '@/hooks/use-register';
-import type { BillingPreview } from '@/lib/api/types';
+import type { BillingPreview, PreviewLine } from '@/lib/api/types';
 import { apiDate, currentPeriod, kes, num, periodLabel } from '@/lib/utils';
 import { useSelectedPropertyId } from '@/store/property';
+
+const PREVIEW_COLUMNS: DataTableColumn<PreviewLine>[] = [
+  { key: 'unit', header: 'Unit', primary: true, accessor: (l) => l.unit_code, render: (l) => <div><p className="font-medium">{l.unit_code}</p><p className="font-mono text-[11px] text-muted-foreground">{l.account_ref}</p></div> },
+  { key: 'bill_to', header: 'Bill to', accessor: (l) => l.customer_name ?? '', render: (l) => l.customer_name || <span className="text-muted-foreground">No owner</span> },
+  { key: 'lines', header: 'Lines', hideBelow: 'md', accessor: (l) => l.lines.map((x) => `${x.description} ${kes(x.amount)}`).join(', '), render: (l) => <span className="text-xs text-muted-foreground">{l.lines.map((x) => `${x.description} ${kes(x.amount)}`).join(', ')}</span> },
+  { key: 'total', header: 'Total', align: 'right', mobileAction: true, accessor: (l) => num(l.total), render: (l) => <span className="font-medium tabular">{kes(l.total)}</span> },
+];
 
 /** Due date default: the 10th of the period month (SRDD billing cycle), as a date input value. */
 function defaultDue(period: string): string {
@@ -105,26 +113,8 @@ export function RunWizard({ open, onOpenChange }: { open: boolean; onOpenChange:
               </ul>
             </div>
           )}
-          <div className="overflow-x-auto rounded-lg border">
-            <table className="w-full min-w-[560px] text-sm">
-              <thead className="bg-muted/50 text-left text-xs text-muted-foreground">
-                <tr><th className="px-3 py-2">Unit</th><th className="px-3 py-2">Bill to</th><th className="px-3 py-2">Lines</th><th className="px-3 py-2 text-right">Total</th></tr>
-              </thead>
-              <tbody className="divide-y">
-                {billable.map((l) => (
-                  <tr key={l.unit_id} className="align-top">
-                    <td className="px-3 py-2 font-medium">{l.unit_code}<div className="font-mono text-[11px] text-muted-foreground">{l.account_ref}</div></td>
-                    <td className="px-3 py-2">{l.customer_name || <span className="text-muted-foreground">No owner</span>}</td>
-                    <td className="px-3 py-2 text-xs text-muted-foreground">{l.lines.map((x) => `${x.description} ${kes(x.amount)}`).join(', ')}</td>
-                    <td className="px-3 py-2 text-right font-medium tabular">{kes(l.total)}</td>
-                  </tr>
-                ))}
-              </tbody>
-              <tfoot className="border-t bg-muted/30 font-semibold">
-                <tr><td className="px-3 py-2" colSpan={3}>Total</td><td className="px-3 py-2 text-right tabular">{kes(billable.reduce((s, l) => s + num(l.total), 0))}</td></tr>
-              </tfoot>
-            </table>
-          </div>
+          <DataTable columns={PREVIEW_COLUMNS} rows={billable} rowKey={(l) => l.unit_id} dense maxBodyHeight="50vh" showExportCsv exportFileName={`bill-preview-${period}`} />
+          <p className="flex justify-end gap-2 text-sm font-semibold">Total <span className="tabular">{kes(billable.reduce((s, l) => s + num(l.total), 0))}</span></p>
         </div>
       )}
     </FormSheet>

@@ -18,11 +18,11 @@ export default function AccountStatementPage({ params }: { params: Promise<{ id:
   const { can } = useAccess();
   const { data, isLoading } = useStatement(id);
 
-  if (isLoading || !data) return <div className="mx-auto max-w-4xl space-y-3"><Skeleton className="h-10 w-56" /><Skeleton className="h-64" /></div>;
+  if (isLoading || !data) return <div className="mx-auto max-w-7xl space-y-3"><Skeleton className="h-10 w-56" /><Skeleton className="h-64" /></div>;
   const a = data.account;
 
   return (
-    <div className="mx-auto max-w-4xl">
+    <div className="mx-auto max-w-7xl">
       <PageHeader
         back={{ href: `/${slug}/billing/accounts`, label: 'Unit accounts' }}
         title={<span>Account <span className="font-mono">{a.account_ref}</span></span>}

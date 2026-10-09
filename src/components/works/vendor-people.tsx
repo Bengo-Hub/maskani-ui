@@ -1,7 +1,8 @@
 'use client';
 
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 import { KeyRound, Plus } from 'lucide-react';
+import { DataTable, type DataTableColumn } from '@bengo-hub/shared-ui-lib/data-table';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Field } from '@/components/common/field';
@@ -20,25 +21,26 @@ export function VendorPeople({ vendorId, people, manage }: { vendorId: string; p
   const [f, setF] = useState({ full_name: '', role: 'guard', phone: '', badge_number: '' });
   const [pin, setPinValue] = useState('');
 
+  const columns = useMemo<DataTableColumn<VendorPersonnel>[]>(() => [
+    { key: 'name', header: 'Name', primary: true, accessor: (p) => p.full_name, render: (p) => <span className="font-medium">{p.full_name}</span> },
+    { key: 'badge', header: 'Badge', accessor: (p) => p.badge_number ?? '', render: (p) => <span className="font-mono text-xs">{p.badge_number}</span> },
+    { key: 'role', header: 'Role', hideBelow: 'md', accessor: (p) => p.role ?? '' },
+    { key: 'phone', header: 'Phone', hideBelow: 'md', accessor: (p) => p.phone ?? '' },
+    { key: 'pin', header: 'Gate PIN', accessor: (p) => (p.has_pin ? 'Set' : 'Not set'), render: (p) => (p.has_pin ? <ToneBadge tone="success">Gate PIN set</ToneBadge> : <ToneBadge>No gate PIN</ToneBadge>) },
+    ...(manage ? [{
+      key: 'actions', header: '', mobileAction: true, exportable: false, accessor: () => '',
+      render: (p: VendorPersonnel) => (
+        <div className="flex justify-end">
+          <Button size="sm" variant="outline" onClick={() => { setPinValue(''); setPinFor(p); }}><KeyRound /> {p.has_pin ? 'Change PIN' : 'Set PIN'}</Button>
+        </div>
+      ),
+    }] : []),
+  ], [manage]);
+
   return (
     <div className="space-y-3">
       {manage && <div className="flex justify-end"><Button variant="outline" size="sm" onClick={() => { setF({ full_name: '', role: 'guard', phone: '', badge_number: '' }); setAdding(true); }}><Plus /> Add person</Button></div>}
-      {people.length === 0 ? <p className="py-6 text-center text-sm text-muted-foreground">No personnel recorded.</p> : (
-        <ul className="divide-y rounded-lg border">
-          {people.map((p) => (
-            <li key={p.id} className="flex flex-col gap-2 px-4 py-3 sm:flex-row sm:items-center sm:justify-between">
-              <div className="min-w-0">
-                <p className="font-medium">{p.full_name} <span className="font-mono text-xs text-muted-foreground">{p.badge_number}</span></p>
-                <p className="text-xs text-muted-foreground">{p.role}{p.phone ? ` · ${p.phone}` : ''}</p>
-              </div>
-              <div className="flex items-center gap-2">
-                {p.has_pin ? <ToneBadge tone="success">Gate PIN set</ToneBadge> : <ToneBadge>No gate PIN</ToneBadge>}
-                {manage && <Button size="sm" variant="outline" onClick={() => { setPinValue(''); setPinFor(p); }}><KeyRound /> {p.has_pin ? 'Change PIN' : 'Set PIN'}</Button>}
-              </div>
-            </li>
-          ))}
-        </ul>
-      )}
+      <DataTable columns={columns} rows={people} rowKey={(p) => p.id} emptyText="No personnel recorded." storageKey="maskani-vendor-people" maxBodyHeight={false} />
       <FormSheet
         open={adding}
         onOpenChange={setAdding}

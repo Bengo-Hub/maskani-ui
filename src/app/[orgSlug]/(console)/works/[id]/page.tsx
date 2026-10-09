@@ -43,11 +43,11 @@ export default function WorkOrderPage({ params }: { params: Promise<{ id: string
   const before = useSignedMedia(wo?.photos_before);
   const after = useSignedMedia(wo?.photos_after);
 
-  if (isLoading || !wo) return <div className="mx-auto max-w-4xl space-y-3"><Skeleton className="h-10 w-56" /><Skeleton className="h-64" /></div>;
+  if (isLoading || !wo) return <div className="mx-auto max-w-7xl space-y-3"><Skeleton className="h-10 w-56" /><Skeleton className="h-64" /></div>;
   const actions = can('works.manage') ? NEXT[wo.status] ?? [] : [];
 
   return (
-    <div className="mx-auto max-w-4xl">
+    <div className="mx-auto max-w-7xl">
       <PageHeader
         back={{ href: `/${slug}/works`, label: 'Work orders' }}
         title={wo.title}

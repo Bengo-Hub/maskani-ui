@@ -2,7 +2,7 @@
 
 import { useMemo, useState } from 'react';
 import { Plus, Send } from 'lucide-react';
-import type { DataTableColumn } from '@bengo-hub/shared-ui-lib/data-table';
+import { DataTable, type DataTableColumn } from '@bengo-hub/shared-ui-lib/data-table';
 import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Input } from '@/components/ui/input';
@@ -16,9 +16,16 @@ import { StatusBadge, ToneBadge } from '@/components/common/status-badge';
 import { useNoticeDeliveries, useNoticeMutations, useNotices } from '@/hooks/use-notices';
 import { useProperty } from '@/hooks/use-register';
 import type { NoticeInput } from '@/lib/api/operations';
-import type { Notice } from '@/lib/api/types';
+import type { Notice, NoticeDelivery } from '@/lib/api/types';
 import { fmtDateTime } from '@/lib/utils';
 import { usePropertyOrSingle } from '@/components/common/property-required';
+
+const DELIVERY_COLUMNS: DataTableColumn<NoticeDelivery>[] = [
+  { key: 'recipient', header: 'Recipient', primary: true, accessor: (d) => d.recipient ?? 'Resident' },
+  { key: 'channel', header: 'Channel', accessor: (d) => d.channel, render: (d) => <span className="capitalize">{d.channel}</span> },
+  { key: 'error', header: 'Problem', hideBelow: 'md', accessor: (d) => d.error ?? '', render: (d) => <span className="text-xs text-muted-foreground">{d.error}</span> },
+  { key: 'status', header: 'Status', mobileAction: true, accessor: (d) => d.status, render: (d) => <StatusBadge status={d.status} /> },
+];
 
 export default function NoticesPage() {
   const propertyId = usePropertyOrSingle();
@@ -119,15 +126,19 @@ export default function NoticesPage() {
         {view && (
           <div className="space-y-4">
             <p className="whitespace-pre-line text-sm">{view.body}</p>
-            <ul className="max-h-80 divide-y overflow-y-auto rounded-lg border text-sm">
-              {(deliveries.data ?? []).length === 0 && <li className="px-3 py-3 text-muted-foreground">{deliveries.isLoading ? 'Loading deliveries...' : 'No deliveries recorded yet.'}</li>}
-              {(deliveries.data ?? []).map((d) => (
-                <li key={d.id} className="flex items-center justify-between gap-3 px-3 py-2">
-                  <span className="min-w-0 truncate">{d.recipient ?? 'Resident'} <span className="text-xs text-muted-foreground">{d.channel}</span></span>
-                  <StatusBadge status={d.status} />
-                </li>
-              ))}
-            </ul>
+            <DataTable
+              columns={DELIVERY_COLUMNS}
+              rows={deliveries.data ?? []}
+              rowKey={(d) => d.id}
+              loading={deliveries.isLoading}
+              error={deliveries.isError}
+              onRetry={() => void deliveries.refetch()}
+              emptyText="No deliveries recorded yet."
+              dense
+              maxBodyHeight="20rem"
+              showExportCsv
+              exportFileName="notice-deliveries"
+            />
           </div>
         )}
       </FormSheet>

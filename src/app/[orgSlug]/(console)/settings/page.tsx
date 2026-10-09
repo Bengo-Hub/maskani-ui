@@ -22,13 +22,13 @@ const SECTIONS: Section<Tab>[] = [
 ];
 
 export default function SettingsPage() {
-  return <Suspense fallback={<Skeleton className="mx-auto h-96 max-w-6xl" />}><Settings /></Suspense>;
+  return <Suspense fallback={<Skeleton className="mx-auto h-96 max-w-7xl" />}><Settings /></Suspense>;
 }
 
 function Settings() {
   const [tab, setTab] = useUrlParam<Tab>('tab', 'general', TABS);
   return (
-    <div className="mx-auto max-w-6xl">
+    <div className="mx-auto max-w-7xl">
       <PageHeader title="Settings" subtitle="How Maskani runs for this estate" />
       <SectionLayout sections={SECTIONS} value={tab} onChange={(v) => setTab(v, { kind: null })}>
         {tab === 'general' && <GeneralSettings />}

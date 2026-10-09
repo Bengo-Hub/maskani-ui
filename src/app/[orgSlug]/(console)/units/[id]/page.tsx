@@ -1,8 +1,10 @@
 'use client';
 
-import { use, useState } from 'react';
+import { use, useMemo, useState } from 'react';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import { Pencil, Send, UserPlus, Wallet } from 'lucide-react';
+import { DataTable, type DataTableColumn } from '@bengo-hub/shared-ui-lib/data-table';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -14,9 +16,19 @@ import { LinkPartySheet, partyName } from '@/components/register/link-party-shee
 import { UnitForm } from '@/components/register/unit-form';
 import { useAccess, useSlug } from '@/hooks/use-access';
 import { useEndLink, useInviteParty, useUnit } from '@/hooks/use-register';
-import type { UnitParty } from '@/lib/api/types';
+import type { UnitAccount, UnitParty } from '@/lib/api/types';
 import { label, OCCUPANCY_STATUS, PARTY_ROLE, SALE_STATUS } from '@/lib/labels';
 import { apiDate, fmtDate, kes, num, titleCase, todayInput } from '@/lib/utils';
+
+const ACCOUNT_COLUMNS: DataTableColumn<UnitAccount>[] = [
+  { key: 'fund', header: 'Fund', primary: true, accessor: (a) => a.edges?.fund?.name ?? 'Account', render: (a) => <span className="font-medium">{a.edges?.fund?.name ?? 'Account'}</span> },
+  { key: 'ref', header: 'Account', accessor: (a) => a.account_ref, render: (a) => <span className="font-mono text-xs">{a.account_ref}</span> },
+  { key: 'paid', header: 'Last paid', hideBelow: 'md', accessor: (a) => a.last_payment_at ?? '', render: (a) => (a.last_payment_at ? fmtDate(a.last_payment_at) : <span className="text-muted-foreground">No payments yet</span>) },
+  {
+    key: 'balance', header: 'Balance', align: 'right', mobileAction: true, accessor: (a) => num(a.balance),
+    render: (a) => <span className={num(a.balance) > 0 ? 'font-semibold text-destructive tabular' : 'tabular'}>{kes(a.balance)}</span>,
+  },
+];
 
 export default function UnitDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = use(params);
@@ -28,14 +40,41 @@ export default function UnitDetailPage({ params }: { params: Promise<{ id: strin
   const [ending, setEnding] = useState<UnitParty | null>(null);
   const endLink = useEndLink(id);
   const invite = useInviteParty();
+  const router = useRouter();
+  const manageParties = can('parties.manage');
 
-  if (isLoading || !u) return <div className="mx-auto max-w-4xl space-y-3"><Skeleton className="h-10 w-48" /><Skeleton className="h-48" /></div>;
+  const peopleColumns = useMemo<DataTableColumn<UnitParty>[]>(() => [
+    {
+      key: 'name', header: 'Name', primary: true, accessor: (l) => partyName(l.edges?.party),
+      render: (l) => <Link href={`/${slug}/parties/${l.party_id}`} className="font-medium hover:underline">{partyName(l.edges?.party)}</Link>,
+    },
+    {
+      key: 'role', header: 'Role', accessor: (l) => label(PARTY_ROLE, l.role),
+      render: (l) => <ToneBadge tone={l.role === 'owner' || l.role === 'joint_owner' ? 'primary' : 'neutral'}>{label(PARTY_ROLE, l.role)}</ToneBadge>,
+    },
+    { key: 'phone', header: 'Phone', hideBelow: 'md', accessor: (l) => l.edges?.party?.phone ?? '' },
+    { key: 'since', header: 'Since', hideBelow: 'md', accessor: (l) => l.start_date ?? '', render: (l) => fmtDate(l.start_date) },
+    { key: 'pays', header: 'Pays', hideBelow: 'lg', accessor: (l) => (l.bill_to ?? []).map((c) => titleCase(c)).join(', ') },
+    ...(manageParties ? [{
+      key: 'actions', header: '', mobileAction: true, exportable: false, accessor: () => '',
+      render: (l: UnitParty) => (
+        <div className="flex justify-end gap-2">
+          {!l.edges?.party?.auth_user_id && l.edges?.party?.phone && (
+            <Button size="sm" variant="outline" onClick={() => invite.mutate(l.party_id)} disabled={invite.isPending}><Send /> Invite to portal</Button>
+          )}
+          <Button size="sm" variant="ghost" onClick={() => setEnding(l)}>End</Button>
+        </div>
+      ),
+    }] : []),
+  ], [slug, manageParties, invite]);
+
+  if (isLoading || !u) return <div className="mx-auto max-w-7xl space-y-3"><Skeleton className="h-10 w-48" /><Skeleton className="h-48" /></div>;
 
   const current = (u.parties ?? []).filter((p) => !p.end_date);
   const past = (u.parties ?? []).filter((p) => !!p.end_date);
 
   return (
-    <div className="mx-auto max-w-4xl">
+    <div className="mx-auto max-w-7xl">
       <PageHeader
         back={{ href: `/${slug}/units`, label: 'Units' }}
         title={`Unit ${u.code}`}
@@ -59,28 +98,9 @@ export default function UnitDetailPage({ params }: { params: Promise<{ id: strin
             {current.length === 0 ? (
               <EmptyState icon={UserPlus} title="No one linked" description="Link the owner first. Occupants and household members can follow." className="py-10" />
             ) : (
-              <ul className="divide-y">
-                {current.map((l) => (
-                  <li key={l.id} className="flex flex-col gap-2 px-4 py-3 sm:flex-row sm:items-center sm:justify-between sm:px-6">
-                    <div className="min-w-0">
-                      <Link href={`/${slug}/parties/${l.party_id}`} className="font-medium hover:underline">{partyName(l.edges?.party)}</Link>
-                      <p className="flex flex-wrap items-center gap-2 text-xs text-muted-foreground">
-                        <ToneBadge tone={l.role === 'owner' || l.role === 'joint_owner' ? 'primary' : 'neutral'}>{label(PARTY_ROLE, l.role)}</ToneBadge>
-                        {l.edges?.party?.phone} {l.start_date && <>since {fmtDate(l.start_date)}</>}
-                        {l.bill_to?.length ? <>pays {l.bill_to.map((c) => titleCase(c)).join(', ')}</> : null}
-                      </p>
-                    </div>
-                    {can('parties.manage') && (
-                      <div className="flex gap-2">
-                        {!l.edges?.party?.auth_user_id && l.edges?.party?.phone && (
-                          <Button size="sm" variant="outline" onClick={() => invite.mutate(l.party_id)} disabled={invite.isPending}><Send /> Invite to portal</Button>
-                        )}
-                        <Button size="sm" variant="ghost" onClick={() => setEnding(l)}>End</Button>
-                      </div>
-                    )}
-                  </li>
-                ))}
-              </ul>
+              <div className="px-4 pb-4 sm:px-6">
+                <DataTable columns={peopleColumns} rows={current} rowKey={(l) => l.id} storageKey="maskani-unit-people" maxBodyHeight={false} />
+              </div>
             )}
             {past.length > 0 && (
               <details className="border-t px-4 py-3 text-sm sm:px-6">
@@ -102,19 +122,15 @@ export default function UnitDetailPage({ params }: { params: Promise<{ id: strin
               {(u.accounts ?? []).length === 0 ? (
                 <EmptyState icon={Wallet} title="No accounts yet" description="Accounts open when the unit is first billed." className="py-10" />
               ) : (
-                <ul className="divide-y">
-                  {(u.accounts ?? []).map((a) => (
-                    <li key={a.id}>
-                      <Link href={`/${slug}/billing/accounts/${a.id}`} className="flex items-center justify-between gap-3 px-4 py-3 hover:bg-muted/50 sm:px-6">
-                        <div>
-                          <p className="font-medium">{a.edges?.fund?.name ?? 'Account'} <span className="font-mono text-xs text-muted-foreground">{a.account_ref}</span></p>
-                          <p className="text-xs text-muted-foreground">{a.last_payment_at ? `Last paid ${fmtDate(a.last_payment_at)}` : 'No payments yet'}</p>
-                        </div>
-                        <span className={num(a.balance) > 0 ? 'font-semibold text-destructive tabular' : 'tabular'}>{kes(a.balance)}</span>
-                      </Link>
-                    </li>
-                  ))}
-                </ul>
+                <div className="px-4 pb-4 sm:px-6">
+                  <DataTable
+                    columns={ACCOUNT_COLUMNS}
+                    rows={u.accounts ?? []}
+                    rowKey={(a) => a.id}
+                    onRowClick={(a) => router.push(`/${slug}/billing/accounts/${a.id}`)}
+                    maxBodyHeight={false}
+                  />
+                </div>
               )}
             </CardContent>
           </Card>

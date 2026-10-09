@@ -2,6 +2,7 @@
 
 import { use, useState } from 'react';
 import { Plus } from 'lucide-react';
+import { DataTable, type DataTableColumn } from '@bengo-hub/shared-ui-lib/data-table';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -13,8 +14,27 @@ import { ToneBadge } from '@/components/common/status-badge';
 import { VendorPeople } from '@/components/works/vendor-people';
 import { useAccess, useSlug } from '@/hooks/use-access';
 import { useAddVendorDocument, useVendor } from '@/hooks/use-works';
+import type { VendorDocument } from '@/lib/api/types';
 import { apiDate, daysUntil, fmtDate } from '@/lib/utils';
 import { ExpiryBadge } from '@/components/works/expiry-badge';
+
+const DOC_COLUMNS: DataTableColumn<VendorDocument>[] = [
+  { key: 'type', header: 'Document', primary: true, accessor: (d) => d.doc_type.replace(/_/g, ' '), render: (d) => <span className="font-medium uppercase">{d.doc_type.replace(/_/g, ' ')}</span> },
+  { key: 'number', header: 'Number', accessor: (d) => d.number ?? '' },
+  { key: 'issued', header: 'Issued', hideBelow: 'md', accessor: (d) => d.issued_at ?? '', render: (d) => fmtDate(d.issued_at) },
+  {
+    key: 'expires', header: 'Expires', mobileAction: true, accessor: (d) => d.expires_at ?? '',
+    render: (d) => {
+      const left = daysUntil(d.expires_at);
+      return (
+        <span className="flex items-center gap-2 text-sm">
+          {fmtDate(d.expires_at) || 'No expiry'}
+          {left !== null && (left < 0 ? <ToneBadge tone="danger">Expired</ToneBadge> : left <= 30 ? <ToneBadge tone="warning">{left} days</ToneBadge> : null)}
+        </span>
+      );
+    },
+  },
+];
 
 export default function VendorPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = use(params);
@@ -26,10 +46,10 @@ export default function VendorPage({ params }: { params: Promise<{ id: string }>
   const [docOpen, setDocOpen] = useState(false);
   const [d, setD] = useState({ doc_type: '', number: '', issued_at: '', expires_at: '' });
 
-  if (isLoading || !v) return <div className="mx-auto max-w-4xl space-y-3"><Skeleton className="h-10 w-56" /><Skeleton className="h-64" /></div>;
+  if (isLoading || !v) return <div className="mx-auto max-w-7xl space-y-3"><Skeleton className="h-10 w-56" /><Skeleton className="h-64" /></div>;
 
   return (
-    <div className="mx-auto max-w-4xl">
+    <div className="mx-auto max-w-7xl">
       <PageHeader back={{ href: `/${slug}/vendors`, label: 'Vendors' }} title={v.name} subtitle={<span className="inline-flex flex-wrap items-center gap-2">{v.contact_name} {v.phone} <ExpiryBadge vendor={v} /></span>} />
       <div className="space-y-4">
         <Card>
@@ -37,23 +57,8 @@ export default function VendorPage({ params }: { params: Promise<{ id: string }>
             <CardTitle>Licences and documents</CardTitle>
             {manage && <Button size="sm" variant="outline" onClick={() => { setD({ doc_type: '', number: '', issued_at: '', expires_at: '' }); setDocOpen(true); }}><Plus /> Add document</Button>}
           </CardHeader>
-          <CardContent className="p-0">
-            {(v.documents ?? []).length === 0 ? <p className="px-6 py-6 text-center text-sm text-muted-foreground">No documents recorded.</p> : (
-              <ul className="divide-y">
-                {(v.documents ?? []).map((doc) => {
-                  const left = daysUntil(doc.expires_at);
-                  return (
-                    <li key={doc.id} className="flex items-center justify-between gap-3 px-4 py-3 sm:px-6">
-                      <div><p className="font-medium uppercase">{doc.doc_type.replace(/_/g, ' ')}</p><p className="text-xs text-muted-foreground">{doc.number}</p></div>
-                      <span className="flex items-center gap-2 text-sm">
-                        {fmtDate(doc.expires_at) || 'No expiry'}
-                        {left !== null && (left < 0 ? <ToneBadge tone="danger">Expired</ToneBadge> : left <= 30 ? <ToneBadge tone="warning">{left} days</ToneBadge> : null)}
-                      </span>
-                    </li>
-                  );
-                })}
-              </ul>
-            )}
+          <CardContent>
+            <DataTable columns={DOC_COLUMNS} rows={v.documents ?? []} rowKey={(doc) => doc.id} emptyText="No documents recorded." maxBodyHeight={false} />
           </CardContent>
         </Card>
         <Card>

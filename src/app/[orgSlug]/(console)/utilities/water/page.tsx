@@ -58,10 +58,10 @@ export default function WaterBalancePage() {
     },
   ], [limit]);
 
-  if (!propertyId) return <div className="mx-auto max-w-6xl"><PageHeader title="Water balance" /><PropertyRequired what="Water balances" /></div>;
+  if (!propertyId) return <div className="mx-auto max-w-7xl"><PageHeader title="Water balance" /><PropertyRequired what="Water balances" /></div>;
 
   return (
-    <div className="mx-auto max-w-6xl space-y-5">
+    <div className="mx-auto max-w-7xl space-y-5">
       <PageHeader
         title="Water balance"
         subtitle={<>Water supplied against water billed, month by month. Losses above {limit}% are flagged (<Link href={`/${slug}/settings?tab=general`} className="text-primary underline">change</Link>).</>}

@@ -26,19 +26,19 @@ export default function ContractPage({ params }: { params: Promise<{ id: string 
   const [signing, setSigning] = useState(false);
   const [signedAt, setSignedAt] = useState(todayInput);
 
-  if (isLoading || !c) return <div className="mx-auto max-w-4xl space-y-3"><Skeleton className="h-10 w-56" /><Skeleton className="h-64" /></div>;
+  if (isLoading || !c) return <div className="mx-auto max-w-7xl space-y-3"><Skeleton className="h-10 w-56" /><Skeleton className="h-64" /></div>;
   const net = num(c.net_price);
   const paid = num(c.paid_total);
 
   return (
-    <div className="mx-auto max-w-4xl">
+    <div className="mx-auto max-w-7xl">
       <PageHeader
         back={{ href: `/${slug}/sales/contracts`, label: 'Sale contracts' }}
         title={<span className="font-mono">{c.contract_number}</span>}
         subtitle={<span className="inline-flex flex-wrap items-center gap-2"><StatusBadge status={c.status} /> {titleCase(c.payment_option)} <Link href={`/${slug}/units/${c.unit_id}`} className="text-primary hover:underline">Open the unit</Link></span>}
         actions={c.status === 'draft' && can('sales.manage') ? <Button onClick={() => setSigning(true)}><FileCheck /> Mark signed and activate</Button> : undefined}
       />
-      <div className="space-y-4">
+      <div className="grid grid-cols-1 items-start gap-4 lg:grid-cols-[minmax(0,1fr)_minmax(0,1.6fr)]">
         <Card>
           <CardContent className="space-y-3">
             <div className="flex items-baseline justify-between gap-3">
@@ -46,7 +46,7 @@ export default function ContractPage({ params }: { params: Promise<{ id: string 
               <span className="font-display text-xl font-semibold tabular">{kes(paid)} <span className="text-sm font-normal text-muted-foreground">of {kes(net)}</span></span>
             </div>
             <Progress value={net > 0 ? Math.min(100, (paid / net) * 100) : 0} />
-            <dl className="grid grid-cols-2 gap-3 pt-1 text-sm sm:grid-cols-4">
+            <dl className="grid grid-cols-2 gap-3 pt-1 text-sm sm:grid-cols-4 lg:grid-cols-2">
               <div><dt className="text-xs text-muted-foreground">Price</dt><dd className="tabular">{kes(c.price)}</dd></div>
               <div><dt className="text-xs text-muted-foreground">Discount</dt><dd className="tabular">{kes(c.discount ?? 0)}</dd></div>
               <div><dt className="text-xs text-muted-foreground">Deposit</dt><dd className="tabular">{kes(c.deposit_amount ?? 0)}</dd></div>
