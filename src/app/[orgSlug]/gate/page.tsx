@@ -35,7 +35,7 @@ export default function GatePage() {
   if (!gate.guard) {
     return (
       <main className="flex min-h-dvh items-center justify-center bg-background p-4">
-        <GuardSignOn gateName={gate.device.gateName} badges={gate.badges} onSignOn={gate.signOn} />
+        <GuardSignOn gateName={gate.device.gateName} badges={gate.badges} online={gate.online} onSignOn={gate.signOn} />
       </main>
     );
   }

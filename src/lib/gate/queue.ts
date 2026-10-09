@@ -18,6 +18,11 @@ export interface GateEventInput {
   offline?: boolean;
   guard_personnel_id?: string;
   notes?: string;
+  /** The visitor's ID as seen at the gate; the server keeps only a keyed hash on the visitor. */
+  id_number?: string;
+  /** An exit names the entry it closes: the server id, or the client id of an entry still queued. */
+  entry_event_id?: string;
+  entry_client_event_id?: string;
 }
 
 export interface CachedPass {

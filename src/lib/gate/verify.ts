@@ -1,5 +1,5 @@
 import { isNetworkError } from '@/lib/api/errors';
-import { gateDeviceApi, type VerifyResult } from './api';
+import { gateDeviceApi, type VerifyResult, type VisitorMatch } from './api';
 import { deviceHash } from './crypto';
 import type { GateDeviceCreds } from './device';
 import type { CachedPass } from './queue';
@@ -11,19 +11,32 @@ export interface GateVerdict {
   visitorName?: string;
   unitCode?: string;
   unitId?: string;
+  block?: string;
+  hostName?: string;
+  passType?: string;
+  vehiclePlate?: string;
+  entriesLeft?: number;
+  visitor?: VisitorMatch;
   validTo?: string;
   offline: boolean;
 }
 
 function fromServer(r: VerifyResult): GateVerdict {
+  const p = r.pass;
   return {
     valid: r.valid,
     reason: r.reason,
-    passId: r.pass?.id,
-    visitorName: r.pass?.visitor_name,
+    passId: p?.id,
+    visitorName: p?.visitor_name,
     unitCode: r.unit_code,
-    unitId: r.pass?.unit_id ?? undefined,
-    validTo: r.pass?.valid_to,
+    unitId: p?.unit_id ?? undefined,
+    block: r.block,
+    hostName: r.host_name,
+    passType: p?.pass_type,
+    vehiclePlate: p?.vehicle_plate,
+    entriesLeft: p?.max_entries ? Math.max(0, p.max_entries - (p.entries_used ?? 0)) : undefined,
+    visitor: r.visitor,
+    validTo: p?.valid_to,
     offline: false,
   };
 }

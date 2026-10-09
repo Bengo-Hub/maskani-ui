@@ -2,12 +2,18 @@
 
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { isNetworkError } from '@/lib/api/errors';
-import { gateDeviceApi, type SignOnResult, type SyncResponse } from '@/lib/gate/api';
+import { gateDeviceApi, type InsidePerson, type SignOnResult, type SyncResponse, type WalkInPolicy } from '@/lib/gate/api';
 import { getDevice, type GateDeviceCreds } from '@/lib/gate/device';
 import { enqueueEvent, flushGateQueue, getPendingGateCount, loadCache, saveCache, type CachedPass, type GateEventInput } from '@/lib/gate/queue';
 
 const SYNC_MS = 5 * 60 * 1000;
 const SHIFT_KEY = (slug: string) => `maskani-gate-shift:${slug}`;
+const POLICY_KEY = (deviceId: string) => `maskani-gate-policy:${deviceId}`;
+
+/** An inside row the tablet recorded offline: its event_id is the client event id. */
+export type LocalInside = InsidePerson & { local?: boolean };
+
+export type RecordGateEvent = (e: Omit<GateEventInput, 'client_event_id' | 'occurred_at' | 'guard_personnel_id'> & { client_event_id?: string }) => Promise<string>;
 
 export interface Guard { id: string; name: string; badge: string; since: string }
 type Badge = NonNullable<SyncResponse['cache']['badges']>[number];
@@ -25,6 +31,10 @@ export function useGate(slug: string) {
   const [syncedAt, setSyncedAt] = useState<number | null>(null);
   const [online, setOnline] = useState(true);
   const [pending, setPending] = useState(0);
+  const [walkInPolicy, setWalkInPolicy] = useState<WalkInPolicy>('guard_decides');
+  // Entries recorded while the queue could not be sent: the server's inside list does not have
+  // them yet, so an exit names them by their client id.
+  const [localInside, setLocalInside] = useState<LocalInside[]>([]);
   const deviceRef = useRef<GateDeviceCreds | null>(null);
 
   const refreshPending = useCallback(async () => setPending(await getPendingGateCount()), []);
@@ -41,6 +51,10 @@ export function useGate(slug: string) {
       setBadges(res.cache.badges ?? []);
       setSyncedAt(Date.now());
       setOnline(true);
+      setLocalInside([]);
+      const policy = res.cache.walk_in_policy ?? 'guard_decides';
+      setWalkInPolicy(policy);
+      try { localStorage.setItem(POLICY_KEY(d.deviceId), policy); } catch { /* storage blocked */ }
     } catch (e) {
       if (isNetworkError(e)) setOnline(false);
     } finally {
@@ -57,6 +71,7 @@ export function useGate(slug: string) {
     try {
       const raw = localStorage.getItem(SHIFT_KEY(slug));
       if (raw) setGuard(JSON.parse(raw) as Guard);
+      if (localStorage.getItem(POLICY_KEY(d.deviceId)) === 'ask_host') setWalkInPolicy('ask_host');
     } catch { /* storage blocked */ }
     void loadCache(d).then(({ passes: cached, syncedAt: at }) => {
       setPasses(cached);
@@ -101,7 +116,7 @@ export function useGate(slug: string) {
   }, [slug]);
 
   /** Records an entry, exit or denial: queued first, then sent; offline it waits in the queue. */
-  const record = useCallback(async (event: Omit<GateEventInput, 'client_event_id' | 'occurred_at' | 'guard_personnel_id'> & { client_event_id?: string }) => {
+  const record: RecordGateEvent = useCallback(async (event) => {
     const d = deviceRef.current;
     if (!d) return '';
     const full: GateEventInput = {
@@ -116,10 +131,23 @@ export function useGate(slug: string) {
       // Count the entry locally so a single-use pass cannot be reused while offline.
       setPasses((list) => list.map((p) => (p.id === full.pass_id ? { ...p, entries_used: p.entries_used + 1 } : p)));
     }
-    try { await flushGateQueue(); setOnline(true); } catch (e) { if (isNetworkError(e)) setOnline(false); }
+    try {
+      await flushGateQueue();
+      setOnline(true);
+    } catch (e) {
+      if (isNetworkError(e)) setOnline(false);
+      if (full.kind === 'entry') {
+        setLocalInside((list) => [{ event_id: full.client_event_id, visitor_name: full.visitor_name ?? 'Visitor',
+          vehicle_plate: full.vehicle_plate, host_unit_id: full.host_unit_id, since: full.occurred_at,
+          pass_id: full.pass_id, walk_in: !full.pass_id, local: true }, ...list]);
+      }
+      if (full.kind === 'exit' && full.entry_client_event_id) {
+        setLocalInside((list) => list.filter((p) => p.event_id !== full.entry_client_event_id));
+      }
+    }
     void refreshPending();
     return full.client_event_id;
   }, [guard?.id, refreshPending]);
 
-  return { device, ready, guard, passes, badges, syncedAt, online, pending, sync, signOn, signOff, record };
+  return { device, ready, guard, passes, badges, syncedAt, online, pending, walkInPolicy, localInside, sync, signOn, signOff, record };
 }
