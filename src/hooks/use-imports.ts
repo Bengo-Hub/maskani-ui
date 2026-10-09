@@ -4,11 +4,12 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { toast } from 'sonner';
 import { importsApi, type ImportJob } from '@/lib/api/imports';
 import { qk } from '@/lib/query-keys';
-import { useSlug } from './use-access';
+import { useAccess, useSlug } from './use-access';
 
 export function useImports() {
   const slug = useSlug();
-  return useQuery({ queryKey: qk.imports(slug), queryFn: () => importsApi.list(slug).then((r) => r.data ?? []) });
+  const { can } = useAccess();
+  return useQuery({ queryKey: qk.imports(slug), queryFn: () => importsApi.list(slug).then((r) => r.data ?? []), enabled: can('imports.run') });
 }
 
 /** One job; polls every 2 seconds while it is being committed, then stops. */

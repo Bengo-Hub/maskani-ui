@@ -1,16 +1,13 @@
 'use client';
 
 import { useEffect, useMemo, useState, type ReactNode } from 'react';
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { toast } from 'sonner';
 import { CalendarDays, Droplets, MessageSquare, Smartphone, Wallet, type LucideIcon } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Field, NativeSelect } from '@/components/common/field';
-import { useAccess, useSlug } from '@/hooks/use-access';
-import { settingsApi } from '@/lib/api/operations';
-import { qk } from '@/lib/query-keys';
+import { useAccess } from '@/hooks/use-access';
+import { useEstateSettings, useUpdateEstateSettings } from '@/hooks/use-settings';
 
 interface Settings {
   billing_day?: number; due_day?: number; reading_window_start?: number; reading_window_end?: number;
@@ -39,11 +36,10 @@ function Group({ icon: Icon, title, hint, children }: { icon: LucideIcon; title:
 
 /** The estate's working rules. Only changed fields are sent; a bar appears while there are changes. */
 export function GeneralSettings() {
-  const slug = useSlug();
-  const qc = useQueryClient();
   const { can } = useAccess();
   const manage = can('settings.manage');
-  const { data, isLoading } = useQuery({ queryKey: qk.settings(slug), queryFn: () => settingsApi.settings(slug) as Promise<Settings> });
+  const { data, isLoading } = useEstateSettings<Settings>();
+  const update = useUpdateEstateSettings();
   const initial = useMemo(() => Object.fromEntries(FIELDS.map((k) => [k, data?.[k] != null ? String(data[k]) : ''])) as Record<string, string>, [data]);
   const [f, setF] = useState<Record<string, string>>({});
   useEffect(() => { if (data) setF(initial); }, [data, initial]);
@@ -55,14 +51,14 @@ export function GeneralSettings() {
     return !Number.isInteger(n) || n < 1 || n > 28;
   });
 
-  const save = useMutation({
-    mutationFn: () => {
+  const save = {
+    isPending: update.isPending,
+    mutate: () => {
       const body: Record<string, unknown> = {};
       for (const k of changed) body[k] = NUMERIC.has(k) ? Number(f[k]) : f[k].trim();
-      return settingsApi.updateSettings(slug, body);
+      update.mutate(body);
     },
-    onSuccess: () => { toast.success('Settings saved'); void qc.invalidateQueries({ queryKey: qk.settings(slug) }); },
-  });
+  };
 
   if (isLoading) return <Skeleton className="h-96 w-full rounded-2xl" />;
 

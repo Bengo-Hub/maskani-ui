@@ -2,7 +2,6 @@
 
 import { useMemo } from 'react';
 import Link from 'next/link';
-import { useQuery } from '@tanstack/react-query';
 import { AlertTriangle, Droplets, Gauge, TrendingDown } from 'lucide-react';
 import type { DataTableColumn } from '@bengo-hub/shared-ui-lib/data-table';
 import { DataTable } from '@bengo-hub/shared-ui-lib/data-table';
@@ -16,23 +15,26 @@ import { ToneBadge } from '@/components/common/status-badge';
 import { WaterBalanceChart } from '@/components/utilities/water-balance-chart';
 import { useSlug } from '@/hooks/use-access';
 import { useWaterBalance } from '@/hooks/use-utilities';
-import { settingsApi } from '@/lib/api/operations';
 import type { WaterBalanceRow } from '@/lib/api/types';
-import { qk } from '@/lib/query-keys';
 import { num, periodLabel } from '@/lib/utils';
+import { useAuthStore } from '@/store/auth';
 
 /** Supplied (bulk meters) against billed (unit meters) and common use; the gap is unaccounted water. */
 export default function WaterBalancePage() {
   const slug = useSlug();
   const propertyId = usePropertyOrSingle();
   const { data = [], isLoading } = useWaterBalance(propertyId);
-  // The alert threshold is the estate's own setting (Settings, General, Meter readings).
-  const { data: settings } = useQuery({ queryKey: qk.settings(slug), queryFn: () => settingsApi.settings(slug) as Promise<{ water_loss_alert_pct?: number }> });
-  const limit = settings?.water_loss_alert_pct ?? 15;
+  // The alert threshold is the estate's own setting (Settings, General, Meter readings), which
+  // /auth/me already carries, so people without settings access still see it.
+  const limit = useAuthStore((s) => Number(s.me?.settings?.water_loss_alert_pct ?? 15));
 
   const summary = useMemo(() => {
     const withLoss = data.filter((r) => r.loss_pct != null);
-    const avg = withLoss.length ? withLoss.reduce((s, r) => s + num(r.loss_pct), 0) / withLoss.length : null;
+    // Weighted by volume: a month with ten times the water counts ten times, unlike a plain mean
+    // of monthly percentages.
+    const supplied = withLoss.reduce((s, r) => s + num(r.supplied_m3), 0);
+    const lost = withLoss.reduce((s, r) => s + num(r.unaccounted_m3), 0);
+    const avg = supplied > 0 ? (lost / supplied) * 100 : null;
     const over = withLoss.filter((r) => num(r.loss_pct) > limit).length;
     const unaccounted = data.reduce((s, r) => s + num(r.unaccounted_m3), 0);
     return { latest: data[0], avg, over, unaccounted };

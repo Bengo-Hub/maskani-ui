@@ -19,6 +19,41 @@ export function useCatalogue(kind: string) {
   });
 }
 
+/** Every entry of a list, switched-off ones included, for the settings editor. */
+export function useCatalogueAll(kind: string) {
+  const slug = useSlug();
+  const { can } = useAccess();
+  return useQuery({
+    queryKey: [...qk.catalogue(slug, kind), 'all'],
+    queryFn: () => settingsApi.catalogue(slug, kind).then((r) => r.data ?? []),
+    enabled: can('settings.view'),
+  });
+}
+
+/** The estate's general settings (billing days, water, channels). */
+export function useEstateSettings<T = Record<string, unknown>>() {
+  const slug = useSlug();
+  const { can } = useAccess();
+  return useQuery({
+    queryKey: qk.settings(slug),
+    queryFn: () => settingsApi.settings(slug) as Promise<T>,
+    enabled: can('settings.view'),
+  });
+}
+
+export function useUpdateEstateSettings() {
+  const slug = useSlug();
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (body: Record<string, unknown>) => settingsApi.updateSettings(slug, body),
+    onSuccess: () => {
+      toast.success('Settings saved');
+      void qc.invalidateQueries({ queryKey: qk.settings(slug) });
+      void useAuthStore.getState().refreshMe(slug);
+    },
+  });
+}
+
 export function useUpsertCatalogue(kind: string) {
   const slug = useSlug();
   const qc = useQueryClient();

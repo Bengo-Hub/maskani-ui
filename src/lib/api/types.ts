@@ -45,6 +45,8 @@ export interface MaskaniMe {
   modules: string[];
   user?: MaskaniUser;
   settings?: Record<string, unknown>;
+  /** Portal users: the terms version they accepted ("" when not yet), checked against the estate's. */
+  terms_accepted_version?: string;
 }
 
 // ---- register -------------------------------------------------------------

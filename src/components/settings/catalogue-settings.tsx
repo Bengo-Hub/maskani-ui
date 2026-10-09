@@ -1,19 +1,16 @@
 'use client';
 
 import { useMemo, useState } from 'react';
-import { useQuery } from '@tanstack/react-query';
 import { Check, ListTree, Pencil, Plus, Search, X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Switch } from '@/components/ui/switch';
 import { EmptyState } from '@/components/common/empty-state';
-import { useAccess, useSlug } from '@/hooks/use-access';
-import { useUpsertCatalogue } from '@/hooks/use-settings';
+import { useAccess } from '@/hooks/use-access';
+import { useCatalogueAll, useUpsertCatalogue } from '@/hooks/use-settings';
 import { useUrlParam } from '@/hooks/use-url-param';
-import { settingsApi } from '@/lib/api/operations';
 import { CATALOGUE_KINDS, type CatalogueKind } from '@/lib/catalogues';
-import { qk } from '@/lib/query-keys';
 import { cn } from '@/lib/utils';
 
 const KIND_VALUES = CATALOGUE_KINDS.map((k) => k.kind);
@@ -28,13 +25,12 @@ export function catalogueCode(name: string): string {
  * switch off or add its own entries (also from any creatable dropdown). The list is in the URL.
  */
 export function CatalogueSettings() {
-  const slug = useSlug();
   const { can } = useAccess();
   const manage = can('settings.manage');
   const [kind, setKind] = useUrlParam<CatalogueKind>('kind', 'unit_type', KIND_VALUES);
   const current = CATALOGUE_KINDS.find((k) => k.kind === kind)!;
   // All entries including inactive ones, so they can be switched back on.
-  const { data = [], isLoading } = useQuery({ queryKey: [...qk.catalogue(slug, kind), 'all'], queryFn: () => settingsApi.catalogue(slug, kind).then((r) => r.data ?? []) });
+  const { data = [], isLoading } = useCatalogueAll(kind);
   const upsert = useUpsertCatalogue(kind);
   const [q, setQ] = useState('');
   const [name, setName] = useState('');

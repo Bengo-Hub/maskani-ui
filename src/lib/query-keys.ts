@@ -82,7 +82,8 @@ export function keysForEvent(slug: string, type: string): readonly (readonly unk
     case 'billing_run.progress':
       return [qk.runs(slug)];
     case 'payment.applied':
-      return [qk.dashboard(slug), qk.accounts(slug), qk.units(slug), qk.suspense(slug), qk.contracts(slug), qk.portal(slug)];
+      return [qk.dashboard(slug), qk.accounts(slug), qk.units(slug), qk.suspense(slug), qk.contracts(slug), qk.portal(slug),
+        [slug, 'arrears'] as const];
     case 'work_order.updated':
       return [qk.workOrders(slug), qk.portalRequests(slug), qk.dashboard(slug)];
     case 'gate.event':

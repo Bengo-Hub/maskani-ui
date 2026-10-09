@@ -1,9 +1,7 @@
 'use client';
 
 import { useMemo, useState } from 'react';
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { Plus, Send } from 'lucide-react';
-import { toast } from 'sonner';
 import type { DataTableColumn } from '@bengo-hub/shared-ui-lib/data-table';
 import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
@@ -15,36 +13,23 @@ import { FormSheet } from '@/components/common/form-sheet';
 import { KeysetTable } from '@/components/common/keyset-table';
 import { PageHeader } from '@/components/common/page-header';
 import { StatusBadge, ToneBadge } from '@/components/common/status-badge';
-import { useSlug } from '@/hooks/use-access';
-import { useKeysetList } from '@/hooks/use-keyset-list';
+import { useNoticeDeliveries, useNoticeMutations, useNotices } from '@/hooks/use-notices';
 import { useProperty } from '@/hooks/use-register';
-import { noticesApi, type NoticeInput } from '@/lib/api/operations';
+import type { NoticeInput } from '@/lib/api/operations';
 import type { Notice } from '@/lib/api/types';
-import { qk } from '@/lib/query-keys';
 import { fmtDateTime } from '@/lib/utils';
 import { usePropertyOrSingle } from '@/components/common/property-required';
 
 export default function NoticesPage() {
-  const slug = useSlug();
-  const qc = useQueryClient();
   const propertyId = usePropertyOrSingle();
   const { data: property } = useProperty(propertyId);
-  const list = useKeysetList(qk.notices(slug), (cursor) => noticesApi.list(slug, { cursor, limit: 30 }));
+  const list = useNotices();
   const [open, setOpen] = useState(false);
   const [view, setView] = useState<Notice | null>(null);
   const [sending, setSending] = useState<Notice | null>(null);
   const [f, setF] = useState({ title: '', body: '', emergency: false, owners: true, occupants: true, whatsapp: true, email: true, blocks: [] as string[] });
-  const deliveries = useQuery({ queryKey: qk.deliveries(slug, view?.id ?? ''), queryFn: () => noticesApi.deliveries(slug, view!.id).then((r) => r.data ?? []), enabled: !!view });
-
-  const refresh = () => void qc.invalidateQueries({ queryKey: qk.notices(slug) });
-  const create = useMutation({
-    mutationFn: (body: NoticeInput) => noticesApi.create(slug, body),
-    onSuccess: (n) => { toast.success(n.status === 'draft' ? 'Draft saved' : 'Notice is going out'); setOpen(false); refresh(); },
-  });
-  const send = useMutation({
-    mutationFn: (id: string) => noticesApi.send(slug, id),
-    onSuccess: () => { toast.success('Notice is going out'); setSending(null); refresh(); },
-  });
+  const deliveries = useNoticeDeliveries(view?.id);
+  const { create, send } = useNoticeMutations(() => { setOpen(false); setSending(null); });
 
   const roles = [...(f.owners ? ['owner' as const] : []), ...(f.occupants ? ['occupant' as const] : [])];
   const channels = [...(f.whatsapp ? ['whatsapp'] : []), ...(f.email ? ['email'] : [])];

@@ -44,7 +44,7 @@ function Collections() {
   const [q, setQ] = useUrlParam('q', '');
   const [min, setMin] = useUrlParam('min', '');
   const suspense = useSuspense(Number(days));
-  const arrears = useArrears(propertyId);
+  const arrears = useArrears(propertyId, { q: tab === 'arrears' ? q : undefined, min });
   const { data: dash, isLoading: dashLoading } = useDashboard(propertyId, currentPeriod());
   const [assigning, setAssigning] = useState<SuspenseRow | null>(null);
 
@@ -55,11 +55,6 @@ function Collections() {
     const t = q.trim().toLowerCase();
     return open.filter((r) => !t || `${r.payer_name ?? ''} ${r.msisdn ?? ''} ${r.bill_ref_number} ${r.trans_id}`.toLowerCase().includes(t));
   }, [open, q]);
-  const shownArrears = useMemo(() => {
-    const t = q.trim().toLowerCase();
-    const floor = Number(min) || 0;
-    return arrears.rows.filter((r) => num(r.balance) >= floor && (!t || `${r.account_ref} ${r.customer_name ?? ''} ${r.customer_phone ?? ''}`.toLowerCase().includes(t)));
-  }, [arrears.rows, q, min]);
 
   const suspenseCols = useMemo<DataTableColumn<SuspenseRow>[]>(() => [
     { key: 'when', header: 'Received', accessor: (r) => r.trans_time, render: (r) => <span className="text-sm">{fmtDateTime(r.trans_time)}</span> },
@@ -127,7 +122,7 @@ function Collections() {
               </div>
             )}
             <div className="flex flex-col gap-2 sm:flex-row">
-              <SearchInput value={q} onSearch={(v) => setQ(v)} placeholder="Account, owner or phone" className="sm:max-w-sm" />
+              <SearchInput value={q} onSearch={(v) => setQ(v)} placeholder="Account or owner name" className="sm:max-w-sm" />
               <NativeSelect className="sm:w-52" value={min} onChange={(e) => setMin(e.target.value)} aria-label="Owing at least">
                 <option value="">Any amount owing</option>
                 <option value="1000">KES 1,000 or more</option>
@@ -138,7 +133,7 @@ function Collections() {
             </div>
             <KeysetTable
               columns={arrearsCols}
-              rows={shownArrears}
+              rows={arrears.rows}
               rowKey={(r) => r.account_id}
               loading={arrears.isLoading}
               error={arrears.isError}

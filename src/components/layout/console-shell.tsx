@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 import { Gauge, LayoutGrid, Plus, Wallet, Wrench, Lock } from 'lucide-react';
 import { MobileBottomNav, type MobileNavTab } from '@bengo-hub/shared-ui-lib/navigation';
+import { FeatureLock } from '@bengo-hub/shared-ui-lib/subscription';
 import { AppSplash } from './app-splash';
 import { Header } from './header';
 import { Sidebar } from './sidebar';
@@ -78,14 +79,20 @@ export function ConsoleShell({ children }: { children: ReactNode }) {
         {/* The shell owns page padding; pages add only a max-w wrapper. min-h-0 lets it scroll. */}
         <main className="min-h-0 flex-1 overflow-y-auto">
           <div className="px-4 py-5 pb-[calc(5rem+env(safe-area-inset-bottom))] sm:px-6 sm:py-6 lg:px-8 lg:pb-8">
-            {allowed ? children : (
-              <EmptyState
-                icon={Lock}
-                title="This area is not available"
-                description="The module is switched off for your estate, or your role does not include it. Ask an administrator."
-                action={<Link href={`${base}/dashboard`} className="text-sm font-medium text-primary hover:underline">Back to the dashboard</Link>}
-              />
-            )}
+            {allowed ? children : (() => {
+              const blocked = (
+                <EmptyState
+                  icon={Lock}
+                  title="This area is not available"
+                  description="The module is switched off for your estate, or your role does not include it. Ask an administrator."
+                  action={<Link href={`${base}/dashboard`} className="text-sm font-medium text-primary hover:underline">Back to the dashboard</Link>}
+                />
+              );
+              // When the plan is the reason, the shared FeatureLock shows the upgrade path; otherwise
+              // (module switched off, role without it) its children, the plain message, show.
+              const module = item?.modules?.[0];
+              return module ? <FeatureLock feature={`maskani_${module}`} mode="block">{blocked}</FeatureLock> : blocked;
+            })()}
           </div>
         </main>
       </div>

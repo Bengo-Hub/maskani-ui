@@ -89,6 +89,7 @@ export const billingApi = {
   suspense: (slug: string, days = 60) => apiClient.get<{ data: SuspenseRow[] }>(`${t(slug)}/collections/suspense`, { days }),
   assignSuspense: (slug: string, transId: string, unitAccountId: string) =>
     apiClient.post(`${t(slug)}/collections/suspense/${encodeURIComponent(transId)}/assign`, { unit_account_id: unitAccountId }),
-  arrears: (slug: string, params: { property_id?: string; cursor?: string; limit?: number }) =>
+  /** q matches the account reference prefix or the owner's name; min is the smallest balance kept. */
+  arrears: (slug: string, params: { property_id?: string; q?: string; min?: string; cursor?: string; limit?: number }) =>
     apiClient.get<Page<ArrearsRow>>(`${t(slug)}/reports/arrears`, params),
 };

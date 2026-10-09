@@ -14,6 +14,16 @@ function usePortalReady() {
   return !!me?.is_portal_user;
 }
 
+/** Records the terms version the resident accepted, then reloads /auth/me so the gate closes. */
+export function useAcceptTerms() {
+  const slug = useSlug();
+  const refreshMe = useAuthStore((s) => s.refreshMe);
+  return useMutation({
+    mutationFn: (version: string) => portalApi.acceptTerms(slug, version),
+    onSuccess: () => refreshMe(slug),
+  });
+}
+
 export function usePortalUnits() {
   const slug = useSlug();
   const ready = usePortalReady();

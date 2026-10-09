@@ -152,12 +152,16 @@ export function useAssignSuspense() {
   });
 }
 
-export function useArrears(propertyId: string) {
+/** Owing accounts, largest first. Search and the minimum balance run on the server, so they reach
+ *  accounts beyond the loaded page. */
+export function useArrears(propertyId: string, filter: { q?: string; min?: string } = {}) {
   const slug = useSlug();
   const { canAll } = useAccess();
+  const q = filter.q?.trim() || undefined;
+  const min = filter.min || undefined;
   return useKeysetList(
-    qk.arrears(slug, propertyId || undefined),
-    (cursor) => billingApi.arrears(slug, { property_id: propertyId || undefined, cursor, limit: 50 }),
+    [...qk.arrears(slug, propertyId || undefined), q ?? '', min ?? ''],
+    (cursor) => billingApi.arrears(slug, { property_id: propertyId || undefined, q, min, cursor, limit: 50 }),
     { enabled: canAll('billing', 'reports.view') },
   );
 }
