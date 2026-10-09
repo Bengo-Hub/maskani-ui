@@ -7,6 +7,7 @@ import { PageHeader } from '@/components/common/page-header';
 import { PayAccount } from '@/components/billing/pay-account';
 import { ExportButtons } from '@/components/common/export-buttons';
 import { StatementView } from '@/components/billing/statement-view';
+import { DocumentsPanel } from '@/components/documents/documents-panel';
 import { useAccess, useSlug } from '@/hooks/use-access';
 import { useStatement } from '@/hooks/use-billing';
 import { billingApi } from '@/lib/api/billing';
@@ -44,6 +45,7 @@ export default function AccountStatementPage({ params }: { params: Promise<{ id:
         actions={<ExportButtons name={`statement-${a.account_ref}`} title={`Statement for ${a.account_ref}`} pdfLabel="Statement PDF"
           fetchFile={(format) => billingApi.statementFile(slug, a.id, format)} />}
       />
+      <div className="mt-5"><DocumentsPanel entityType="unit_account" entityId={a.id} title="Letters and certificates" /></div>
     </div>
   );
 }

@@ -14,6 +14,7 @@ import { PageHeader } from '@/components/common/page-header';
 import { StatusBadge, ToneBadge } from '@/components/common/status-badge';
 import { LinkPartySheet, partyName } from '@/components/register/link-party-sheet';
 import { UnitForm } from '@/components/register/unit-form';
+import { DocumentsPanel } from '@/components/documents/documents-panel';
 import { useAccess, useSlug } from '@/hooks/use-access';
 import { useEndLink, useInviteParty, useUnit } from '@/hooks/use-register';
 import type { UnitAccount, UnitParty } from '@/lib/api/types';
@@ -136,6 +137,7 @@ export default function UnitDetailPage({ params }: { params: Promise<{ id: strin
           </Card>
         )}
       </div>
+      <div className="mt-5"><DocumentsPanel unitId={u.id} title="Documents about this unit" /></div>
 
       <UnitForm open={edit} onOpenChange={setEdit} unit={u} />
       <LinkPartySheet open={linking} onOpenChange={setLinking} unitId={u.id} unitCode={u.code} />

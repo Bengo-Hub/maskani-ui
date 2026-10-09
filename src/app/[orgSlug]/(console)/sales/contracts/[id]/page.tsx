@@ -13,6 +13,7 @@ import { FormSheet } from '@/components/common/form-sheet';
 import { PageHeader } from '@/components/common/page-header';
 import { StatusBadge } from '@/components/common/status-badge';
 import { InstalmentSchedule } from '@/components/sales/instalment-schedule';
+import { DocumentsPanel } from '@/components/documents/documents-panel';
 import { useAccess, useSlug } from '@/hooks/use-access';
 import { useActivateContract, useContract } from '@/hooks/use-sales';
 import { apiDate, fmtDate, kes, num, titleCase, todayInput } from '@/lib/utils';
@@ -62,6 +63,7 @@ export default function ContractPage({ params }: { params: Promise<{ id: string 
           </CardContent>
         </Card>
       </div>
+      <div className="mt-5"><DocumentsPanel entityType="sale_contract" entityId={c.id} title="Letters" /></div>
       <FormSheet
         open={signing}
         onOpenChange={setSigning}

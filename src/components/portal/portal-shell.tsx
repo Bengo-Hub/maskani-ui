@@ -3,7 +3,7 @@
 import { useEffect, type ReactNode } from 'react';
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
-import { Bell, Home, ShieldCheck, Wrench } from 'lucide-react';
+import { Bell, FileText, Home, ShieldCheck, Wrench } from 'lucide-react';
 import { MobileBottomNav, type MobileNavTab } from '@bengo-hub/shared-ui-lib/navigation';
 import { useTenantBranding } from '@bengo-hub/shared-ui-lib/tenant';
 import { AppSplash } from '@/components/layout/app-splash';
@@ -53,6 +53,7 @@ export function PortalShell({ children }: { children: ReactNode }) {
       active: pathname.startsWith(`${base}/visitors`) || pathname.startsWith(`${base}/walk-ins`) },
     { key: 'requests', label: 'Requests', hint: 'Repairs and problems', href: `${base}/requests`, icon: Wrench, active: pathname.startsWith(`${base}/requests`) },
     { key: 'notices', label: 'Notices', hint: 'News from the estate', href: `${base}/notices`, icon: Bell, active: pathname.startsWith(`${base}/notices`) },
+    { key: 'documents', label: 'Documents', hint: 'Letters and certificates', href: `${base}/documents`, icon: FileText, active: pathname.startsWith(`${base}/documents`) },
   ];
   const mobileTabs: MobileNavTab[] = tabs.map(({ key, label, href, icon, active }) => ({ key, label, href, icon, active }));
   const person = { name: me.user?.name, contact: me.email || me.user?.email || me.user?.phone };

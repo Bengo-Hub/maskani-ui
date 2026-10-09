@@ -11,3 +11,4 @@ export * from './notices';
 export * from './reports';
 export * from './settings';
 export * from './portal';
+export * from './documents';
