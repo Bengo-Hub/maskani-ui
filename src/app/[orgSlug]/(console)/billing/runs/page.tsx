@@ -9,6 +9,7 @@ import { KeysetTable } from '@/components/common/keyset-table';
 import { PageHeader } from '@/components/common/page-header';
 import { StatusBadge } from '@/components/common/status-badge';
 import { RunWizard } from '@/components/billing/run-wizard';
+import { SchedulePanel } from '@/components/billing/schedule-panel';
 import { useAccess, useSlug } from '@/hooks/use-access';
 import { useBillingRuns, useFunds } from '@/hooks/use-billing';
 import { useProperties } from '@/hooks/use-register';
@@ -51,6 +52,8 @@ export default function BillingRunsPage() {
         subtitle="Monthly bills per property and fund. One run per month and fund; repeating it opens the same run."
         actions={can('billing.run') ? <Button onClick={() => setOpen(true)}><Plus /> New billing run</Button> : undefined}
       />
+      {/* Automatic billing is set per property; with "all properties" there is nothing to show. */}
+      {propertyId && <SchedulePanel propertyId={propertyId} />}
       <KeysetTable
         columns={columns}
         rows={runs.rows}

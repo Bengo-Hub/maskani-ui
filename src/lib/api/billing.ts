@@ -1,7 +1,7 @@
 import { apiClient } from './client';
 import { tenantBase as t } from '@/lib/config';
 import type {
-  ArrearsRow, BillingPreview, BillingRun, BillingRunLine, ChargeRate, ChargeType, ExportFormat, Fund, Page, PayIntent,
+  ArrearsRow, BillingPreview, BillingRun, BillingRunLine, BillingSchedule, BillingScheduleInput, ChargeRate, ChargeType, ExportFormat, Fund, Page, PayIntent,
   PayRequest, Statement, SuspenseRow, UnitAccount,
 } from './types';
 
@@ -79,6 +79,10 @@ export const billingApi = {
   runs: (slug: string, params: { property_id?: string; cursor?: string; limit?: number }) =>
     apiClient.get<Page<BillingRun>>(`${t(slug)}/billing-runs`, params),
   run: (slug: string, id: string) => apiClient.get<BillingRun>(`${t(slug)}/billing-runs/${id}`),
+  schedule: (slug: string, propertyId: string) => apiClient.get<BillingSchedule>(`${t(slug)}/billing-schedule`, { property_id: propertyId }),
+  saveSchedule: (slug: string, body: BillingScheduleInput) => apiClient.put<BillingSchedule>(`${t(slug)}/billing-schedule`, body),
+  /** Run the period now without the readings still missing. */
+  approveSchedule: (slug: string, body: { property_id: string; period: string }) => apiClient.post<BillingRun>(`${t(slug)}/billing-schedule/approve`, body),
   runLines: (slug: string, id: string, params: { status?: string; cursor?: string; limit?: number }) =>
     apiClient.get<Page<BillingRunLine>>(`${t(slug)}/billing-runs/${id}/lines`, params, { suppressErrorToast: true }),
 

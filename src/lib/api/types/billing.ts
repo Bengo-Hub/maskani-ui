@@ -217,3 +217,45 @@ export interface PayIntent {
   authorization_url?: string;
   instructions?: string;
 }
+
+/** A property's billing schedule and where its next scheduled run stands (GET /billing-schedule). */
+export type ScheduleStage = 'off' | 'scheduled' | 'collecting_readings' | 'waiting_for_readings' | 'ready_to_run' | 'due' | 'issued';
+
+export interface MissingReading {
+  meter_id: string;
+  serial: string;
+  unit_id?: string;
+  unit_code?: string;
+}
+
+export interface BillingSchedule {
+  enabled: boolean;
+  fund: string;
+  /** auto: the run starts on the billing day; remind: finance is told it is ready. */
+  mode: 'auto' | 'remind';
+  /** wait: hold the run for missing readings; skip: run without them. */
+  missing_readings: 'wait' | 'skip';
+  remind_days_before: number;
+  approved?: Record<string, string>;
+  sent?: Record<string, string>;
+  billing_day: number;
+  /** The month the next scheduled run bills (YYYY-MM). */
+  period: string;
+  billing_date: string;
+  stage: ScheduleStage;
+  metered: boolean;
+  missing_count: number;
+  missing: MissingReading[];
+  run_id?: string;
+  run_status?: string;
+  approved_by?: string;
+}
+
+export interface BillingScheduleInput {
+  property_id: string;
+  enabled?: boolean;
+  fund?: string;
+  mode?: 'auto' | 'remind';
+  missing_readings?: 'wait' | 'skip';
+  remind_days_before?: number;
+}

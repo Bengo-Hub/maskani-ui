@@ -3,7 +3,7 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { toast } from 'sonner';
 import { billingApi, type ChargeTypeInput, type FundInput, type RateInput, type RunInput } from '@/lib/api/billing';
-import type { PayRequest } from '@/lib/api/types';
+import type { BillingScheduleInput, PayRequest } from '@/lib/api/types';
 import { qk } from '@/lib/query-keys';
 import { useAccess, useSlug } from './use-access';
 import { useKeysetList } from './use-keyset-list';
@@ -63,6 +63,39 @@ export function useBillingRuns(propertyId: string) {
     (cursor) => billingApi.runs(slug, { property_id: propertyId || undefined, cursor, limit: 24 }),
     { enabled: canAll('billing', 'billing.view') },
   );
+}
+
+/** A property's billing schedule and the stage of its next run. */
+export function useBillingSchedule(propertyId: string) {
+  const slug = useSlug();
+  const { canAll } = useAccess();
+  return useQuery({
+    queryKey: qk.billingSchedule(slug, propertyId),
+    queryFn: () => billingApi.schedule(slug, propertyId),
+    enabled: !!propertyId && canAll('billing', 'billing.view'),
+  });
+}
+
+export function useBillingScheduleMutations(propertyId: string) {
+  const slug = useSlug();
+  const qc = useQueryClient();
+  return {
+    save: useMutation({
+      mutationFn: (body: Omit<BillingScheduleInput, 'property_id'>) => billingApi.saveSchedule(slug, { property_id: propertyId, ...body }),
+      onSuccess: (v) => {
+        qc.setQueryData(qk.billingSchedule(slug, propertyId), v);
+        toast.success('Billing schedule saved');
+      },
+    }),
+    approve: useMutation({
+      mutationFn: (period: string) => billingApi.approveSchedule(slug, { property_id: propertyId, period }),
+      onSuccess: () => {
+        toast.success('Billing run started without the missing readings');
+        void qc.invalidateQueries({ queryKey: qk.billingSchedule(slug, propertyId) });
+        void qc.invalidateQueries({ queryKey: qk.runs(slug) });
+      },
+    }),
+  };
 }
 
 /** A run being issued refreshes on the realtime event and, as a fallback, every 5 s while issuing. */

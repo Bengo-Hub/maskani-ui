@@ -20,6 +20,7 @@ export const qk = {
   funds: (slug: string) => [slug, 'funds'] as const,
   charges: (slug: string) => [slug, 'charges'] as const,
   runs: (slug: string) => [slug, 'billing-runs'] as const,
+  billingSchedule: (slug: string, propertyId: string) => [slug, 'billing-schedule', propertyId] as const,
   runList: (slug: string, propertyId?: string) => [slug, 'billing-runs', 'list', propertyId ?? 'all'] as const,
   run: (slug: string, id: string) => [slug, 'billing-runs', id] as const,
   runLines: (slug: string, id: string) => [slug, 'billing-runs', id, 'lines'] as const,
