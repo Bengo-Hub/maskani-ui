@@ -105,7 +105,7 @@ export const NAV: NavGroup[] = [
   },
   {
     label: 'Communication',
-    items: [{ label: 'Notices', path: '/notices', icon: Megaphone, modules: ['communication'], perms: ['notices.manage'] }],
+    items: [{ label: 'Notices', path: '/notices', icon: Megaphone, modules: ['communication'], perms: ['notices.view', 'notices.manage'] }],
   },
   {
     label: 'Admin',
@@ -132,22 +132,22 @@ export const NAV: NavGroup[] = [
   },
 ];
 
-export function navAllowed(me: MaskaniMe | null, item: Pick<NavItem, 'modules' | 'perms'>): boolean {
+export function navAllowed(me: MaskaniMe | null, item: Pick<NavItem, 'modules' | 'perms'>, propertyId = ''): boolean {
   if (!me) return false;
-  if (item.modules?.length && !item.modules.some((m) => hasModule(me, m)) && !me.bypass) return false;
+  if (item.modules?.length && !item.modules.some((m) => hasModule(me, m, propertyId)) && !me.bypass) return false;
   if (item.perms?.length && !item.perms.some((p) => hasPermission(me, p))) return false;
   return true;
 }
 
-function filterItems(me: MaskaniMe | null, items: NavItem[]): NavItem[] {
+function filterItems(me: MaskaniMe | null, items: NavItem[], propertyId: string): NavItem[] {
   return items
-    .filter((i) => navAllowed(me, i))
-    .map((i) => (i.children ? { ...i, children: filterItems(me, i.children) } : i));
+    .filter((i) => navAllowed(me, i, propertyId))
+    .map((i) => (i.children ? { ...i, children: filterItems(me, i.children, propertyId) } : i));
 }
 
-/** The groups and items this user may see, children filtered the same way. */
-export function visibleNav(me: MaskaniMe | null): NavGroup[] {
-  return NAV.map((g) => ({ ...g, items: filterItems(me, g.items) })).filter((g) => g.items.length > 0);
+/** The groups and items this user may see at the selected property (or all), children filtered the same way. */
+export function visibleNav(me: MaskaniMe | null, propertyId = ''): NavGroup[] {
+  return NAV.map((g) => ({ ...g, items: filterItems(me, g.items, propertyId) })).filter((g) => g.items.length > 0);
 }
 
 /** Splits a nav path into its pathname and query. */

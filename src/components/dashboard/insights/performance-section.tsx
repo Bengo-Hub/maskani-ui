@@ -31,7 +31,7 @@ export function PerformanceSection({ propertyId, period, base }: { propertyId: s
           <h2 id="performance-heading" className="text-lg font-semibold">Performance and outlook</h2>
           <p className="text-sm text-muted-foreground">{month} against last month and the same month last year, and what is coming in.</p>
         </div>
-        <ExportButtons name={`performance-${period}`} title={`Performance, ${month}`} pdfLabel="Report PDF"
+        <ExportButtons name={`performance-${period}`} title={`Performance, ${month}`} pdfLabel="Report PDF" perm="reports.export"
           fetchFile={(format) => insightsApi.file(slug, { property_id: propertyId || undefined, period }, format)} />
       </div>
 

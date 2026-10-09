@@ -12,7 +12,7 @@ export function useNotices() {
   const slug = useSlug();
   const { canAll } = useAccess();
   return useKeysetList(qk.notices(slug), (cursor) => noticesApi.list(slug, { cursor, limit: 30 }),
-    { enabled: canAll('communication', 'notices.manage') });
+    { enabled: canAll('communication', 'notices.view') || canAll('communication', 'notices.manage') });
 }
 
 /** Per-person delivery records of one notice (opened from the list). */
@@ -22,7 +22,7 @@ export function useNoticeDeliveries(noticeId: string | undefined) {
   return useQuery({
     queryKey: qk.deliveries(slug, noticeId ?? ''),
     queryFn: () => noticesApi.deliveries(slug, noticeId!).then((r) => r.data ?? []),
-    enabled: !!noticeId && canAll('communication', 'notices.manage'),
+    enabled: !!noticeId && (canAll('communication', 'notices.view') || canAll('communication', 'notices.manage')),
   });
 }
 

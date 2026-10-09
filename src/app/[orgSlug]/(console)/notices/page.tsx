@@ -14,6 +14,7 @@ import { KeysetTable } from '@/components/common/keyset-table';
 import { PageHeader } from '@/components/common/page-header';
 import { StatusBadge, ToneBadge } from '@/components/common/status-badge';
 import { useNoticeDeliveries, useNoticeMutations, useNotices } from '@/hooks/use-notices';
+import { useAccess } from '@/hooks/use-access';
 import { useProperty } from '@/hooks/use-register';
 import type { NoticeInput } from '@/lib/api/operations';
 import type { Notice, NoticeDelivery } from '@/lib/api/types';
@@ -37,6 +38,8 @@ export default function NoticesPage() {
   const [f, setF] = useState({ title: '', body: '', emergency: false, owners: true, occupants: true, whatsapp: true, email: true, blocks: [] as string[] });
   const deliveries = useNoticeDeliveries(view?.id);
   const { create, send } = useNoticeMutations(() => { setOpen(false); setSending(null); });
+  // notices.view reads the list and deliveries; writing and sending need notices.manage.
+  const manage = useAccess().can('notices.manage');
 
   const roles = [...(f.owners ? ['owner' as const] : []), ...(f.occupants ? ['occupant' as const] : [])];
   const channels = [...(f.whatsapp ? ['whatsapp'] : []), ...(f.email ? ['email'] : [])];
@@ -59,7 +62,7 @@ export default function NoticesPage() {
       <PageHeader
         title="Notices"
         subtitle="Sent by WhatsApp and email. Routine notices wait out quiet hours (21:00 to 07:00); emergencies go at once."
-        actions={<Button onClick={() => { setF({ title: '', body: '', emergency: false, owners: true, occupants: true, whatsapp: true, email: true, blocks: [] }); setOpen(true); }}><Plus /> New notice</Button>}
+        actions={manage && <Button onClick={() => { setF({ title: '', body: '', emergency: false, owners: true, occupants: true, whatsapp: true, email: true, blocks: [] }); setOpen(true); }}><Plus /> New notice</Button>}
       />
       <KeysetTable
         columns={columns}
@@ -72,7 +75,7 @@ export default function NoticesPage() {
         loadMore={() => void list.loadMore()}
         loadingMore={list.loadingMore}
         emptyText="No notices yet."
-        onRowClick={(n) => (n.status === 'draft' ? setSending(n) : setView(n))}
+        onRowClick={(n) => (n.status === 'draft' && manage ? setSending(n) : setView(n))}
       />
 
       <FormSheet

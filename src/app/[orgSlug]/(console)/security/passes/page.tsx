@@ -34,7 +34,8 @@ const unitText = (p: VisitorPass) => [p.unit_code, p.block].filter(Boolean).join
 export default function PassesPage() {
   const propertyId = usePropertyOrSingle();
   const { can } = useAccess();
-  const manage = can('gate.manage');
+  // Issuing and cancelling passes: gate.passes, or the wider gate.manage.
+  const manage = can('gate.passes') || can('gate.manage');
   const { tenant } = useTenantBranding();
   const [active, setActive] = useState(true);
   const list = usePasses(propertyId, active);

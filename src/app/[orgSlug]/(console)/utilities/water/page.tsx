@@ -66,7 +66,7 @@ export default function WaterBalancePage() {
         title="Water balance"
         subtitle={<>Water supplied against water billed, month by month. Losses above {limit}% are flagged (<Link href={`/${slug}/settings?tab=general`} className="text-primary underline">change</Link>).</>}
         actions={data.length > 0 ? (
-          <ExportButtons name="water-balance" title="Water balance"
+          <ExportButtons name="water-balance" title="Water balance" perm="reports.export"
             fetchFile={(format) => utilitiesApi.waterBalanceFile(slug, propertyId, undefined, format)} />
         ) : undefined}
       />

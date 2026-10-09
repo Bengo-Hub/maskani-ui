@@ -134,7 +134,7 @@ function Collections() {
               </NativeSelect>
               {/* The download follows the same search, amount and property as the list. */}
               <div className="sm:ml-auto">
-                <ExportButtons name="arrears" title="Arrears"
+                <ExportButtons name="arrears" title="Arrears" perm="reports.export"
                   fetchFile={(format) => billingApi.arrearsFile(slug, { property_id: propertyId || undefined, q: q || undefined, min: min || undefined }, format)} />
               </div>
             </div>
