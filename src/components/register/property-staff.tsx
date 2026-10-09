@@ -5,6 +5,7 @@ import { Trash2, UserPlus, Users } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { ConfirmDialog } from '@/components/common/confirm-dialog';
 import { EmptyState } from '@/components/common/empty-state';
+import { IconButton } from '@/components/common/icon-button';
 import { Field, NativeSelect } from '@/components/common/field';
 import { FormSheet } from '@/components/common/form-sheet';
 import { useAccess } from '@/hooks/use-access';
@@ -48,7 +49,7 @@ export function PropertyStaff({ propertyId }: { propertyId: string }) {
                   <p className="text-xs text-muted-foreground">{titleCase(s.property_role)}{u?.phone ? ` · ${u.phone}` : ''}</p>
                 </div>
                 {manage && (
-                  <Button variant="ghost" size="icon" onClick={() => setRemoving(s)} aria-label="Remove assignment"><Trash2 /></Button>
+                  <IconButton label="Remove assignment" onClick={() => setRemoving(s)}><Trash2 /></IconButton>
                 )}
               </li>
             );
@@ -63,7 +64,7 @@ export function PropertyStaff({ propertyId }: { propertyId: string }) {
         description="Staff must already belong to your organisation in Codevertex accounts."
         footer={<>
           <Button variant="outline" onClick={() => setOpen(false)}>Cancel</Button>
-          <Button onClick={submit}disabled={!form.user || assign.isPending}>{assign.isPending ? 'Saving...' : 'Assign'}</Button>
+          <Button onClick={submit} disabled={!form.user || assign.isPending}>{assign.isPending ? 'Saving...' : 'Assign'}</Button>
         </>}
       >
         <div className="space-y-4">

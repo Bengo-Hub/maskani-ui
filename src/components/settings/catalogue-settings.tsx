@@ -7,6 +7,7 @@ import { Input } from '@/components/ui/input';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Switch } from '@/components/ui/switch';
 import { EmptyState } from '@/components/common/empty-state';
+import { IconButton } from '@/components/common/icon-button';
 import { useAccess } from '@/hooks/use-access';
 import { useCatalogueAll, useUpsertCatalogue } from '@/hooks/use-settings';
 import { useUrlParam } from '@/hooks/use-url-param';
@@ -99,8 +100,8 @@ export function CatalogueSettings() {
                         }}
                       >
                         <Input autoFocus value={editing.name} onChange={(ev) => setEditing({ code: e.code, name: ev.target.value })} aria-label="Name" className="h-9" />
-                        <Button type="submit" size="icon" variant="ghost" aria-label="Save name" disabled={upsert.isPending}><Check /></Button>
-                        <Button type="button" size="icon" variant="ghost" aria-label="Cancel" onClick={() => setEditing(null)}><X /></Button>
+                        <IconButton type="submit" label="Save name" disabled={upsert.isPending}><Check /></IconButton>
+                        <IconButton type="button" label="Cancel renaming" onClick={() => setEditing(null)}><X /></IconButton>
                       </form>
                     ) : (
                       <>
@@ -110,7 +111,7 @@ export function CatalogueSettings() {
                     )}
                   </div>
                   {manage && !isEditing && (
-                    <Button size="icon" variant="ghost" aria-label={`Rename ${e.name}`} onClick={() => setEditing({ code: e.code, name: e.name })}><Pencil /></Button>
+                    <IconButton label={`Rename ${e.name}`} onClick={() => setEditing({ code: e.code, name: e.name })}><Pencil /></IconButton>
                   )}
                   <Switch
                     checked={e.active !== false}

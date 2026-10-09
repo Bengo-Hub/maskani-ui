@@ -13,6 +13,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { ConfirmDialog } from '@/components/common/confirm-dialog';
 import { Field, NativeSelect } from '@/components/common/field';
 import { FormSheet } from '@/components/common/form-sheet';
+import { IconButton } from '@/components/common/icon-button';
 import { PageHeader } from '@/components/common/page-header';
 import { SearchInput } from '@/components/common/search-input';
 import { StatTile } from '@/components/common/stat-tile';
@@ -71,8 +72,8 @@ function Users() {
         <div className="flex justify-end gap-1.5">
           <Button size="sm" variant="outline" onClick={() => setEditing(u)}><UserCog /> Roles</Button>
           {(u.status || 'active') === 'active'
-            ? <Button size="sm" variant="ghost" aria-label="Suspend access" onClick={() => setSuspending(u)}><ShieldOff /></Button>
-            : <Button size="sm" variant="ghost" aria-label="Restore access" onClick={() => setStatus.mutate({ id: u.id, status: 'active' })}><ShieldCheck /></Button>}
+            ? <IconButton label="Suspend access" onClick={() => setSuspending(u)}><ShieldOff /></IconButton>
+            : <IconButton label="Restore access" onClick={() => setStatus.mutate({ id: u.id, status: 'active' })}><ShieldCheck /></IconButton>}
         </div>
       ),
     }] : []),
@@ -216,7 +217,7 @@ function InviteSheet({ open, onOpenChange, roles }: { open: boolean; onOpenChang
               <p className="text-sm font-medium">A new account was created. Its temporary password is shown only now:</p>
               <div className="flex gap-2">
                 <Input readOnly value={result.temp} className="font-mono" aria-label="Temporary password" />
-                <Button variant="outline" size="icon" aria-label="Copy" onClick={() => void navigator.clipboard?.writeText(result.temp!).then(() => toast.success('Copied'))}><Copy /></Button>
+                <IconButton variant="outline" label="Copy password" onClick={() => void navigator.clipboard?.writeText(result.temp!).then(() => toast.success('Copied'))}><Copy /></IconButton>
               </div>
               <p className="text-xs text-muted-foreground">They also get an email with the sign-in link, and must choose a new password the first time.</p>
             </div>

@@ -6,7 +6,7 @@ import { useTheme } from 'next-themes';
 import { AppSwitcherTrigger, useVisibleServices } from '@bengo-hub/shared-ui-lib/app-switcher';
 import { AccountPanel } from '@bengo-hub/shared-ui-lib/account-panel';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
-import { Button } from '@/components/ui/button';
+import { IconButton, WithTooltip } from '@/components/common/icon-button';
 import { useSlug } from '@/hooks/use-access';
 import { useSubscription } from '@/providers/subscription-provider';
 import { AUTH_UI_URL, TREASURY_UI_URL } from '@/lib/config';
@@ -41,30 +41,32 @@ export function Header({ title, onMenu }: { title?: string; onMenu: () => void }
 
   return (
     <header className="sticky top-0 z-30 flex h-14 shrink-0 items-center gap-2 border-b bg-card px-3 pt-safe sm:h-16 sm:px-5">
-      <Button variant="ghost" size="icon-lg" className="lg:hidden" onClick={onMenu} aria-label="Open menu">
+      <IconButton label="Open menu" side="bottom" size="icon-lg" className="lg:hidden" onClick={onMenu}>
         <Menu />
-      </Button>
+      </IconButton>
       <div className="flex min-w-0 flex-1 items-center gap-3">
         {title && <span className="truncate font-display text-base font-semibold lg:hidden">{title}</span>}
         <div className="hidden min-w-0 lg:block"><PropertySwitcher /></div>
       </div>
       <div className="flex shrink-0 items-center gap-1">
         <div className="lg:hidden"><PropertySwitcher /></div>
-        <Button
-          variant="ghost"
+        <IconButton
+          label={resolvedTheme === 'dark' ? 'Switch to light theme' : 'Switch to dark theme'}
+          side="bottom"
           size="icon-lg"
           onClick={() => setTheme(resolvedTheme === 'dark' ? 'light' : 'dark')}
-          aria-label="Switch theme"
           className="hidden sm:inline-flex"
         >
           {resolvedTheme === 'dark' ? <Sun /> : <Moon />}
-        </Button>
+        </IconButton>
         <AppSwitcherTrigger services={services} />
-        <button type="button" onClick={() => setAccountOpen(true)} className="ml-1 rounded-full" aria-label="Account">
-          <Avatar className="h-9 w-9">
-            <AvatarFallback className="bg-primary text-xs font-semibold text-primary-foreground">{initials(name)}</AvatarFallback>
-          </Avatar>
-        </button>
+        <WithTooltip label="Account" side="bottom">
+          <button type="button" onClick={() => setAccountOpen(true)} className="ml-1 rounded-full" aria-label="Account">
+            <Avatar className="h-9 w-9">
+              <AvatarFallback className="bg-primary text-xs font-semibold text-primary-foreground">{initials(name)}</AvatarFallback>
+            </Avatar>
+          </button>
+        </WithTooltip>
       </div>
       <AccountPanel
         open={accountOpen}

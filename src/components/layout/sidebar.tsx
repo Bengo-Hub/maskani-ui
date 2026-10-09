@@ -8,6 +8,7 @@ import { ChevronDown, PanelLeftClose, PanelLeftOpen } from 'lucide-react';
 import { useTenantBranding } from '@bengo-hub/shared-ui-lib/tenant';
 import { Sheet, SheetContent, SheetTitle } from '@/components/ui/sheet';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
+import { WithTooltip } from '@/components/common/icon-button';
 import { useSlug } from '@/hooks/use-access';
 import { navPathActive, visibleNav, type NavGroup, type NavItem } from '@/lib/nav';
 import { cn, estateName } from '@/lib/utils';
@@ -65,18 +66,20 @@ function ItemRow({ item, depth, loc, onNavigate }: { item: NavItem; depth: numbe
           <span className="truncate">{item.label}</span>
         </Link>
         {hasChildren && (
-          <button
-            type="button"
-            onClick={() => setOpen((v) => !v)}
-            aria-expanded={open}
-            aria-label={`${open ? 'Hide' : 'Show'} ${item.label} pages`}
-            className={cn(
-              'absolute right-1 grid h-7 w-7 place-items-center rounded-lg transition-colors',
-              active ? 'text-primary-foreground/80 hover:bg-primary-foreground/15' : 'text-sidebar-muted hover:bg-sidebar-accent hover:text-sidebar-foreground',
-            )}
-          >
-            <ChevronDown className={cn('h-4 w-4 transition-transform duration-200', open && 'rotate-180')} />
-          </button>
+          <WithTooltip label={`${open ? 'Hide' : 'Show'} ${item.label} pages`} side="right">
+            <button
+              type="button"
+              onClick={() => setOpen((v) => !v)}
+              aria-expanded={open}
+              aria-label={`${open ? 'Hide' : 'Show'} ${item.label} pages`}
+              className={cn(
+                'absolute right-1 grid h-7 w-7 place-items-center rounded-lg transition-colors',
+                active ? 'text-primary-foreground/80 hover:bg-primary-foreground/15' : 'text-sidebar-muted hover:bg-sidebar-accent hover:text-sidebar-foreground',
+              )}
+            >
+              <ChevronDown className={cn('h-4 w-4 transition-transform duration-200', open && 'rotate-180')} />
+            </button>
+          </WithTooltip>
         )}
       </div>
       {hasChildren && open && (
@@ -225,14 +228,28 @@ export function Sidebar({ collapsed, onToggle, mobileOpen, onMobileOpenChange }:
         <Suspense fallback={<div className="flex-1" />}>
           <NavTree groups={groups} collapsed={collapsed} />
         </Suspense>
-        <button
-          type="button"
-          onClick={onToggle}
-          className="flex h-11 items-center justify-center gap-2 border-t border-sidebar-border text-xs text-sidebar-muted hover:text-sidebar-foreground"
-          aria-label={collapsed ? 'Expand sidebar' : 'Collapse sidebar'}
-        >
-          {collapsed ? <PanelLeftOpen className="h-4 w-4" /> : <><PanelLeftClose className="h-4 w-4" /> Collapse</>}
-        </button>
+        {/* Collapsed, the toggle is icon only, so it gets a tooltip; expanded it reads "Collapse". */}
+        {collapsed ? (
+          <WithTooltip label="Expand sidebar" side="right">
+            <button
+              type="button"
+              onClick={onToggle}
+              className="flex h-11 items-center justify-center gap-2 border-t border-sidebar-border text-xs text-sidebar-muted hover:text-sidebar-foreground"
+              aria-label="Expand sidebar"
+            >
+              <PanelLeftOpen className="h-4 w-4" />
+            </button>
+          </WithTooltip>
+        ) : (
+          <button
+            type="button"
+            onClick={onToggle}
+            className="flex h-11 items-center justify-center gap-2 border-t border-sidebar-border text-xs text-sidebar-muted hover:text-sidebar-foreground"
+            aria-label="Collapse sidebar"
+          >
+            <PanelLeftClose className="h-4 w-4" /> Collapse
+          </button>
+        )}
       </aside>
 
       <Sheet open={mobileOpen} onOpenChange={onMobileOpenChange}>

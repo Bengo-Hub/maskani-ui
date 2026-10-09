@@ -8,6 +8,7 @@ import { Progress } from '@/components/ui/progress';
 import { Skeleton } from '@/components/ui/skeleton';
 import { EmptyState } from '@/components/common/empty-state';
 import { NativeSelect } from '@/components/common/field';
+import { IconButton } from '@/components/common/icon-button';
 import { PageHeader } from '@/components/common/page-header';
 import { PeriodPicker } from '@/components/common/period-picker';
 import { PropertyRequired, usePropertyOrSingle } from '@/components/common/property-required';
@@ -179,7 +180,7 @@ function ReadingRound() {
                         </div>
                       ) : (
                         <div className="flex shrink-0 items-center gap-2">
-                          {manage && <Button size="sm" variant="ghost" onClick={() => estimate.mutate(r.meter_id)} disabled={estimate.isPending} aria-label="Estimate this reading"><Calculator /></Button>}
+                          {manage && <IconButton label="Estimate this reading at the 3-month average" onClick={() => estimate.mutate(r.meter_id)} disabled={estimate.isPending}><Calculator /></IconButton>}
                           <Button size="lg" className="h-11" onClick={() => setCapture(r)}><Camera /> Read</Button>
                         </div>
                       )}

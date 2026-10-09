@@ -3,6 +3,7 @@
 import { useState, type ReactNode } from 'react';
 import { BarChart3, Table2 } from 'lucide-react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { WithTooltip } from '@/components/common/icon-button';
 import { cn } from '@/lib/utils';
 
 /**
@@ -19,16 +20,17 @@ export function ChartCard({ title, description, chart, table, footer, className 
 }) {
   const [view, setView] = useState<'chart' | 'table'>('chart');
   const btn = (v: 'chart' | 'table', Icon: typeof BarChart3, label: string) => (
-    <button
-      type="button"
-      onClick={() => setView(v)}
-      aria-pressed={view === v}
-      aria-label={label}
-      title={label}
-      className={cn('grid h-8 w-8 place-items-center rounded-md text-muted-foreground hover:bg-muted', view === v && 'bg-muted text-foreground')}
-    >
-      <Icon className="h-4 w-4" aria-hidden />
-    </button>
+    <WithTooltip label={label}>
+      <button
+        type="button"
+        onClick={() => setView(v)}
+        aria-pressed={view === v}
+        aria-label={label}
+        className={cn('grid h-8 w-8 place-items-center rounded-md text-muted-foreground hover:bg-muted', view === v && 'bg-muted text-foreground')}
+      >
+        <Icon className="h-4 w-4" aria-hidden />
+      </button>
+    </WithTooltip>
   );
   return (
     <Card className={className}>

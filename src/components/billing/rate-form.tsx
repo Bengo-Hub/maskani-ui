@@ -7,6 +7,7 @@ import { Input } from '@/components/ui/input';
 import { CatalogueCombobox } from '@/components/common/catalogue-combobox';
 import { Field, NativeSelect } from '@/components/common/field';
 import { FormSheet } from '@/components/common/form-sheet';
+import { IconButton } from '@/components/common/icon-button';
 import { useAddRate } from '@/hooks/use-billing';
 import { useProperties } from '@/hooks/use-register';
 import type { RateInput } from '@/lib/api/billing';
@@ -112,7 +113,7 @@ export function RateForm({ charge, onClose }: { charge: ChargeType | null; onClo
                 <Field label="From"><Input inputMode="decimal" value={b.from} onChange={(e) => setBlocks((s) => s.map((x, j) => (j === i ? { ...x, from: e.target.value } : x)))} /></Field>
                 <Field label="To"><Input inputMode="decimal" value={b.to} placeholder="and above" onChange={(e) => setBlocks((s) => s.map((x, j) => (j === i ? { ...x, to: e.target.value } : x)))} /></Field>
                 <Field label="KES per m3"><Input inputMode="decimal" value={b.rate} onChange={(e) => setBlocks((s) => s.map((x, j) => (j === i ? { ...x, rate: e.target.value } : x)))} /></Field>
-                <Button variant="ghost" size="icon" disabled={blocks.length === 1} onClick={() => setBlocks((s) => s.filter((_, j) => j !== i))} aria-label="Remove band"><Trash2 /></Button>
+                <IconButton label="Remove band" disabled={blocks.length === 1} onClick={() => setBlocks((s) => s.filter((_, j) => j !== i))}><Trash2 /></IconButton>
               </div>
             ))}
             <Button variant="outline" size="sm" onClick={() => setBlocks((s) => [...s, { from: s[s.length - 1]?.to ?? '', to: '', rate: '' }])}><Plus /> Add band</Button>

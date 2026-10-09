@@ -6,6 +6,7 @@ import { toast } from 'sonner';
 import { apiErrorMessage } from '@/lib/api/errors';
 import { uploadPhoto, type MediaKind } from '@/lib/media';
 import { cn } from '@/lib/utils';
+import { WithTooltip } from './icon-button';
 
 export interface PickedPhoto { key: string; url: string }
 
@@ -50,14 +51,16 @@ export function PhotoPicker({ slug, kind, value, onChange, max = 4, required, la
         <div key={p.key} className="relative h-20 w-20 overflow-hidden rounded-lg border">
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img src={p.url} alt="" className="h-full w-full object-cover" />
-          <button
-            type="button"
-            onClick={() => onChange(value.filter((x) => x.key !== p.key))}
-            className="absolute right-1 top-1 flex h-6 w-6 items-center justify-center rounded-full bg-black/60 text-white"
-            aria-label="Remove photo"
-          >
-            <X className="h-3.5 w-3.5" />
-          </button>
+          <WithTooltip label="Remove photo">
+            <button
+              type="button"
+              onClick={() => onChange(value.filter((x) => x.key !== p.key))}
+              className="absolute right-1 top-1 flex h-6 w-6 items-center justify-center rounded-full bg-black/60 text-white"
+              aria-label="Remove photo"
+            >
+              <X className="h-3.5 w-3.5" />
+            </button>
+          </WithTooltip>
         </div>
       ))}
       {value.length < max && (

@@ -9,6 +9,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { Switch } from '@/components/ui/switch';
 import { NativeSelect } from '@/components/common/field';
 import { FormSheet } from '@/components/common/form-sheet';
+import { IconButton } from '@/components/common/icon-button';
 import { PageHeader } from '@/components/common/page-header';
 import { SearchInput } from '@/components/common/search-input';
 import { SectionLayout, type Section } from '@/components/common/section-nav';
@@ -116,7 +117,7 @@ function Charges() {
       render: (c: ChargeType) => (
         <div className="flex justify-end gap-1.5">
           <Button size="sm" variant="outline" onClick={() => setRateFor(c)} disabled={!c.active}><Plus /> Rate</Button>
-          <Button size="sm" variant="ghost" aria-label={`Edit ${c.name}`} onClick={() => setEditing(c)}><Pencil /></Button>
+          <IconButton size="icon-sm" label={`Edit ${c.name}`} onClick={() => setEditing(c)}><Pencil /></IconButton>
         </div>
       ),
     }] : []),
