@@ -2,7 +2,7 @@
 
 import { Suspense, useEffect, useMemo, useState } from 'react';
 import Link from 'next/link';
-import { Check, Copy, Lock, Plus, RotateCcw, Save, Search, Trash2, Users } from 'lucide-react';
+import { Check, Lock, Plus, RotateCcw, Save, Search, Trash2, Users } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -95,10 +95,8 @@ function Roles() {
               role={selected}
               catalogue={catalogue}
               manage={manage}
-              onCustomize={() => m.customize.mutate(selected.code)}
-              customizing={m.customize.isPending}
-              onSave={(body) => m.update.mutate({ id: selected.id, ...body })}
-              saving={m.update.isPending}
+              onSave={(body) => m.save.mutate({ role: selected, ...body })}
+              saving={m.save.isPending}
               onRemove={() => setRemoving(selected)}
             />
           )}
@@ -122,21 +120,24 @@ function Roles() {
   );
 }
 
-function RoleEditor({ role, catalogue, manage, onCustomize, customizing, onSave, saving, onRemove }: {
+/**
+ * Every role but the administrator edits in place. Saving a default role gives this estate its own
+ * copy with the changes (other estates keep the default); Reset brings the default back.
+ */
+function RoleEditor({ role, catalogue, manage, onSave, saving, onRemove }: {
   role: Role;
   catalogue: Permission[];
   manage: boolean;
-  onCustomize: () => void;
-  customizing: boolean;
   onSave: (body: { name?: string; description?: string; permissions: string[] }) => void;
   saving: boolean;
   onRemove: () => void;
 }) {
-  const editable = manage && !role.is_system_role && !role.locked;
+  const editable = manage && !role.locked && !role.is_customer_role;
   const [picked, setPicked] = useState<Set<string>>(new Set(role.permissions));
   const [name, setName] = useState(role.name);
+  const [description, setDescription] = useState(role.description ?? '');
   const [q, setQ] = useState('');
-  useEffect(() => { setPicked(new Set(role.permissions)); setName(role.name); }, [role]);
+  useEffect(() => { setPicked(new Set(role.permissions)); setName(role.name); setDescription(role.description ?? ''); }, [role]);
 
   const grouped = useMemo(() => {
     const t = q.trim().toLowerCase();
@@ -148,7 +149,8 @@ function RoleEditor({ role, catalogue, manage, onCustomize, customizing, onSave,
     return [...g.entries()].sort((a, b) => moduleLabel(a[0]).localeCompare(moduleLabel(b[0])));
   }, [catalogue, q]);
 
-  const dirty = name.trim() !== role.name || picked.size !== role.permissions.length || role.permissions.some((p) => !picked.has(p));
+  const dirty = name.trim() !== role.name || description.trim() !== (role.description ?? '')
+    || picked.size !== role.permissions.length || role.permissions.some((p) => !picked.has(p));
   const toggle = (c: string) => editable && setPicked((s) => { const n = new Set(s); if (n.has(c)) n.delete(c); else n.add(c); return n; });
   const toggleModule = (perms: Permission[]) => editable && setPicked((s) => {
     const n = new Set(s);
@@ -172,24 +174,24 @@ function RoleEditor({ role, catalogue, manage, onCustomize, customizing, onSave,
               <span>{picked.size} of {catalogue.length} permissions</span>
               <span>{role.holders} {role.holders === 1 ? 'person' : 'people'}</span>
             </div>
-            {role.description && <p className="text-sm text-muted-foreground">{role.description}</p>}
+            {editable
+              ? <Input value={description} onChange={(e) => setDescription(e.target.value)} placeholder="What this role is for" className="h-9 max-w-xl text-sm" aria-label="Role description" />
+              : role.description && <p className="text-sm text-muted-foreground">{role.description}</p>}
           </div>
           <div className="flex flex-wrap gap-2">
-            {manage && role.is_system_role && !role.locked && (
-              <Button variant="outline" onClick={onCustomize} disabled={customizing}><Copy /> Customise for this estate</Button>
+            {editable && !role.is_system_role && (
+              <Button variant="ghost" onClick={onRemove}>{role.cloned_from_role_id ? <><RotateCcw /> Reset to default</> : <><Trash2 /> Delete</>}</Button>
             )}
             {editable && (
-              <>
-                <Button variant="ghost" onClick={onRemove}>{role.cloned_from_role_id ? <><RotateCcw /> Reset</> : <><Trash2 /> Delete</>}</Button>
-                <Button onClick={() => onSave({ name: name.trim(), permissions: [...picked] })} disabled={!dirty || saving || !name.trim()}>
-                  <Save /> {saving ? 'Saving...' : 'Save'}
-                </Button>
-              </>
+              <Button onClick={() => onSave({ name: name.trim(), description: description.trim(), permissions: [...picked] })} disabled={!dirty || saving || !name.trim()}>
+                <Save /> {saving ? 'Saving...' : 'Save'}
+              </Button>
             )}
           </div>
         </div>
         {role.locked && <p className="flex items-center gap-1.5 text-sm text-muted-foreground"><Lock className="h-4 w-4" /> The tenant administrator always has every permission, so an estate can never lock itself out.</p>}
-        {!role.locked && role.is_system_role && <p className="text-sm text-muted-foreground">This is the default used by every estate. Customise it to change its permissions here without affecting anyone else.</p>}
+        {role.is_customer_role && <p className="text-sm text-muted-foreground">Portal roles carry no staff permissions: owners, residents and vendors see only what their unit or company links give them.</p>}
+        {editable && role.is_system_role && <p className="text-sm text-muted-foreground">Default role. Your changes are saved as this estate&apos;s own version; other estates keep the default, and Reset brings it back.</p>}
         <div className="relative max-w-sm">
           <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
           <Input value={q} onChange={(e) => setQ(e.target.value)} placeholder="Search permissions" className="pl-9" aria-label="Search permissions" />

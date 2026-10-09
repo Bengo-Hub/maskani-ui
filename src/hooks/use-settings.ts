@@ -3,6 +3,7 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { toast } from 'sonner';
 import { settingsApi, type StaffInviteInput } from '@/lib/api/operations';
+import type { Role } from '@/lib/api/types';
 import { qk } from '@/lib/query-keys';
 import { useAuthStore } from '@/store/auth';
 import { useAccess, useSlug } from './use-access';
@@ -170,6 +171,14 @@ export function useRoleMutations() {
     update: useMutation({
       mutationFn: ({ id, ...body }: { id: string; name?: string; description?: string; permissions?: string[] }) => settingsApi.updateRole(slug, id, body),
       onSuccess: done('Role saved'),
+    }),
+    /** Saves any role: a default one first gets this estate's own copy, which takes the edits. */
+    save: useMutation({
+      mutationFn: async ({ role, ...body }: { role: Role; name?: string; description?: string; permissions: string[] }) => {
+        const id = role.is_system_role ? (await settingsApi.customizeRole(slug, role.code)).id : role.id;
+        return settingsApi.updateRole(slug, id, body);
+      },
+      onSuccess: done('Role saved for this estate'),
     }),
     remove: useMutation({ mutationFn: (id: string) => settingsApi.deleteRole(slug, id), onSuccess: done('Role removed') }),
   };
