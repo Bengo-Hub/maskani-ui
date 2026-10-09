@@ -8,11 +8,12 @@ import { MobileBottomNav, type MobileNavTab } from '@bengo-hub/shared-ui-lib/nav
 import { FeatureLock } from '@bengo-hub/shared-ui-lib/subscription';
 import { AppSplash } from './app-splash';
 import { Header } from './header';
+import { ModuleReadOnly } from './module-read-only';
 import { Sidebar } from './sidebar';
 import { EmptyState } from '@/components/common/empty-state';
 import { useSlug } from '@/hooks/use-access';
 import { navAllowed, navItemFor } from '@/lib/nav';
-import { useAuthStore } from '@/store/auth';
+import { hasPermission, useAuthStore } from '@/store/auth';
 
 const COLLAPSE_KEY = 'maskani-sidebar-collapsed';
 
@@ -59,6 +60,9 @@ export function ConsoleShell({ children }: { children: ReactNode }) {
   const sub = pathname.slice(`/${slug}`.length) || '/';
   const item = navItemFor(sub);
   const allowed = !item || navAllowed(me, item);
+  // Role allows it but the module is switched off: open read only (FR-09) instead of blocking,
+  // so records stay viewable and exportable. The nav still hides the module.
+  const readOnly = !allowed && !!item?.modules?.length && navAllowed(me, { perms: item.perms });
 
   const base = `/${slug}`;
   const tabs: MobileNavTab[] = [
@@ -79,20 +83,22 @@ export function ConsoleShell({ children }: { children: ReactNode }) {
         {/* The shell owns page padding; pages add only a max-w wrapper. min-h-0 lets it scroll. */}
         <main className="min-h-0 flex-1 overflow-y-auto">
           <div className="px-4 py-5 pb-[calc(5rem+env(safe-area-inset-bottom))] sm:px-6 sm:py-6 lg:px-8 lg:pb-8">
-            {allowed ? children : (() => {
-              const blocked = (
-                <EmptyState
-                  icon={Lock}
-                  title="This area is not available"
-                  description="The module is switched off for your estate, or your role does not include it. Ask an administrator."
-                  action={<Link href={`${base}/dashboard`} className="text-sm font-medium text-primary hover:underline">Back to the dashboard</Link>}
-                />
-              );
-              // When the plan is the reason, the shared FeatureLock shows the upgrade path; otherwise
-              // (module switched off, role without it) its children, the plain message, show.
-              const module = item?.modules?.[0];
-              return module ? <FeatureLock feature={`maskani_${module}`} mode="block">{blocked}</FeatureLock> : blocked;
-            })()}
+            {allowed ? children : readOnly && item?.modules ? (
+              // A plan without the module still shows the upgrade path; FeatureLock passes its
+              // children through when the plan covers it and the estate only switched it off.
+              <FeatureLock feature={`maskani_${item.modules[0]}`} mode="block">
+                <ModuleReadOnly modules={item.modules} settingsHref={`${base}/settings?tab=modules`} canManage={hasPermission(me, 'settings.manage')}>
+                  {children}
+                </ModuleReadOnly>
+              </FeatureLock>
+            ) : (
+              <EmptyState
+                icon={Lock}
+                title="This area is not available"
+                description="Your role does not include it. Ask an administrator."
+                action={<Link href={`${base}/dashboard`} className="text-sm font-medium text-primary hover:underline">Back to the dashboard</Link>}
+              />
+            )}
           </div>
         </main>
       </div>

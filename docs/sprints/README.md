@@ -35,7 +35,7 @@ file points here. Every UI call matches a real API route; the gaps are below.
 - [x] `payment.applied` refreshes arrears (`3cfabe7`)
 - [x] Terms acceptance follows `/auth/me` `terms_accepted_version` (api `4d05518`, ui `3cfabe7`)
 - [x] Route guard shows the shared `FeatureLock` upgrade path when the plan is the reason, the plain message otherwise (`3cfabe7`)
-- [ ] Read-only banner for a switched-off module from the API's `X-Module-Read-Only` header (API side done in `3ae57a5`)
+- [x] Switched-off module opens read only (FR-09) instead of "not available": the shell wraps the page in `ModuleReadOnly` (banner, "Switch it back on" for `settings.manage`), and `useAccess().canAll` lets that page's queries run; the API answers the reads and refuses changes (`3ae57a5`). The nav still hides the module, so it is reached by link or bookmark. A plan without the module still shows the `FeatureLock` upgrade path. The UI derives the state from `/auth/me` modules, so it does not read the `X-Module-Read-Only` header; the header stays for other clients
 - [ ] Dead code: unused shadcn components (dropdown-menu, popover, scroll-area, select, separator, table, textarea), unused wrappers and query keys (meters, price lists, reservations, addVehicle until their screens land), `TREASURY_API_URL`; the header hardcodes the treasury URL instead of `TREASURY_UI_URL`
 - [ ] `lib/api/types.ts` is 813 lines; split by domain
 - [ ] `typescript.ignoreBuildErrors` turned off once type-check is green
