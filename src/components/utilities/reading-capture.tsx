@@ -30,7 +30,9 @@ export function ReadingCapture({ row, propertyId, period, onDone }: { row: Round
 
   const prev = num(row.previous_reading);
   const reading = value === '' ? null : Number(value);
-  const used = reading != null && Number.isFinite(reading) ? reading - prev : null;
+  // Use is the dial difference times the meter's multiplier, as the API stores it.
+  const mult = num(row.multiplier ?? 1) || 1;
+  const used = reading != null && Number.isFinite(reading) ? (reading - prev) * mult : null;
   // The same two checks the API flags on: below the last reading, or use above the row's
   // spike_above (a multiple of this meter's average). No limit is guessed here without history.
   const warning = used == null ? null

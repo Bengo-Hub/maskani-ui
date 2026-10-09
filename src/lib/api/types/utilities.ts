@@ -44,6 +44,8 @@ export interface RoundRow {
   block?: string;
   /** The last reading before this period (the initial reading for a new meter). */
   previous_reading: Money;
+  /** Use = (new reading - last reading) x multiplier; 1 for most meters. */
+  multiplier?: Money;
   current?: MeterReading;
   /** Mean use over the meter's last three periods; absent without history. */
   average_use?: Money;
