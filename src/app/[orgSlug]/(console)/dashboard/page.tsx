@@ -10,6 +10,7 @@ import { PeriodPicker } from '@/components/common/period-picker';
 import { StatTile } from '@/components/common/stat-tile';
 import { CollectionsChart } from '@/components/dashboard/collections-chart';
 import { ArrearsAgeing } from '@/components/dashboard/arrears-ageing';
+import { PerformanceSection } from '@/components/dashboard/insights/performance-section';
 import { useAccess, useSlug } from '@/hooks/use-access';
 import { useDashboard, useTopArrears } from '@/hooks/use-reports';
 import { currentPeriod, fmtDate, kes, num, periodLabel } from '@/lib/utils';
@@ -20,7 +21,7 @@ export default function DashboardPage() {
   const slug = useSlug();
   const propertyId = useSelectedPropertyId(slug);
   const [period, setPeriod] = useState(currentPeriod);
-  const { mod } = useAccess();
+  const { mod, can } = useAccess();
   const me = useAuthStore((s) => s.me);
   const { data, isLoading } = useDashboard(propertyId, period);
   const { data: arrears = [] } = useTopArrears(propertyId);
@@ -145,6 +146,8 @@ export default function DashboardPage() {
           </Card>
         </div>
       )}
+
+      {can('reports.view') && <PerformanceSection propertyId={propertyId} period={period} base={base} />}
 
       {mod('billing') && arrears.length > 0 && (
         <Card className="mt-4">
