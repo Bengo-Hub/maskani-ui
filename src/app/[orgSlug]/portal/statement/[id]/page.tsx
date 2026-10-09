@@ -4,6 +4,7 @@ import { use } from 'react';
 import { Skeleton } from '@/components/ui/skeleton';
 import { PageHeader } from '@/components/common/page-header';
 import { PayAccount } from '@/components/billing/pay-account';
+import { StatementDownload } from '@/components/billing/statement-download';
 import { StatementView } from '@/components/billing/statement-view';
 import { useSlug } from '@/hooks/use-access';
 import { usePortalStatement } from '@/hooks/use-portal';
@@ -36,7 +37,10 @@ export default function PortalStatementPage({ params }: { params: Promise<{ id: 
           />
         ) : undefined}
       />
-      <StatementView statement={data} />
+      <StatementView
+        statement={data}
+        actions={<StatementDownload accountRef={data.account.account_ref} fetchFile={(format) => portalApi.statementFile(slug, id, format)} />}
+      />
     </div>
   );
 }

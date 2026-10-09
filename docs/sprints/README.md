@@ -45,7 +45,8 @@ file points here. Every UI call matches a real API route; the gaps are below.
 
 **Screens missing (wave 2, API first)**
 - [ ] S1: unit detail tabs Billing, Utilities, Sales, Works, Documents, Timeline and vehicles; portal household, vehicles and domestic staff; custom fields; privacy requests
-- [ ] S2: statement PDF and spreadsheet through shared-ui-lib `PdfPreview`; meter register and replacement; adjustments and bill queries (console queue and portal submission); payment plans; arrears ladder view
+- [x] S2 statement downloads (api `d2b80e6`): "Statement PDF" opens the branded statement in shared-ui-lib `PdfPreview` (download, print, new tab) and "Excel" downloads, on the console account page and the portal statement page; both carry up to 500 bills and 500 payments. The running balance now comes from the API's `entries`, so the screen no longer works it out
+- [ ] S2: meter register and replacement; adjustments and bill queries (console queue and portal submission); payment plans; arrears ladder view
 - [ ] S3: price list editor, reservations list, milestone release, restructure, handover with snag list, title stages, purchase and completion statements
 - [ ] S4: vendor contracts, schedules and visits, preventive maintenance, vendor invoices, vendor portal, ERP staff picker, guard posts and rosters, patrol checkpoints and tablet patrol scan, occurrence book, gate device list and revoke
 - [ ] S5: reports area with charts and export, documents library, budgets and AGM pack, audit log, marketplace enquiries inbox (routes already exist), approval rules and reminder schedules settings

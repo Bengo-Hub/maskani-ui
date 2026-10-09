@@ -5,6 +5,8 @@ import type {
   PayRequest, Statement, SuspenseRow, UnitAccount,
 } from './types';
 
+export type StatementFormat = 'pdf' | 'csv' | 'xlsx';
+
 export interface RunInput {
   property_id: string;
   fund?: string;
@@ -85,6 +87,9 @@ export const billingApi = {
   accounts: (slug: string, params: { property_id?: string; owing?: boolean; cursor?: string; limit?: number }) =>
     apiClient.get<Page<UnitAccount>>(`${t(slug)}/unit-accounts`, params),
   statement: (slug: string, id: string) => apiClient.get<Statement>(`${t(slug)}/unit-accounts/${id}/statement`),
+  /** Branded statement download with the full history (pdf, csv or xlsx). */
+  statementFile: (slug: string, id: string, format: StatementFormat) =>
+    apiClient.getBlob(`${t(slug)}/unit-accounts/${id}/statement/export`, `statement.${format}`, { format }),
   staffPay: (slug: string, id: string, body: PayRequest) => apiClient.post<PayIntent>(`${t(slug)}/unit-accounts/${id}/pay`, body),
 
   suspense: (slug: string, days = 60) => apiClient.get<{ data: SuspenseRow[] }>(`${t(slug)}/collections/suspense`, { days }),

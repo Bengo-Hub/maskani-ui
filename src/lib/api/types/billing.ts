@@ -83,8 +83,24 @@ export interface LedgerPayment {
   unapplied?: Money;
 }
 
+/** One bill or payment of a statement, with the balance after it (worked out by the API). */
+export interface StatementEntry {
+  kind: 'bill' | 'payment';
+  date: string;
+  label: string;
+  reference?: string;
+  debit: Money;
+  credit: Money;
+  status?: string;
+  balance_after: Money;
+}
+
 export interface Statement {
   account: UnitAccount;
+  /** Newest first. */
+  entries: StatementEntry[];
+  /** Treasury's list was full, so older history exists beyond these entries. */
+  trimmed: boolean;
   ledger: {
     account_ref: string;
     balance: Money;
