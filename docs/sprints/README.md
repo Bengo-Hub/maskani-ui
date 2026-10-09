@@ -41,6 +41,8 @@ file points here. Every UI call matches a real API route; the gaps are below.
 - [x] `typescript.ignoreBuildErrors` turned off: `next build` now type-checks too
 - [x] Docs: the UX spec named `org-shell.tsx` and `nav-config.ts`; corrected to `providers/org-providers.tsx` and `lib/nav.ts`, and `/gate/sync` to `GET` (2026-10-09)
 
+- [x] Billing run screen pages its lines by keyset in unit code order with the status filter on the API (api `3943e14`), replacing one 5000-line read filtered in the browser. Other capped reads were checked and stay as they are: pickers and job batches are bounded by design, and the remaining staff lists already page
+
 **Screens missing (wave 2, API first)**
 - [ ] S1: unit detail tabs Billing, Utilities, Sales, Works, Documents, Timeline and vehicles; portal household, vehicles and domestic staff; custom fields; privacy requests
 - [ ] S2: statement PDF and spreadsheet through shared-ui-lib `PdfPreview`; meter register and replacement; adjustments and bill queries (console queue and portal submission); payment plans; arrears ladder view

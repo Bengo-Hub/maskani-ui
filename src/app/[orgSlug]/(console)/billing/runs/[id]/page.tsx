@@ -1,6 +1,6 @@
 'use client';
 
-import { use, useMemo, useState } from 'react';
+import { use, useState } from 'react';
 import { RotateCcw } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
@@ -18,11 +18,10 @@ export default function BillingRunPage({ params }: { params: Promise<{ id: strin
   const slug = useSlug();
   const { can } = useAccess();
   const { data: run, isLoading } = useBillingRun(id);
-  const { data: lines = [] } = useRunLines(id, run?.status);
   const retry = useRetryRun();
   const [show, setShow] = useState('all');
-
-  const shown = useMemo(() => (show === 'all' ? lines : lines.filter((l) => l.status === show)), [lines, show]);
+  // Filtered and paged on the API, in unit code order.
+  const lines = useRunLines(id, show === 'all' ? '' : show, run?.status);
   if (isLoading || !run) return <div className="mx-auto max-w-4xl space-y-3"><Skeleton className="h-10 w-56" /><Skeleton className="h-40" /></div>;
 
   const toBill = Math.max(0, (run.unit_count ?? 0) - (run.skipped_count ?? 0));
@@ -66,8 +65,9 @@ export default function BillingRunPage({ params }: { params: Promise<{ id: strin
         </NativeSelect>
       </div>
       <ul className="divide-y rounded-xl border bg-card">
-        {shown.length === 0 && <li className="px-4 py-6 text-center text-sm text-muted-foreground">Nothing to show.</li>}
-        {shown.map((l) => (
+        {lines.isLoading && <li className="p-4"><Skeleton className="h-10" /></li>}
+        {!lines.isLoading && lines.rows.length === 0 && <li className="px-4 py-6 text-center text-sm text-muted-foreground">Nothing to show.</li>}
+        {lines.rows.map((l) => (
           <li key={l.id} className="flex items-center justify-between gap-3 px-4 py-3">
             <div className="min-w-0">
               <p className="font-medium">{l.unit_code} {l.invoice_number && <span className="font-mono text-xs text-muted-foreground">{l.invoice_number}</span>}</p>
@@ -80,6 +80,13 @@ export default function BillingRunPage({ params }: { params: Promise<{ id: strin
           </li>
         ))}
       </ul>
+      {lines.hasMore && (
+        <div className="mt-3 flex justify-center">
+          <Button variant="outline" onClick={() => void lines.loadMore()} disabled={lines.loadingMore}>
+            {lines.loadingMore ? 'Loading...' : 'Show more'}
+          </Button>
+        </div>
+      )}
     </div>
   );
 }

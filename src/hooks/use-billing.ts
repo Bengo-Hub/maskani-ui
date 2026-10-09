@@ -76,14 +76,15 @@ export function useBillingRun(id: string) {
   });
 }
 
-export function useRunLines(id: string, status?: string) {
+/** A run's lines in unit code order, 100 at a time; `filter` is a line status ('' for all). The
+ *  run's own status is in the key so lines refresh when issuing ends, and poll while it lasts. */
+export function useRunLines(id: string, filter: string, runStatus?: string) {
   const slug = useSlug();
-  return useQuery({
-    queryKey: [...qk.runLines(slug, id), status ?? ''],
-    queryFn: () => billingApi.runLines(slug, id).then((r) => r.data ?? []),
-    enabled: !!id,
-    refetchInterval: status === 'issuing' ? 5000 : false,
-  });
+  return useKeysetList(
+    [...qk.runLines(slug, id), filter, runStatus ?? ''],
+    (cursor) => billingApi.runLines(slug, id, { status: filter || undefined, cursor, limit: 100 }),
+    { enabled: !!id, refetchInterval: runStatus === 'issuing' ? 5000 : false },
+  );
 }
 
 export function usePreviewRun() {

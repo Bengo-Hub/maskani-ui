@@ -79,7 +79,8 @@ export const billingApi = {
   runs: (slug: string, params: { property_id?: string; cursor?: string; limit?: number }) =>
     apiClient.get<Page<BillingRun>>(`${t(slug)}/billing-runs`, params),
   run: (slug: string, id: string) => apiClient.get<BillingRun>(`${t(slug)}/billing-runs/${id}`),
-  runLines: (slug: string, id: string) => apiClient.get<{ data: BillingRunLine[] }>(`${t(slug)}/billing-runs/${id}/lines`),
+  runLines: (slug: string, id: string, params: { status?: string; cursor?: string; limit?: number }) =>
+    apiClient.get<Page<BillingRunLine>>(`${t(slug)}/billing-runs/${id}/lines`, params, { suppressErrorToast: true }),
 
   accounts: (slug: string, params: { property_id?: string; owing?: boolean; cursor?: string; limit?: number }) =>
     apiClient.get<Page<UnitAccount>>(`${t(slug)}/unit-accounts`, params),
