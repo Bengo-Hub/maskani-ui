@@ -6,22 +6,25 @@ import { toast } from 'sonner';
 import { extractErrorMessage, PdfPreview, useDocumentPreview } from '@bengo-hub/shared-ui-lib/documents';
 import { Button } from '@/components/ui/button';
 import { downloadBlob } from '@/lib/api/client';
-import type { StatementFormat } from '@/lib/api/billing';
+import type { ExportFormat } from '@/lib/api/types';
 
-type Fetch = (format: StatementFormat) => Promise<{ blob: Blob; fileName: string }>;
+export type ExportFetch = (format: ExportFormat) => Promise<{ blob: Blob; fileName: string }>;
 
 /**
- * The statement as a branded document with the account's full history: the PDF opens in the shared
+ * A branded document of what the screen shows, rendered by the API: the PDF opens in the shared
  * preview (download, print, open in a tab), Excel downloads straight away.
  */
-export function StatementDownload({ accountRef, fetchFile }: { accountRef: string; fetchFile: Fetch }) {
+export function ExportButtons({ name, title, fetchFile, pdfLabel = 'PDF' }: {
+  /** File name stem for the preview's download, e.g. "statement-SV-A12". */
+  name: string;
+  title: string;
+  fetchFile: ExportFetch;
+  pdfLabel?: string;
+}) {
   const { openPreview, previewProps } = useDocumentPreview({ onError: (m) => toast.error(m) });
   const [excel, setExcel] = useState(false);
 
-  const viewPdf = () => openPreview(
-    () => fetchFile('pdf').then((f) => f.blob),
-    { fileName: `statement-${accountRef}.pdf`, title: `Statement for ${accountRef}` },
-  );
+  const viewPdf = () => openPreview(() => fetchFile('pdf').then((f) => f.blob), { fileName: `${name}.pdf`, title });
 
   const downloadExcel = async () => {
     setExcel(true);
@@ -29,7 +32,7 @@ export function StatementDownload({ accountRef, fetchFile }: { accountRef: strin
       const { blob, fileName } = await fetchFile('xlsx');
       downloadBlob(blob, fileName);
     } catch (err) {
-      toast.error(await extractErrorMessage(err, 'The statement could not be downloaded.'));
+      toast.error(await extractErrorMessage(err, 'The file could not be downloaded.'));
     } finally {
       setExcel(false);
     }
@@ -37,7 +40,7 @@ export function StatementDownload({ accountRef, fetchFile }: { accountRef: strin
 
   return (
     <div className="flex flex-wrap gap-2">
-      <Button variant="outline" size="sm" onClick={() => void viewPdf()}><FileText /> Statement PDF</Button>
+      <Button variant="outline" size="sm" onClick={() => void viewPdf()}><FileText /> {pdfLabel}</Button>
       <Button variant="outline" size="sm" onClick={() => void downloadExcel()} disabled={excel}>
         <FileSpreadsheet /> {excel ? 'Preparing...' : 'Excel'}
       </Button>

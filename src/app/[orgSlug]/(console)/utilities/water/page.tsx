@@ -15,6 +15,8 @@ import { ToneBadge } from '@/components/common/status-badge';
 import { WaterBalanceChart } from '@/components/utilities/water-balance-chart';
 import { useSlug } from '@/hooks/use-access';
 import { useWaterBalance } from '@/hooks/use-utilities';
+import { ExportButtons } from '@/components/common/export-buttons';
+import { utilitiesApi } from '@/lib/api/operations';
 import type { WaterBalanceRow } from '@/lib/api/types';
 import { num, periodLabel } from '@/lib/utils';
 import { useAuthStore } from '@/store/auth';
@@ -63,6 +65,10 @@ export default function WaterBalancePage() {
       <PageHeader
         title="Water balance"
         subtitle={<>Water supplied against water billed, month by month. Losses above {limit}% are flagged (<Link href={`/${slug}/settings?tab=general`} className="text-primary underline">change</Link>).</>}
+        actions={data.length > 0 ? (
+          <ExportButtons name="water-balance" title="Water balance"
+            fetchFile={(format) => utilitiesApi.waterBalanceFile(slug, propertyId, undefined, format)} />
+        ) : undefined}
       />
       {isLoading ? <Skeleton className="h-64" /> : data.length === 0 ? (
         <EmptyState icon={Droplets} title="No balance yet" description="Needs bulk or borehole meter readings and unit readings for the same month." />

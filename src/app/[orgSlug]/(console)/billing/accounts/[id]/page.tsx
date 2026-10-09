@@ -5,7 +5,7 @@ import Link from 'next/link';
 import { Skeleton } from '@/components/ui/skeleton';
 import { PageHeader } from '@/components/common/page-header';
 import { PayAccount } from '@/components/billing/pay-account';
-import { StatementDownload } from '@/components/billing/statement-download';
+import { ExportButtons } from '@/components/common/export-buttons';
 import { StatementView } from '@/components/billing/statement-view';
 import { useAccess, useSlug } from '@/hooks/use-access';
 import { useStatement } from '@/hooks/use-billing';
@@ -41,7 +41,8 @@ export default function AccountStatementPage({ params }: { params: Promise<{ id:
       />
       <StatementView
         statement={data}
-        actions={<StatementDownload accountRef={a.account_ref} fetchFile={(format) => billingApi.statementFile(slug, a.id, format)} />}
+        actions={<ExportButtons name={`statement-${a.account_ref}`} title={`Statement for ${a.account_ref}`} pdfLabel="Statement PDF"
+          fetchFile={(format) => billingApi.statementFile(slug, a.id, format)} />}
       />
     </div>
   );

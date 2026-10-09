@@ -1,6 +1,6 @@
 import { tenantBase as t } from '@/lib/config';
 import { apiClient } from './client';
-import type { Money } from './types';
+import type { ExportFormat, Money } from './types';
 
 /** GET /reports/insights: trends, comparisons and forecasts for the staff dashboard. */
 
@@ -75,6 +75,9 @@ export interface RoleSummary {
 export const insightsApi = {
   get: (slug: string, params: { property_id?: string; period?: string }) =>
     apiClient.get<Insights>(`${t(slug)}/reports/insights`, params, { suppressErrorToast: true }),
+  /** The performance report behind the dashboard, as a document. */
+  file: (slug: string, params: { property_id?: string; period?: string }, format: ExportFormat) =>
+    apiClient.getBlob(`${t(slug)}/reports/insights/export`, `performance.${format}`, { ...params, format }),
   roleSummary: (slug: string, params: { property_id?: string }) =>
     apiClient.get<RoleSummary>(`${t(slug)}/reports/role-summary`, params, { suppressErrorToast: true }),
 };

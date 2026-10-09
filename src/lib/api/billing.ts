@@ -1,11 +1,9 @@
 import { apiClient } from './client';
 import { tenantBase as t } from '@/lib/config';
 import type {
-  ArrearsRow, BillingPreview, BillingRun, BillingRunLine, ChargeRate, ChargeType, Fund, Page, PayIntent,
+  ArrearsRow, BillingPreview, BillingRun, BillingRunLine, ChargeRate, ChargeType, ExportFormat, Fund, Page, PayIntent,
   PayRequest, Statement, SuspenseRow, UnitAccount,
 } from './types';
-
-export type StatementFormat = 'pdf' | 'csv' | 'xlsx';
 
 export interface RunInput {
   property_id: string;
@@ -88,7 +86,7 @@ export const billingApi = {
     apiClient.get<Page<UnitAccount>>(`${t(slug)}/unit-accounts`, params),
   statement: (slug: string, id: string) => apiClient.get<Statement>(`${t(slug)}/unit-accounts/${id}/statement`),
   /** Branded statement download with the full history (pdf, csv or xlsx). */
-  statementFile: (slug: string, id: string, format: StatementFormat) =>
+  statementFile: (slug: string, id: string, format: ExportFormat) =>
     apiClient.getBlob(`${t(slug)}/unit-accounts/${id}/statement/export`, `statement.${format}`, { format }),
   staffPay: (slug: string, id: string, body: PayRequest) => apiClient.post<PayIntent>(`${t(slug)}/unit-accounts/${id}/pay`, body),
 
@@ -98,4 +96,7 @@ export const billingApi = {
   /** q matches the account reference prefix or the owner's name; min is the smallest balance kept. */
   arrears: (slug: string, params: { property_id?: string; q?: string; min?: string; cursor?: string; limit?: number }) =>
     apiClient.get<Page<ArrearsRow>>(`${t(slug)}/reports/arrears`, params),
+  /** Every matching owing account with the ageing chart, as a document. */
+  arrearsFile: (slug: string, params: { property_id?: string; q?: string; min?: string }, format: ExportFormat) =>
+    apiClient.getBlob(`${t(slug)}/reports/arrears/export`, `arrears.${format}`, { ...params, format }),
 };

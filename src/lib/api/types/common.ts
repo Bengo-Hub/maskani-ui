@@ -17,6 +17,9 @@ export interface Base {
   custom_fields?: Record<string, unknown> | null;
 }
 
+/** Document download formats the API renders (`?format=`). */
+export type ExportFormat = 'pdf' | 'csv' | 'xlsx';
+
 export interface MediaUpload {
   key: string;
   url: string;

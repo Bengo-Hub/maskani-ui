@@ -2,8 +2,10 @@
 
 import { Building2, Clock, Gauge, Landmark, Receipt, Timer } from 'lucide-react';
 import { Skeleton } from '@/components/ui/skeleton';
-import { useAccess } from '@/hooks/use-access';
+import { ExportButtons } from '@/components/common/export-buttons';
+import { useAccess, useSlug } from '@/hooks/use-access';
 import { useInsights } from '@/hooks/use-reports';
+import { insightsApi } from '@/lib/api/insights';
 import { kes, num, periodLabel } from '@/lib/utils';
 import { BlocksCard, hours, RevenueMixCard, SalesCard, WorkCard } from './insights-breakdowns';
 import { ForecastCard, TrendCard } from './insights-charts';
@@ -16,6 +18,7 @@ import { KpiCard } from './kpi-card';
  */
 export function PerformanceSection({ propertyId, period, base }: { propertyId: string; period: string; base: string }) {
   const { mod } = useAccess();
+  const slug = useSlug();
   const { data, isLoading, isError } = useInsights(propertyId, period);
   if (isError) return null;
   const k = data?.kpis;
@@ -23,9 +26,13 @@ export function PerformanceSection({ propertyId, period, base }: { propertyId: s
 
   return (
     <section className="mt-8 space-y-4" aria-labelledby="performance-heading">
-      <div>
-        <h2 id="performance-heading" className="text-lg font-semibold">Performance and outlook</h2>
-        <p className="text-sm text-muted-foreground">{month} against last month and the same month last year, and what is coming in.</p>
+      <div className="flex flex-wrap items-end justify-between gap-3">
+        <div>
+          <h2 id="performance-heading" className="text-lg font-semibold">Performance and outlook</h2>
+          <p className="text-sm text-muted-foreground">{month} against last month and the same month last year, and what is coming in.</p>
+        </div>
+        <ExportButtons name={`performance-${period}`} title={`Performance, ${month}`} pdfLabel="Report PDF"
+          fetchFile={(format) => insightsApi.file(slug, { property_id: propertyId || undefined, period }, format)} />
       </div>
 
       <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-3">

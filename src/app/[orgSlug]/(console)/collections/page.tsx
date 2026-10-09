@@ -17,7 +17,9 @@ import { StatTile } from '@/components/common/stat-tile';
 import { StatusBadge } from '@/components/common/status-badge';
 import { AssignSuspense } from '@/components/billing/assign-suspense';
 import { ArrearsAgeing } from '@/components/dashboard/arrears-ageing';
+import { ExportButtons } from '@/components/common/export-buttons';
 import { useAccess, useSlug } from '@/hooks/use-access';
+import { billingApi } from '@/lib/api/billing';
 import { useArrears, useSuspense } from '@/hooks/use-billing';
 import { useDashboard } from '@/hooks/use-reports';
 import { useUrlParam } from '@/hooks/use-url-param';
@@ -130,6 +132,11 @@ function Collections() {
                 <option value="20000">KES 20,000 or more</option>
                 <option value="100000">KES 100,000 or more</option>
               </NativeSelect>
+              {/* The download follows the same search, amount and property as the list. */}
+              <div className="sm:ml-auto">
+                <ExportButtons name="arrears" title="Arrears"
+                  fetchFile={(format) => billingApi.arrearsFile(slug, { property_id: propertyId || undefined, q: q || undefined, min: min || undefined }, format)} />
+              </div>
             </div>
             <KeysetTable
               columns={arrearsCols}

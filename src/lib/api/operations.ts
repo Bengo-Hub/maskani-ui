@@ -1,7 +1,7 @@
 import { apiClient } from './client';
 import { tenantBase as t } from '@/lib/config';
 import type {
-  AvailabilityGroup, ContractInput, Dashboard, GateDevice, GateEvent, Incident, MediaUpload, Meter, MeterReading,
+  AvailabilityGroup, ContractInput, Dashboard, ExportFormat, GateDevice, GateEvent, Incident, MediaUpload, Meter, MeterReading,
   Notice, NoticeDelivery, Page, PassInput, PriceList, PriceListItem, ReadingRound, Reservation, SaleContract,
   SalesPosition, Vendor, VendorDocument, VendorPersonnel, VisitorPass, WaterBalanceRow, WorkAction, WorkOrder,
   WorkPriority, CatalogEntry, StaffUser, Role, Permission, ModulesState,
@@ -20,6 +20,8 @@ export const utilitiesApi = {
     apiClient.post<MeterReading>(`${t(slug)}/meter-readings/${readingId}/verify`, { action }),
   waterBalance: (slug: string, propertyId: string, period?: string) =>
     apiClient.get<{ data: WaterBalanceRow[] }>(`${t(slug)}/water-balance`, { property_id: propertyId, period }),
+  waterBalanceFile: (slug: string, propertyId: string, period: string | undefined, format: ExportFormat) =>
+    apiClient.getBlob(`${t(slug)}/water-balance/export`, `water-balance.${format}`, { property_id: propertyId, period, format }),
 };
 
 export const salesApi = {
