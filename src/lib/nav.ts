@@ -28,7 +28,9 @@ export interface NavGroup {
 export const NAV: NavGroup[] = [
   {
     label: 'Overview',
-    items: [{ label: 'Dashboard', path: '/dashboard', icon: Gauge, perms: ['reports.view'] }],
+    // Open to every staff role: it is where sign-in lands. Reports inside need reports.view;
+    // the role queues at the top follow each panel's own permission.
+    items: [{ label: 'Dashboard', path: '/dashboard', icon: Gauge }],
   },
   {
     label: 'Register',

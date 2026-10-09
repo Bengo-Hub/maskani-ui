@@ -2,7 +2,9 @@
 
 import { useState } from 'react';
 import Link from 'next/link';
-import { AlertTriangle, Building2, Droplets, FileSignature, Landmark, Truck, Wrench } from 'lucide-react';
+import { AlertTriangle, Building2, Droplets, FileSignature, Gauge, Landmark, Truck, Wrench } from 'lucide-react';
+import { EmptyState } from '@/components/common/empty-state';
+import { RoleFocus, rolePanels } from '@/components/dashboard/role-focus';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
 import { PageHeader } from '@/components/common/page-header';
@@ -26,6 +28,8 @@ export default function DashboardPage() {
   const { data, isLoading } = useDashboard(propertyId, period);
   const { data: arrears = [] } = useTopArrears(propertyId);
   const base = `/${slug}`;
+  const reports = can('reports.view');
+  const hasPanels = rolePanels(can, mod).length > 0;
 
   const billed = num(data?.billed);
   const collected = num(data?.collected);
@@ -37,9 +41,13 @@ export default function DashboardPage() {
       <PageHeader
         title="Dashboard"
         subtitle={firstName ? `Signed in as ${firstName}` : undefined}
-        actions={<PeriodPicker value={period} onChange={setPeriod} />}
+        actions={reports ? <PeriodPicker value={period} onChange={setPeriod} /> : undefined}
       />
 
+      <RoleFocus propertyId={propertyId} base={base} />
+
+      {reports ? (<>
+      <h2 className="mb-2 text-sm font-medium text-muted-foreground">{periodLabel(period)} at a glance</h2>
       <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-3">
         {mod('billing') && (
           <StatTile
@@ -147,7 +155,7 @@ export default function DashboardPage() {
         </div>
       )}
 
-      {can('reports.view') && <PerformanceSection propertyId={propertyId} period={period} base={base} />}
+      <PerformanceSection propertyId={propertyId} period={period} base={base} />
 
       {mod('billing') && arrears.length > 0 && (
         <Card className="mt-4">
@@ -171,6 +179,13 @@ export default function DashboardPage() {
             </ul>
           </CardContent>
         </Card>
+      )}
+      </>) : !hasPanels && (
+        <EmptyState
+          icon={Gauge}
+          title="Nothing to show here yet"
+          description="Your role has no queues or reports on the dashboard. Use the menu to open the areas you work in."
+        />
       )}
     </div>
   );

@@ -61,7 +61,20 @@ export interface Insights {
   work_by_category: { category: string; opened: number; completed: number; breached: number; avg_resolve_hours?: Money }[];
 }
 
+/** GET /reports/role-summary: what each kind of staff acts on today. Open to all staff; the
+ *  screen shows only the panels the caller's role and modules allow. */
+export interface RoleSummary {
+  period: string;
+  readings: { meters: number; read: number; to_recheck: number; pending_review: number };
+  works: { open: number; urgent_open: number; past_due: number; awaiting_confirmation: number };
+  gate: { entries_today: number; walk_ins_pending: number; active_passes: number; open_incidents: number; tablets_offline: number };
+  finance: { failed_bill_lines: number; accounts_owing: number; owing: Money };
+  sales: { holds_expiring_3d: number; instalments_overdue: number; overdue_amount: Money; contracts_in_default: number };
+}
+
 export const insightsApi = {
   get: (slug: string, params: { property_id?: string; period?: string }) =>
     apiClient.get<Insights>(`${t(slug)}/reports/insights`, params, { suppressErrorToast: true }),
+  roleSummary: (slug: string, params: { property_id?: string }) =>
+    apiClient.get<RoleSummary>(`${t(slug)}/reports/role-summary`, params, { suppressErrorToast: true }),
 };

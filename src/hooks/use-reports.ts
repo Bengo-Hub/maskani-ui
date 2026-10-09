@@ -33,6 +33,20 @@ export function useInsights(propertyId: string, period: string) {
   });
 }
 
+/** Today's queues per role (readings, works, gate, finance, sales). Every staff member may call
+ *  it; the panels pick what the caller's role shows. Realtime events refresh it. */
+export function useRoleSummary(propertyId: string, enabled: boolean) {
+  const slug = useSlug();
+  const { me } = useAccess();
+  return useQuery({
+    queryKey: qk.roleSummaryFor(slug, propertyId || undefined),
+    queryFn: () => insightsApi.roleSummary(slug, { property_id: propertyId || undefined }),
+    enabled: !!me && enabled,
+    staleTime: 60_000,
+    placeholderData: (prev) => prev,
+  });
+}
+
 /** Top owing accounts for the dashboard list (first page of the arrears report). */
 export function useTopArrears(propertyId: string) {
   const slug = useSlug();

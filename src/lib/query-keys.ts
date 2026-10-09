@@ -57,6 +57,9 @@ export const qk = {
 
   dashboard: (slug: string) => [slug, 'dashboard'] as const,
   dashboardFor: (slug: string, propertyId: string | undefined, period: string) => [slug, 'dashboard', propertyId ?? 'all', period] as const,
+  // Own prefix so gate and reading events refresh the role panels without refetching insights.
+  roleSummary: (slug: string) => [slug, 'role-summary'] as const,
+  roleSummaryFor: (slug: string, propertyId: string | undefined) => [slug, 'role-summary', propertyId ?? 'all'] as const,
 
   settings: (slug: string) => [slug, 'settings'] as const,
   modules: (slug: string) => [slug, 'settings', 'modules'] as const,
@@ -83,15 +86,15 @@ export function keysForEvent(slug: string, type: string): readonly (readonly unk
       return [qk.runs(slug)];
     case 'payment.applied':
       return [qk.dashboard(slug), qk.accounts(slug), qk.units(slug), qk.suspense(slug), qk.contracts(slug), qk.portal(slug),
-        [slug, 'arrears'] as const];
+        [slug, 'arrears'] as const, qk.roleSummary(slug)];
     case 'work_order.updated':
-      return [qk.workOrders(slug), qk.portalRequests(slug), qk.dashboard(slug)];
+      return [qk.workOrders(slug), qk.portalRequests(slug), qk.dashboard(slug), qk.roleSummary(slug)];
     case 'gate.event':
     case 'walk_in.requested':
     case 'walk_in.decided':
-      return [qk.gateEvents(slug), qk.passes(slug), qk.portalPasses(slug)];
+      return [qk.gateEvents(slug), qk.passes(slug), qk.portalPasses(slug), qk.roleSummary(slug)];
     case 'reading.saved':
-      return [qk.readings(slug)];
+      return [qk.readings(slug), qk.roleSummary(slug)];
     case 'notice.status':
       return [qk.notices(slug), qk.portalNotices(slug)];
     default:
