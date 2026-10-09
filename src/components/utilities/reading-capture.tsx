@@ -11,10 +11,12 @@ import { useSlug } from '@/hooks/use-access';
 import { useSaveReading } from '@/hooks/use-utilities';
 import type { RoundRow } from '@/lib/api/types';
 import { num } from '@/lib/utils';
+import { flagReason, m3 } from './reading-maths';
 
 /**
- * Capture sheet for one meter: numeric keypad entry and a required meter photo. Obvious problems
- * (lower than last month, a big jump) are flagged before saving so the caretaker can look again.
+ * Capture sheet for one meter: numeric keypad entry and an optional meter photo. A reading below
+ * the last one, or use above the API's spike limit, is pointed out before saving so the caretaker
+ * can look again.
  */
 export function ReadingCapture({ row, propertyId, period, onDone }: { row: RoundRow | null; propertyId: string; period: string; onDone: () => void }) {
   const slug = useSlug();
@@ -26,10 +28,15 @@ export function ReadingCapture({ row, propertyId, period, onDone }: { row: Round
   useEffect(() => { setValue(''); setPhotos([]); setConfirmOdd(false); }, [row]);
   if (!row) return null;
 
-  const prev = row.previous_reading != null ? num(row.previous_reading) : null;
+  const prev = num(row.previous_reading);
   const reading = value === '' ? null : Number(value);
-  const used = prev != null && reading != null ? reading - prev : null;
-  const warning = used == null ? null : used < 0 ? 'Lower than last month' : prev != null && prev > 0 && used > Math.max(30, prev * 0.5) ? 'Much higher than usual' : null;
+  const used = reading != null && Number.isFinite(reading) ? reading - prev : null;
+  // The same two checks the API flags on: below the last reading, or use above the row's
+  // spike_above (a multiple of this meter's average). No limit is guessed here without history.
+  const warning = used == null ? null
+    : used < 0 ? flagReason('lower_than_previous', row, 0, reading ?? 0)
+    : row.spike_above != null && used > num(row.spike_above) ? flagReason('spike', row, used, reading ?? 0)
+    : null;
   // The photo is optional (user decision 2026-10-08): it settles disputes, but a failed camera or
   // upload must never block a reading.
   const ready = reading != null && Number.isFinite(reading) && reading >= 0;
@@ -46,7 +53,7 @@ export function ReadingCapture({ row, propertyId, period, onDone }: { row: Round
       onOpenChange={(o) => !o && onDone()}
       size="sm"
       title={`${row.unit_code ?? 'Meter'} · ${row.serial}`}
-      description={prev != null ? `Last reading ${prev}` : 'First reading for this meter'}
+      description={`Last reading ${m3(prev)}${row.average_use != null ? `, usually about ${m3(row.average_use)} m3 a month` : ''}`}
       footer={<>
         <Button variant="outline" onClick={onDone}>Skip</Button>
         <Button size="lg" onClick={submit} disabled={!ready || save.isPending}>
@@ -58,10 +65,14 @@ export function ReadingCapture({ row, propertyId, period, onDone }: { row: Round
         <Field label="Reading (m3)" htmlFor="rd-val">
           <Input id="rd-val" inputMode="decimal" autoFocus value={value} onChange={(e) => { setValue(e.target.value.replace(/[^\d.]/g, '')); setConfirmOdd(false); }} className="h-14 text-center font-mono text-2xl" />
         </Field>
-        {used != null && <p className="text-center text-sm text-muted-foreground">Used this month: <strong className="text-foreground">{used.toFixed(1)} m3</strong></p>}
+        {used != null && reading != null && (
+          <p className="text-center text-sm text-muted-foreground">
+            {m3(reading)} new minus {m3(prev)} last: <strong className="text-foreground">{m3(used)} m3 used</strong>
+          </p>
+        )}
         {warning && (
-          <p className="flex items-center gap-2 rounded-lg bg-warning/10 px-3 py-2 text-sm text-warning">
-            <AlertTriangle className="h-4 w-4 shrink-0" /> {warning}. Check the meter again{confirmOdd ? ', then save anyway if it is right.' : '.'}
+          <p className="flex items-start gap-2 rounded-lg bg-warning/10 px-3 py-2 text-sm text-warning">
+            <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0" /> <span>{warning} Check the meter again{confirmOdd ? ', then save anyway if it is right.' : '.'}</span>
           </p>
         )}
         <Field label="Photo of the meter" hint="Optional, but it helps if the owner queries the bill">

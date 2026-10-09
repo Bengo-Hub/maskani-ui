@@ -14,21 +14,21 @@ import { PeriodPicker } from '@/components/common/period-picker';
 import { PropertyRequired, usePropertyOrSingle } from '@/components/common/property-required';
 import { SearchInput } from '@/components/common/search-input';
 import { StatTile } from '@/components/common/stat-tile';
-import { StatusBadge, ToneBadge } from '@/components/common/status-badge';
+import { StatusBadge } from '@/components/common/status-badge';
 import { ReadingCapture } from '@/components/utilities/reading-capture';
+import { ReadingMaths } from '@/components/utilities/reading-maths';
 import { useAccess } from '@/hooks/use-access';
 import { useUrlParam } from '@/hooks/use-url-param';
 import { useEstimateReading, useReadingRound, useVerifyReading } from '@/hooks/use-utilities';
 import type { RoundRow } from '@/lib/api/types';
 import { apiErrorMessage } from '@/lib/api/errors';
-import { currentPeriod, num } from '@/lib/utils';
+import { currentPeriod } from '@/lib/utils';
 
-const FLAG: Record<string, string> = { lower_than_previous: 'Lower than last', zero_occupied: 'Zero, but occupied', spike: 'Big jump' };
 const SHOW = ['todo', 'read', 'flagged', 'waiting', 'all'] as const;
 type Show = (typeof SHOW)[number];
 
 export default function ReadingRoundPage() {
-  return <Suspense fallback={<Skeleton className="mx-auto h-96 max-w-5xl" />}><ReadingRound /></Suspense>;
+  return <Suspense fallback={<Skeleton className="mx-auto h-96 max-w-7xl" />}><ReadingRound /></Suspense>;
 }
 
 const flagged = (r: RoundRow) => !!r.current?.flags?.length;
@@ -96,11 +96,11 @@ function ReadingRound() {
     }
   };
 
-  if (!propertyId) return <div className="mx-auto max-w-5xl"><PageHeader title="Meter readings" /><PropertyRequired what="Meter readings" /></div>;
+  if (!propertyId) return <div className="mx-auto max-w-7xl"><PageHeader title="Meter readings" /><PropertyRequired what="Meter readings" /></div>;
   const total = round?.total ?? 0;
 
   return (
-    <div className="mx-auto max-w-5xl space-y-5">
+    <div className="mx-auto max-w-7xl space-y-5">
       <PageHeader
         title="Meter readings"
         subtitle="Walk the round on your phone; a photo of each meter helps but is optional."
@@ -156,17 +156,10 @@ function ReadingRound() {
                 </div>
                 <ul className="divide-y rounded-2xl border bg-card">
                   {g.rows.map((r) => (
-                    <li key={r.meter_id} className="flex items-center justify-between gap-3 px-4 py-3">
-                      <div className="min-w-0">
+                    <li key={r.meter_id} className="flex flex-col gap-3 px-4 py-3 sm:flex-row sm:items-center sm:justify-between">
+                      <div className="grid min-w-0 flex-1 gap-1 md:grid-cols-[minmax(10rem,14rem)_1fr] md:items-center md:gap-4">
                         <p className="font-medium">{r.unit_code ?? r.kind.replace(/_/g, ' ')} <span className="font-mono text-xs text-muted-foreground">{r.serial}</span></p>
-                        <p className="text-xs text-muted-foreground">
-                          Last {r.previous_reading != null ? num(r.previous_reading) : 'none'}
-                          {r.current ? `, now ${num(r.current.reading)} (${num(r.current.consumption)} m3)` : ''}
-                          {r.current?.estimated ? ', estimated' : ''}
-                        </p>
-                        {r.current?.flags?.length ? (
-                          <div className="mt-1 flex flex-wrap gap-1">{r.current.flags.map((f) => <ToneBadge key={f} tone="warning">{FLAG[f] ?? f}</ToneBadge>)}</div>
-                        ) : null}
+                        <ReadingMaths row={r} />
                       </div>
                       {r.current ? (
                         <div className="flex shrink-0 flex-wrap items-center justify-end gap-2">
