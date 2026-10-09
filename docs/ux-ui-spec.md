@@ -125,8 +125,24 @@ the same period opens the existing run instead of creating another.
 ### Reading round (caretaker phone)
 
 List in walking order grouped by block; each row shows unit, meter serial, previous reading; tapping
-opens a capture sheet: numeric keypad input, camera capture (required), instant flag (lower than
+opens a capture sheet: numeric keypad input, camera capture (optional), instant flag (lower than
 previous, zero consumption, spike) with "re-check" or "save anyway"; progress "23 of 40 read".
+
+A read row shows the arithmetic: last reading, new reading and use, so 2082 after 1085 reads
+"997 m3 used". A flagged row says why in words, using the round's `average_use` and `spike_above`
+(for example "997 m3 is above 90 m3, which is 3 times this meter's average use of 30 m3 a month").
+The capture sheet warns on the same two rules the API flags (below the last reading, use above
+`spike_above`); without history there is no spike limit and no warning.
+
+### Security (console)
+
+- Visitor passes: keyset table with unit and block; view a pass (`GET /visitor-passes/{id}`) and
+  cancel an active one (`POST /visitor-passes/{id}/cancel`, 409 once it is used or expired). The
+  staff form picks the host unit from the property's units so the gate shows unit and block.
+- Gate log: an "Inside now" panel (`GET /gate/inside`) above the log; the log shows event, visitor,
+  unit and block, guard, who decided a walk-in and when an entry left, filterable by event.
+- Gate tablets: every registered tablet with online state, last seen and app version; revoke a lost
+  or replaced tablet after a confirm. Registering the device in hand stays on the same page.
 
 ### Owner portal home
 
