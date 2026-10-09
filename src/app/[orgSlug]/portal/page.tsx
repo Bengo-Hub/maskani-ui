@@ -6,6 +6,7 @@ import { EmptyState } from '@/components/common/empty-state';
 import {
   HomeHero, NoticesPanel, PurchaseCard, QuickActions, RequestsPanel, UnitCard, VisitorsPanel,
 } from '@/components/portal/home-sections';
+import { PushPrompt } from '@/components/portal/push-prompt';
 import { useSlug } from '@/hooks/use-access';
 import { usePortalNotices, usePortalPasses, usePortalPurchase, usePortalRequests, usePortalUnits } from '@/hooks/use-portal';
 import { useAuthStore } from '@/store/auth';
@@ -49,6 +50,7 @@ export default function PortalHome() {
   return (
     <div className="space-y-6">
       <HomeHero name={first} estate={estate} units={units} />
+      <PushPrompt slug={slug} />
       <QuickActions base={base} />
 
       <div className="grid grid-cols-1 gap-6 xl:grid-cols-[minmax(0,1fr)_22rem]">

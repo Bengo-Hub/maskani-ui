@@ -8,11 +8,12 @@ import { Card } from '@/components/ui/card';
 import { useSlug } from '@/hooks/use-access';
 import { useDecideWalkIn } from '@/hooks/use-portal';
 
-type Outcome = 'approved' | 'declined' | 'timeout' | null;
+type Outcome = 'approved' | 'declined' | 'timeout' | 'guard_approved' | 'guard_declined' | null;
 
 /**
- * Opened from the WhatsApp "visitor at the gate" button (deep link contract in the UX spec). The
- * guard waits up to 5 minutes; after that the API records a timeout whatever the answer.
+ * Opened from the gate alert on the phone or the WhatsApp "visitor at the gate" button. The answer
+ * counts for 5 minutes after the guard's latest ask (a ring restarts them); the guard can also
+ * decide at the gate, and then this page says so.
  */
 export default function WalkInDecisionPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = use(params);
@@ -22,6 +23,7 @@ export default function WalkInDecisionPage({ params }: { params: Promise<{ id: s
   const answer = (approve: boolean) => decide.mutate(approve, {
     onSuccess: (ev) => {
       const d = ev?.decision;
+      if (ev?.decided_by === 'guard' && (d === 'approved' || d === 'declined')) { setOutcome(`guard_${d}`); return; }
       setOutcome(d === 'timeout' ? 'timeout' : d === 'approved' || d === 'declined' ? d : approve ? 'approved' : 'declined');
     },
   });
@@ -30,7 +32,9 @@ export default function WalkInDecisionPage({ params }: { params: Promise<{ id: s
     const view = {
       approved: { icon: Check, tone: 'text-success', title: 'Visitor allowed in', body: 'The guard has been told to let them in.' },
       declined: { icon: X, tone: 'text-destructive', title: 'Visitor turned away', body: 'The guard has been told not to let them in.' },
-      timeout: { icon: Clock, tone: 'text-warning', title: 'Too late to answer', body: 'More than 5 minutes passed, so the guard did not let them in. Call the gate if they are still there.' },
+      guard_approved: { icon: Check, tone: 'text-success', title: 'The guard already let them in', body: 'The guard decided at the gate before your answer arrived.' },
+      guard_declined: { icon: X, tone: 'text-destructive', title: 'The guard already turned them away', body: 'The guard decided at the gate before your answer arrived. Call the gate if they should come in.' },
+      timeout: { icon: Clock, tone: 'text-warning', title: 'Too late to answer', body: 'More than 5 minutes passed since the guard asked. Call the gate if they are still there.' },
     }[outcome];
     return (
       <Card className="items-center gap-3 p-8 text-center">
@@ -47,7 +51,7 @@ export default function WalkInDecisionPage({ params }: { params: Promise<{ id: s
       <ShieldCheck className="h-12 w-12 text-primary" />
       <div className="space-y-1">
         <h1 className="font-display text-xl font-semibold">Someone is at the gate for you</h1>
-        <p className="text-sm text-muted-foreground">The guard is waiting for your answer. The request expires 5 minutes after the guard sent it.</p>
+        <p className="text-sm text-muted-foreground">The guard is waiting for your answer. It counts for 5 minutes after the guard asked.</p>
       </div>
       <div className="grid w-full gap-3 sm:grid-cols-2">
         <Button size="lg" className="h-14 text-base" onClick={() => answer(true)} disabled={decide.isPending}><Check /> Let them in</Button>

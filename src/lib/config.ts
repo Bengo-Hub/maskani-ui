@@ -12,3 +12,5 @@ export const MARKETPLACE_URL = process.env.NEXT_PUBLIC_MARKETPLACE_URL || 'https
 export function tenantBase(slug: string): string {
   return `/api/v1/${encodeURIComponent(slug)}/maskani`;
 }
+/** notifications-api: push device registration for residents (host rings, visitor arrivals). */
+export const NOTIFICATIONS_API_URL = (process.env.NEXT_PUBLIC_NOTIFICATIONS_URL || 'https://notificationsapi.codevertexafrica.com').replace(/\/$/, '');

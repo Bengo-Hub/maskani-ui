@@ -57,11 +57,11 @@ export function useCreatePortalPass() {
 }
 
 /** A resident's answer to a walk-in at the gate. The API returns the recorded decision, which is
- *  "timeout" when the 5 minutes ran out first. */
+ *  "timeout" when the 5 minutes ran out first; decided_by says whether the guard settled it already. */
 export function useDecideWalkIn(id: string) {
   const slug = useSlug();
   return useMutation({
-    mutationFn: (approve: boolean) => portalApi.decideWalkIn(slug, id, approve) as Promise<{ decision?: string }>,
+    mutationFn: (approve: boolean) => portalApi.decideWalkIn(slug, id, approve) as Promise<{ decision?: string; decided_by?: string }>,
   });
 }
 

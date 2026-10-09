@@ -118,3 +118,40 @@ function wakeClientsToSync() {
 self.addEventListener('sync', (event) => {
   if (event.tag === 'maskani-gate-sync') event.waitUntil(wakeClientsToSync());
 });
+
+// Web push (notifications-api): a host ring or a visitor arrival. The payload is
+// {notification: {title, body}, data: {url, ...}}; a ring stays on screen until answered.
+self.addEventListener('push', (event) => {
+  if (!event.data) return;
+  let payload;
+  try { payload = event.data.json(); } catch { return; }
+  const n = payload.notification || {};
+  const data = payload.data || {};
+  const ring = data.ring === 'true' || /walk-ins\//.test(data.url || '');
+  event.waitUntil(self.registration.showNotification(n.title || 'Maskani', {
+    body: n.body || '',
+    data,
+    icon: '/icons/icon-192.png',
+    badge: '/icons/icon-192.png',
+    tag: data.url || 'maskani',
+    renotify: true,
+    requireInteraction: ring,
+    vibrate: ring ? [300, 150, 300, 150, 300] : undefined,
+  }));
+});
+
+self.addEventListener('notificationclick', (event) => {
+  event.notification.close();
+  const url = (event.notification.data && event.notification.data.url) || '/';
+  const target = new URL(url, self.location.origin).href;
+  event.waitUntil((async () => {
+    const all = await self.clients.matchAll({ type: 'window', includeUncontrolled: true });
+    for (const c of all) {
+      if (new URL(c.url).origin === self.location.origin && 'focus' in c) {
+        if ('navigate' in c) await c.navigate(target);
+        return c.focus();
+      }
+    }
+    return self.clients.openWindow(target);
+  })());
+});
