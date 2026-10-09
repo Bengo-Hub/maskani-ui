@@ -1,6 +1,7 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
+import { useSearchParams } from 'next/navigation';
 import { Plus, Wrench } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
@@ -31,6 +32,17 @@ export default function PortalRequestsPage() {
   const [photos, setPhotos] = useState<PickedPhoto[]>([]);
 
   const openForm = () => { setF({ unit_id: units[0]?.unit.id ?? '', category: categories[0]?.code ?? '', urgent: false, title: '', description: '' }); setPhotos([]); setOpen(true); };
+  // "Report a problem" on the home opens the form here (?new=1), once, after the units load.
+  const wantsNew = useSearchParams().get('new') === '1';
+  const openRef = useRef(openForm);
+  openRef.current = openForm;
+  const autoOpened = useRef(false);
+  useEffect(() => {
+    if (wantsNew && !autoOpened.current && units.length > 0) {
+      autoOpened.current = true;
+      openRef.current();
+    }
+  }, [wantsNew, units.length]);
   const valid = f.unit_id && f.title.trim();
   const submit = () => {
     if (!valid) return;

@@ -1,6 +1,7 @@
 'use client';
 
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
+import { useSearchParams } from 'next/navigation';
 import { Plus, ShieldCheck } from 'lucide-react';
 import { useTenantBranding } from '@bengo-hub/shared-ui-lib/tenant';
 import { Button } from '@/components/ui/button';
@@ -46,6 +47,17 @@ export default function PortalVisitorsPage() {
     setF({ unit_id: units[0]?.unit.id ?? '', pass_type: 'guest_single', visitor_name: '', visitor_phone: '', vehicle_plate: '', from: localInput(now), to: localInput(new Date(now.getTime() + 12 * 3600_000)) });
     setOpen(true);
   };
+  // "Add a visitor" on the home opens the form here (?new=1), once, after the units load.
+  const wantsNew = useSearchParams().get('new') === '1';
+  const openRef = useRef(openForm);
+  openRef.current = openForm;
+  const autoOpened = useRef(false);
+  useEffect(() => {
+    if (wantsNew && !autoOpened.current && units.length > 0) {
+      autoOpened.current = true;
+      openRef.current();
+    }
+  }, [wantsNew, units.length]);
   const setType = (t: PassType) => {
     const start = f.from ? new Date(f.from) : new Date();
     setF({ ...f, pass_type: t, to: localInput(new Date(start.getTime() + (HOURS[t] ?? 12) * 3600_000)) });

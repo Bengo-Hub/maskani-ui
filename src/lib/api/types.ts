@@ -807,6 +807,8 @@ export interface PortalUnit {
   property: Property;
   /** Each account carries its fund (name, paybill) under edges.fund. */
   accounts: UnitAccount[];
+  /** Latest accepted water reading within six months. */
+  last_reading?: { period: string; reading: Money; consumption: Money; read_at: string; estimated: boolean; photo_key?: string };
 }
 
 export interface MediaUpload {
