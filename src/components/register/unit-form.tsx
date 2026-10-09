@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { CatalogueCombobox } from '@/components/common/catalogue-combobox';
@@ -47,9 +47,20 @@ export function UnitForm({ open, onOpenChange, unit, propertyId, onSaved }: {
   const { data: types = [] } = useCatalogue('unit_type');
   const save = useSaveUnit(unit?.id);
 
+  // Reset when the sheet opens or the unit being edited changes; the property defaults in once the
+  // list loads. Primitive deps only: a `= []` default is a new array each render (React #185).
+  const onlyPropertyId = properties.length === 1 ? properties[0].id : '';
+  // The unit comes from query data: a background refetch hands a new object, so the reset keys on
+  // its id and reads the object through a ref instead of wiping edits on every refetch.
+  const unitRef = useRef(unit);
+  unitRef.current = unit;
+  const unitId = unit?.id;
   useEffect(() => {
-    if (open) setF(toForm(unit, propertyId || (properties.length === 1 ? properties[0].id : '')));
-  }, [open, unit, propertyId, properties]);
+    if (open) setF(toForm(unitRef.current, propertyId ?? ''));
+  }, [open, unitId, propertyId]);
+  useEffect(() => {
+    if (open) setF((s) => (s.property_id ? s : { ...s, property_id: onlyPropertyId }));
+  }, [open, onlyPropertyId]);
 
   const set = (k: keyof FormState, v: string) => setF((s) => ({ ...s, [k]: v }));
   const onType = (code: string) => {

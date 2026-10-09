@@ -29,12 +29,22 @@ export function WorkOrderForm({ open, onOpenChange }: { open: boolean; onOpenCha
   const [photos, setPhotos] = useState<PickedPhoto[]>([]);
   const units = useUnits({ property_id: f.property_id, q: unitQ });
 
+  // Reset only when the sheet opens; defaults fill in as their lists load, never over what was typed.
+  // Effects depend on primitives only: a `= []` default is a new array each render (React #185).
+  const onlyPropertyId = properties.length === 1 ? properties[0].id : '';
+  const firstCategory = categories[0]?.code ?? '';
   useEffect(() => {
     if (!open) return;
-    setF({ property_id: selected || (properties.length === 1 ? properties[0].id : ''), unit_id: '', area: '', category: categories[0]?.code ?? '', priority: 'normal', title: '', description: '' });
+    setF({ property_id: '', unit_id: '', area: '', category: '', priority: 'normal', title: '', description: '' });
     setUnitQ('');
     setPhotos([]);
-  }, [open, selected, properties, categories]);
+  }, [open]);
+  useEffect(() => {
+    if (open) setF((s) => (s.property_id ? s : { ...s, property_id: selected || onlyPropertyId }));
+  }, [open, selected, onlyPropertyId]);
+  useEffect(() => {
+    if (open) setF((s) => (s.category ? s : { ...s, category: firstCategory }));
+  }, [open, firstCategory]);
 
   const valid = f.property_id && f.category && f.title.trim();
   const submit = () => create.mutate({

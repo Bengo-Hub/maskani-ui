@@ -34,11 +34,16 @@ export function RunWizard({ open, onOpenChange }: { open: boolean; onOpenChange:
   const previewRun = usePreviewRun();
   const issue = useIssueRun();
 
+  // Effects depend on primitives only: a `= []` default is a new array each render (React #185).
+  const onlyPropertyId = properties.length === 1 ? properties[0].id : '';
   useEffect(() => {
     if (!open) return;
     setPreview(null);
-    setPropertyId(selected || (properties.length === 1 ? properties[0].id : ''));
-  }, [open, selected, properties]);
+    setPropertyId('');
+  }, [open]);
+  useEffect(() => {
+    if (open) setPropertyId((cur) => cur || selected || onlyPropertyId);
+  }, [open, selected, onlyPropertyId]);
   useEffect(() => { setDue(defaultDue(period)); setPreview(null); }, [period]);
 
   const billable = useMemo(() => preview?.lines.filter((l) => !l.skip_reason) ?? [], [preview]);

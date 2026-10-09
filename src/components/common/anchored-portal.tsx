@@ -1,6 +1,6 @@
 'use client';
 
-import { useCallback, useEffect, useLayoutEffect, useState, type ReactNode, type RefObject } from 'react';
+import { useCallback, useEffect, useLayoutEffect, useRef, useState, type ReactNode, type RefObject } from 'react';
 import { createPortal } from 'react-dom';
 import { cn } from '@/lib/utils';
 
@@ -38,9 +38,14 @@ export function AnchoredPortal({ anchorRef, open, onClose, width, align = 'start
     if (open) place();
   }, [open, place]);
 
+  // Callers pass inline closures; reading onClose through a ref keeps the listeners attached once
+  // per open instead of re-binding them on every parent render.
+  const onCloseRef = useRef(onClose);
+  onCloseRef.current = onClose;
+
   useEffect(() => {
     if (!open) return;
-    const onKey = (e: KeyboardEvent) => { if (e.key === 'Escape') onClose(); };
+    const onKey = (e: KeyboardEvent) => { if (e.key === 'Escape') onCloseRef.current(); };
     window.addEventListener('resize', place);
     window.addEventListener('scroll', place, true);
     window.addEventListener('keydown', onKey);
@@ -49,13 +54,13 @@ export function AnchoredPortal({ anchorRef, open, onClose, width, align = 'start
       window.removeEventListener('scroll', place, true);
       window.removeEventListener('keydown', onKey);
     };
-  }, [open, place, onClose]);
+  }, [open, place]);
 
   if (!open || !pos || typeof document === 'undefined') return null;
 
   return createPortal(
     <>
-      <div className="fixed inset-0 z-[90]" onClick={onClose} aria-hidden />
+      <div className="fixed inset-0 z-[90]" onClick={() => onCloseRef.current()} aria-hidden />
       <div
         className={cn('fixed z-[91] flex flex-col rounded-xl border border-border bg-popover shadow-xl', className)}
         style={{ top: pos.top, left: pos.left, width, maxHeight: `calc(100vh - ${pos.top + 8}px)` }}
