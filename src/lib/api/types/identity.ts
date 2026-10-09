@@ -22,6 +22,8 @@ export interface MaskaniMe {
   is_staff?: boolean;
   is_portal_user?: boolean;
   modules: string[];
+  /** Staff: property id to its modules, for properties whose use case or switches narrow `modules`. */
+  property_modules?: Record<string, string[]>;
   user?: MaskaniUser;
   settings?: Record<string, unknown>;
   /** Portal users: the terms version they accepted ("" when not yet), checked against the estate's. */

@@ -14,6 +14,7 @@ import { EmptyState } from '@/components/common/empty-state';
 import { useSlug } from '@/hooks/use-access';
 import { navAllowed, navItemFor } from '@/lib/nav';
 import { hasPermission, useAuthStore } from '@/store/auth';
+import { useSelectedPropertyId } from '@/store/property';
 
 const COLLAPSE_KEY = 'maskani-sidebar-collapsed';
 
@@ -41,6 +42,8 @@ function useStaffSession(slug: string) {
 
 export function ConsoleShell({ children }: { children: ReactNode }) {
   const slug = useSlug();
+  // Modules follow the selected property (its use case and switches), like a POS outlet.
+  const propertyId = useSelectedPropertyId(slug);
   const pathname = usePathname() ?? '';
   const ready = useStaffSession(slug);
   const me = useAuthStore((s) => s.me);
@@ -59,7 +62,7 @@ export function ConsoleShell({ children }: { children: ReactNode }) {
 
   const sub = pathname.slice(`/${slug}`.length) || '/';
   const item = navItemFor(sub);
-  const allowed = !item || navAllowed(me, item);
+  const allowed = !item || navAllowed(me, item, propertyId);
   // Role allows it but the module is switched off: open read only (FR-09) instead of blocking,
   // so records stay viewable and exportable. The nav still hides the module.
   const readOnly = !allowed && !!item?.modules?.length && navAllowed(me, { perms: item.perms });
@@ -72,7 +75,7 @@ export function ConsoleShell({ children }: { children: ReactNode }) {
     { key: 'works', label: 'Works', href: `${base}/works`, icon: Wrench, active: sub.startsWith('/works') },
   ].filter((t) => {
     const n = navItemFor(t.href.slice(base.length));
-    return !n || navAllowed(me, n);
+    return !n || navAllowed(me, n, propertyId);
   });
 
   return (
@@ -105,7 +108,7 @@ export function ConsoleShell({ children }: { children: ReactNode }) {
       <div className="lg:hidden">
         <MobileBottomNav
           tabs={tabs}
-          centerAction={navAllowed(me, { modules: ['maintenance'], perms: ['works.manage'] }) ? { label: 'New request', href: `${base}/works?new=1`, icon: Plus } : undefined}
+          centerAction={navAllowed(me, { modules: ['maintenance'], perms: ['works.manage'] }, propertyId) ? { label: 'New request', href: `${base}/works?new=1`, icon: Plus } : undefined}
           onOpenMore={() => setDrawer(true)}
           LinkComponent={Link}
         />

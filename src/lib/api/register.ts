@@ -17,6 +17,8 @@ export interface PropertyInput {
   town?: string;
   county?: string;
   amenities?: string[];
+  /** Module switches over the use case preset ({module: on or off}); changing them needs settings.manage. */
+  module_overrides?: Record<string, boolean>;
 }
 
 export interface UnitInput {

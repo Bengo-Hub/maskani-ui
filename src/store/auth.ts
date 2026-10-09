@@ -172,7 +172,12 @@ export function hasPermission(me: MaskaniMe | null, code: string): boolean {
   return me.permissions.includes(full) || me.permissions.includes(code);
 }
 
-export function hasModule(me: MaskaniMe | null, module: string): boolean {
+/**
+ * Module check. With a property selected, that property's own set applies when its use case or
+ * switches narrow the tenant's (like a POS outlet's use case); otherwise the tenant's set.
+ */
+export function hasModule(me: MaskaniMe | null, module: string, propertyId = ''): boolean {
   if (!me) return false;
-  return me.modules.includes(module);
+  const own = propertyId ? me.property_modules?.[propertyId] : undefined;
+  return (own ?? me.modules).includes(module);
 }

@@ -13,6 +13,7 @@ import { useSlug } from '@/hooks/use-access';
 import { navPathActive, visibleNav, type NavGroup, type NavItem } from '@/lib/nav';
 import { cn, estateName } from '@/lib/utils';
 import { useAuthStore } from '@/store/auth';
+import { useSelectedPropertyId } from '@/store/property';
 
 const GROUPS_KEY = 'maskani-nav-closed-groups';
 
@@ -220,7 +221,8 @@ export function Sidebar({ collapsed, onToggle, mobileOpen, onMobileOpenChange }:
   onMobileOpenChange: (open: boolean) => void;
 }) {
   const me = useAuthStore((s) => s.me);
-  const groups = visibleNav(me);
+  const propertyId = useSelectedPropertyId(useSlug());
+  const groups = visibleNav(me, propertyId);
   return (
     <>
       <aside className={cn('hidden shrink-0 flex-col border-r border-sidebar-border bg-sidebar text-sidebar-foreground transition-[width] duration-200 lg:flex', collapsed ? 'w-18' : 'w-64')}>

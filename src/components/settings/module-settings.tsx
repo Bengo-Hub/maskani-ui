@@ -10,7 +10,7 @@ import { useAccess } from '@/hooks/use-access';
 import { USE_CASES, useModules, useSetModules } from '@/hooks/use-settings';
 import { cn } from '@/lib/utils';
 
-const MODULE_INFO: Record<string, { label: string; hint: string; icon: LucideIcon }> = {
+export const MODULE_INFO: Record<string, { label: string; hint: string; icon: LucideIcon }> = {
   properties: { label: 'Properties and units', hint: 'Register, owners and residents', icon: Building2 },
   billing: { label: 'Billing and collections', hint: 'Charges, bills, paybill and M-Pesa', icon: Receipt },
   utilities: { label: 'Water meters', hint: 'Reading rounds and water balance', icon: Droplets },
