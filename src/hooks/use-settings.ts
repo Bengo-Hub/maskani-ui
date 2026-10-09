@@ -54,15 +54,16 @@ export function useUpdateEstateSettings() {
   });
 }
 
-export function useUpsertCatalogue(kind: string) {
+/** Saves a list entry. `quiet` leaves the success message to the caller (the combobox names the entry). */
+export function useUpsertCatalogue(kind: string, quiet = false) {
   const slug = useSlug();
   const qc = useQueryClient();
   return useMutation({
     mutationFn: ({ code, name, active }: { code: string; name: string; active?: boolean }) =>
       settingsApi.upsertCatalogue(slug, kind, code, { name, active }),
     onSuccess: () => {
-      toast.success('Saved');
-      void qc.invalidateQueries({ queryKey: qk.catalogue(slug, kind) });
+      if (!quiet) toast.success('Saved');
+      return qc.invalidateQueries({ queryKey: qk.catalogue(slug, kind) });
     },
   });
 }

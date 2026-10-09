@@ -1,6 +1,6 @@
 'use client';
 
-import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { toast } from 'sonner';
 import { gateApi } from '@/lib/api/operations';
 import type { Incident, PassInput } from '@/lib/api/types';
@@ -37,6 +37,16 @@ export function useIncidents(propertyId: string, open?: boolean) {
     (cursor) => gateApi.incidents(slug, { property_id: propertyId, open, cursor, limit: 50 }),
     { enabled: !!propertyId && canAll('gate', 'gate.view') },
   );
+}
+
+export function useIncident(id: string) {
+  const slug = useSlug();
+  const { canAll } = useAccess();
+  return useQuery({
+    queryKey: [...qk.incidents(slug), 'detail', id],
+    queryFn: () => gateApi.incident(slug, id),
+    enabled: !!id && canAll('gate', 'gate.view'),
+  });
 }
 
 export function useCreatePass() {

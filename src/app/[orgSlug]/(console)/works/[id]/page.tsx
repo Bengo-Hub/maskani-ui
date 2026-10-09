@@ -1,6 +1,6 @@
 'use client';
 
-import { use, useEffect, useState } from 'react';
+import { use, useState } from 'react';
 import { AlertTriangle, Clock } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -10,8 +10,8 @@ import { RichTextView } from '@/components/common/rich-text';
 import { StatusBadge } from '@/components/common/status-badge';
 import { WorkActionSheet } from '@/components/works/work-action-sheet';
 import { useAccess, useSlug } from '@/hooks/use-access';
+import { useSignedMedia } from '@/hooks/use-media';
 import { useWorkOrder } from '@/hooks/use-works';
-import { mediaApi } from '@/lib/api/operations';
 import type { WorkAction, WorkStatus } from '@/lib/api/types';
 import { label, WORK_STATUS } from '@/lib/labels';
 import { fmtDateTime, kes, num, titleCase } from '@/lib/utils';
@@ -34,25 +34,14 @@ const ACTION_LABEL: Record<WorkAction, string> = {
   confirm: 'Confirm', reopen: 'Reopen', cancel: 'Cancel', close: 'Close',
 };
 
-function useSigned(slug: string, keys: string[]) {
-  const [urls, setUrls] = useState<string[]>([]);
-  const joined = keys.join('|');
-  useEffect(() => {
-    const list = joined ? joined.split('|') : [];
-    if (!list.length) { setUrls([]); return; }
-    mediaApi.sign(slug, list).then((r) => setUrls(list.map((k) => r.urls?.[k]).filter(Boolean) as string[])).catch(() => setUrls([]));
-  }, [slug, joined]);
-  return urls;
-}
-
 export default function WorkOrderPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = use(params);
   const slug = useSlug();
   const { can } = useAccess();
   const { data: wo, isLoading } = useWorkOrder(id);
   const [action, setAction] = useState<WorkAction | null>(null);
-  const before = useSigned(slug, wo?.photos_before ?? []);
-  const after = useSigned(slug, wo?.photos_after ?? []);
+  const before = useSignedMedia(wo?.photos_before);
+  const after = useSignedMedia(wo?.photos_after);
 
   if (isLoading || !wo) return <div className="mx-auto max-w-4xl space-y-3"><Skeleton className="h-10 w-56" /><Skeleton className="h-64" /></div>;
   const actions = can('works.manage') ? NEXT[wo.status] ?? [] : [];

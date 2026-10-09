@@ -3,6 +3,7 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { toast } from 'sonner';
 import { registerApi, type LinkPartyInput, type PartyInput, type PropertyInput, type UnitFilters, type UnitInput } from '@/lib/api/register';
+import type { PropertyRole } from '@/lib/api/types';
 import { qk } from '@/lib/query-keys';
 import { useAccess, useSlug } from './use-access';
 import { useKeysetList } from './use-keyset-list';
@@ -29,6 +30,24 @@ export function usePropertyStaff(id: string, enabled = true) {
     queryKey: qk.propertyStaff(slug, id),
     queryFn: () => registerApi.propertyStaff(slug, id).then((r) => r.data ?? []),
     enabled: !!id && enabled,
+  });
+}
+
+export function useAssignStaff(propertyId: string) {
+  const slug = useSlug();
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (body: { auth_user_id: string; property_role: PropertyRole }) => registerApi.assignStaff(slug, propertyId, body),
+    onSuccess: () => { toast.success('Staff assigned'); void qc.invalidateQueries({ queryKey: qk.propertyStaff(slug, propertyId) }); },
+  });
+}
+
+export function useRemoveStaff(propertyId: string) {
+  const slug = useSlug();
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (assignmentId: string) => registerApi.removeStaff(slug, assignmentId),
+    onSuccess: () => { toast.success('Assignment removed'); void qc.invalidateQueries({ queryKey: qk.propertyStaff(slug, propertyId) }); },
   });
 }
 

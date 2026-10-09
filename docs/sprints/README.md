@@ -25,7 +25,7 @@ file points here. Every UI call matches a real API route; the gaps are below.
 - [x] Render loops: the work order, billing run and unit sheets now reset only when opened and fill defaults from primitive values; refetches no longer wipe what was typed (`13826ed`)
 - [x] `AnchoredPortal` reads `onClose` through a ref, so inline closures no longer re-bind its listeners (`13826ed`)
 - [x] Notices, water balance, general and catalogue settings and terms moved into hooks (`3cfabe7`)
-- [ ] Still inline: incident detail, property staff, walk-in decide, media signing (work order and incident detail), gate walk-in and incident sheets, portal pay, catalogue combobox
+- [x] Last inline calls moved into hooks: `useIncident`, `useSignedMedia` (one cached hook for work order and incident photos, replacing two effect-and-state copies), `useAssignStaff` and `useRemoveStaff`, `useDecideWalkIn`, and the catalogue combobox on `useUpsertCatalogue(kind, quiet)`. The gate sheets were already on hooks. Pay dialogs keep passing `createIntent` to the shared pay component, which is its contract
 - [x] `enabled` gating on imports, notices, settings and catalogue queries; water balance takes its threshold from `/auth/me` instead of a settings call (`3cfabe7`)
 - [x] Arrears search and minimum balance run on the API (`q`, `min`), so they reach accounts beyond the loaded page (api `e166219`, ui `3cfabe7`). Suspense total stays client side: it sums one bounded window of treasury's unmatched list
 - [x] Water loss average is volume weighted (`3cfabe7`)

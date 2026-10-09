@@ -1,16 +1,13 @@
 'use client';
 
 import { useMemo } from 'react';
-import { useQueryClient } from '@tanstack/react-query';
 import { toast } from 'sonner';
 import { SearchableCombobox, type ComboboxOption } from '@bengo-hub/shared-ui-lib/combobox';
 import { catalogueCode } from '@/components/settings/catalogue-settings';
-import { useAccess, useSlug } from '@/hooks/use-access';
-import { useCatalogue } from '@/hooks/use-settings';
+import { useAccess } from '@/hooks/use-access';
+import { useCatalogue, useUpsertCatalogue } from '@/hooks/use-settings';
 import { apiErrorMessage } from '@/lib/api/errors';
-import { settingsApi } from '@/lib/api/operations';
 import type { CatalogueKind } from '@/lib/catalogues';
-import { qk } from '@/lib/query-keys';
 import { titleCase } from '@/lib/utils';
 
 /** Who may add to each list from a dropdown; mirrors maskani-api rbac.CatalogueManagePerms. */
@@ -37,10 +34,9 @@ export function CatalogueCombobox({ kind, value, onChange, placeholder, disabled
   id?: string;
   className?: string;
 }) {
-  const slug = useSlug();
-  const qc = useQueryClient();
   const { can } = useAccess();
   const { data = [], isLoading } = useCatalogue(kind);
+  const upsert = useUpsertCatalogue(kind, true);
   const options: ComboboxOption[] = useMemo(() => data.map((e) => ({ value: e.code, label: e.name })), [data]);
   const canCreate = CREATE_PERMS[kind].some((p) => can(p));
 
@@ -48,8 +44,8 @@ export function CatalogueCombobox({ kind, value, onChange, placeholder, disabled
     const code = catalogueCode(text);
     if (!code) return;
     try {
-      await settingsApi.upsertCatalogue(slug, kind, code, { name: text.trim(), active: true });
-      await qc.invalidateQueries({ queryKey: qk.catalogue(slug, kind) });
+      // The hook waits for the list to refetch, so the new entry is there when it is selected.
+      await upsert.mutateAsync({ code, name: text.trim(), active: true });
       toast.success(`Added "${text.trim()}"`);
       onChange(code);
       return { value: code, label: text.trim() };

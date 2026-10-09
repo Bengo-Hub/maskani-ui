@@ -1,27 +1,22 @@
 'use client';
 
-import { use, useEffect, useState } from 'react';
-import { useQuery } from '@tanstack/react-query';
+import { use } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
 import { PageHeader } from '@/components/common/page-header';
 import { RichTextView } from '@/components/common/rich-text';
 import { StatusBadge, ToneBadge } from '@/components/common/status-badge';
 import { useSlug } from '@/hooks/use-access';
-import { gateApi, mediaApi } from '@/lib/api/operations';
+import { useSignedMedia } from '@/hooks/use-media';
+import { useIncident } from '@/hooks/use-security';
 import { fmtDateTime, titleCase } from '@/lib/utils';
 
 /** Incident detail; the target of the incident alert deep link (security/incidents/{id}). */
 export default function IncidentDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = use(params);
   const slug = useSlug();
-  const { data: inc, isLoading } = useQuery({ queryKey: [slug, 'incidents', id], queryFn: () => gateApi.incident(slug, id) });
-  const [photos, setPhotos] = useState<string[]>([]);
-
-  useEffect(() => {
-    if (!inc?.photos?.length) return;
-    mediaApi.sign(slug, inc.photos).then((r) => setPhotos(Object.values(r.urls ?? {}))).catch(() => setPhotos([]));
-  }, [slug, inc?.photos]);
+  const { data: inc, isLoading } = useIncident(id);
+  const photos = useSignedMedia(inc?.photos);
 
   if (isLoading || !inc) return <div className="mx-auto max-w-4xl space-y-3"><Skeleton className="h-10 w-56" /><Skeleton className="h-48" /></div>;
 

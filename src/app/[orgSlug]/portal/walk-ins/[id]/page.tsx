@@ -2,12 +2,11 @@
 
 import { use, useState } from 'react';
 import Link from 'next/link';
-import { useMutation } from '@tanstack/react-query';
 import { Check, Clock, ShieldCheck, X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { useSlug } from '@/hooks/use-access';
-import { portalApi } from '@/lib/api/portal';
+import { useDecideWalkIn } from '@/hooks/use-portal';
 
 type Outcome = 'approved' | 'declined' | 'timeout' | null;
 
@@ -19,9 +18,9 @@ export default function WalkInDecisionPage({ params }: { params: Promise<{ id: s
   const { id } = use(params);
   const slug = useSlug();
   const [outcome, setOutcome] = useState<Outcome>(null);
-  const decide = useMutation({
-    mutationFn: (approve: boolean) => portalApi.decideWalkIn(slug, id, approve) as Promise<{ decision?: string }>,
-    onSuccess: (ev, approve) => {
+  const decide = useDecideWalkIn(id);
+  const answer = (approve: boolean) => decide.mutate(approve, {
+    onSuccess: (ev) => {
       const d = ev?.decision;
       setOutcome(d === 'timeout' ? 'timeout' : d === 'approved' || d === 'declined' ? d : approve ? 'approved' : 'declined');
     },
@@ -51,8 +50,8 @@ export default function WalkInDecisionPage({ params }: { params: Promise<{ id: s
         <p className="text-sm text-muted-foreground">The guard is waiting for your answer. The request expires 5 minutes after the guard sent it.</p>
       </div>
       <div className="grid w-full gap-3 sm:grid-cols-2">
-        <Button size="lg" className="h-14 text-base" onClick={() => decide.mutate(true)} disabled={decide.isPending}><Check /> Let them in</Button>
-        <Button size="lg" variant="outline" className="h-14 text-base" onClick={() => decide.mutate(false)} disabled={decide.isPending}><X /> Turn them away</Button>
+        <Button size="lg" className="h-14 text-base" onClick={() => answer(true)} disabled={decide.isPending}><Check /> Let them in</Button>
+        <Button size="lg" variant="outline" className="h-14 text-base" onClick={() => answer(false)} disabled={decide.isPending}><X /> Turn them away</Button>
       </div>
     </Card>
   );
