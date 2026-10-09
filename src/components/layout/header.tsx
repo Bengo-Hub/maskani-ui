@@ -9,7 +9,7 @@ import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
 import { useSlug } from '@/hooks/use-access';
 import { useSubscription } from '@/providers/subscription-provider';
-import { AUTH_UI_URL } from '@/lib/config';
+import { AUTH_UI_URL, TREASURY_UI_URL } from '@/lib/config';
 import { initials } from '@/lib/utils';
 import { useAuthStore, hasPermission } from '@/store/auth';
 import { PropertySwitcher } from './property-switcher';
@@ -17,7 +17,7 @@ import { PropertySwitcher } from './property-switcher';
 // Literal env expressions so the bundler inlines them (see shared-ui-lib service-registry docs).
 const SERVICE_URLS = {
   maskani: process.env.NEXT_PUBLIC_APP_URL || 'https://maskaniapp.codevertexafrica.com',
-  treasury: process.env.NEXT_PUBLIC_TREASURY_UI_URL || 'https://books.codevertexafrica.com',
+  treasury: TREASURY_UI_URL,
   erp: process.env.NEXT_PUBLIC_ERP_UI_URL || 'https://erp.codevertexafrica.com',
   notifications: process.env.NEXT_PUBLIC_NOTIFICATIONS_UI_URL || 'https://notifications.codevertexafrica.com',
   subscriptions: process.env.NEXT_PUBLIC_SUBSCRIPTIONS_UI_URL || 'https://pricing.codevertexafrica.com',

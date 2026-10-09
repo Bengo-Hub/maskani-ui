@@ -7,8 +7,6 @@ import type { NextConfig } from "next";
 // that never runs. The guarantee is the same: no build ever writes public/sw.js.
 const nextConfig: NextConfig = {
   ...(process.env.SKIP_STANDALONE !== "true" && { output: "standalone" as const }),
-  // Route validator types are checked by `pnpm type-check` (tsc) in CI, not by next build.
-  typescript: { ignoreBuildErrors: true },
   images: {
     remotePatterns: [
       { protocol: "https", hostname: "maskaniapi.codevertexafrica.com", pathname: "/media/**" },

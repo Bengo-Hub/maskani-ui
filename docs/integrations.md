@@ -8,7 +8,7 @@
 | `NEXT_PUBLIC_SSO_URL` | `https://sso.codevertexafrica.com` | auth-api OIDC |
 | `NEXT_PUBLIC_SSO_CLIENT_ID` | `maskani-ui` | registered in auth-api seed |
 | `NEXT_PUBLIC_AUTH_UI_URL` | `https://accounts.codevertexafrica.com` | login and logout pages |
-| `NEXT_PUBLIC_TREASURY_API_URL` | `https://booksapi.codevertexafrica.com` | public gateways and pay status |
+| `NEXT_PUBLIC_TREASURY_UI_URL` | `https://books.codevertexafrica.com` | payment modal and app switcher; payments go through maskani-api, never straight to treasury |
 | `NEXT_PUBLIC_NOTIFICATIONS_URL` | `https://notificationsapi.codevertexafrica.com` | push config |
 | `NEXT_PUBLIC_SUBSCRIPTIONS_UI_URL` | `https://pricing.codevertexafrica.com` | upgrade links |
 | `SUBSCRIPTION_BASE_URL` (server only) | `http://subscription-api.subscriptions.svc.cluster.local:4000` | in-cluster, never through Cloudflare |

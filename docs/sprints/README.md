@@ -36,9 +36,9 @@ file points here. Every UI call matches a real API route; the gaps are below.
 - [x] Terms acceptance follows `/auth/me` `terms_accepted_version` (api `4d05518`, ui `3cfabe7`)
 - [x] Route guard shows the shared `FeatureLock` upgrade path when the plan is the reason, the plain message otherwise (`3cfabe7`)
 - [x] Switched-off module opens read only (FR-09) instead of "not available": the shell wraps the page in `ModuleReadOnly` (banner, "Switch it back on" for `settings.manage`), and `useAccess().canAll` lets that page's queries run; the API answers the reads and refuses changes (`3ae57a5`). The nav still hides the module, so it is reached by link or bookmark. A plan without the module still shows the `FeatureLock` upgrade path. The UI derives the state from `/auth/me` modules, so it does not read the `X-Module-Read-Only` header; the header stays for other clients
-- [ ] Dead code: unused shadcn components (dropdown-menu, popover, scroll-area, select, separator, table, textarea), unused wrappers and query keys (meters, price lists, reservations, addVehicle until their screens land), `TREASURY_API_URL`; the header hardcodes the treasury URL instead of `TREASURY_UI_URL`
+- [x] Dead code: the seven unused shadcn components removed; `TREASURY_API_URL` removed from config, Dockerfile, `build.sh` and `.env.example` (payments go through maskani-api; shared-ui-lib reads only the treasury UI URL); the header uses `TREASURY_UI_URL` from config. The meter, price list, reservation and vehicle wrappers stay: they match live routes and wave 2 screens use them
 - [ ] `lib/api/types.ts` is 813 lines; split by domain
-- [ ] `typescript.ignoreBuildErrors` turned off once type-check is green
+- [x] `typescript.ignoreBuildErrors` turned off: `next build` now type-checks too
 - [x] Docs: the UX spec named `org-shell.tsx` and `nav-config.ts`; corrected to `providers/org-providers.tsx` and `lib/nav.ts`, and `/gate/sync` to `GET` (2026-10-09)
 
 **Screens missing (wave 2, API first)**
@@ -58,8 +58,8 @@ file points here. Every UI call matches a real API route; the gaps are below.
 
 ## Definition of done
 
-`pnpm type-check` and `pnpm build` both green (`ignoreBuildErrors` means build alone proves nothing
-about types); every new page opened in a real browser at phone, tablet and desktop widths; no console
+`pnpm type-check` and `pnpm build` both green (the build type-checks since `ignoreBuildErrors` was
+turned off on 2026-10-09); every new page opened in a real browser at phone, tablet and desktop widths; no console
 errors; docs updated; pushed to `main` and the deployed page checked.
 
 ## Standing frontend rules (from `.claude/memory`)
