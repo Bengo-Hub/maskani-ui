@@ -1,7 +1,8 @@
 import { apiClient } from './client';
 import { tenantBase as t } from '@/lib/config';
 import type {
-  AvailabilityGroup, ContractInput, Dashboard, ExportFormat, GateDevice, GateEvent, Incident, MediaUpload, Meter, MeterReading,
+  AvailabilityGroup, ContractInput, Dashboard, ExportFormat, GateDevice, GateDeviceView, GateEvent, GateEventKind, Incident,
+  InsidePerson, MediaUpload, Meter, MeterReading,
   Notice, NoticeDelivery, Page, PassInput, PriceList, PriceListItem, ReadingRound, Reservation, SaleContract,
   SalesPosition, Vendor, VendorDocument, VendorPersonnel, VisitorPass, WaterBalanceRow, WorkAction, WorkOrder,
   WorkPriority, CatalogEntry, StaffUser, Role, Permission, ModulesState,
@@ -89,10 +90,18 @@ export const gateApi = {
   passes: (slug: string, params: { property_id: string; active?: boolean; cursor?: string; limit?: number }) =>
     apiClient.get<Page<VisitorPass>>(`${t(slug)}/visitor-passes`, params),
   createPass: (slug: string, body: PassInput) => apiClient.post<VisitorPass>(`${t(slug)}/visitor-passes`, body),
-  events: (slug: string, params: { property_id: string; cursor?: string; limit?: number }) =>
+  pass: (slug: string, id: string) => apiClient.get<VisitorPass>(`${t(slug)}/visitor-passes/${id}`),
+  /** 409 when the pass is no longer active (used, expired or already cancelled). */
+  cancelPass: (slug: string, id: string) => apiClient.post<void>(`${t(slug)}/visitor-passes/${id}/cancel`),
+  events: (slug: string, params: { property_id: string; kind?: GateEventKind; cursor?: string; limit?: number }) =>
     apiClient.get<Page<GateEvent>>(`${t(slug)}/gate/events`, params),
+  inside: (slug: string, propertyId: string) =>
+    apiClient.get<{ data: InsidePerson[] | null }>(`${t(slug)}/gate/inside`, { property_id: propertyId }),
   registerDevice: (slug: string, body: { property_id: string; name: string; gate_name?: string }) =>
     apiClient.post<{ device: GateDevice; device_key: string; tenant_slug: string }>(`${t(slug)}/gate/devices`, body),
+  devices: (slug: string, propertyId: string) =>
+    apiClient.get<{ data: GateDeviceView[] | null }>(`${t(slug)}/gate/devices`, { property_id: propertyId }),
+  revokeDevice: (slug: string, id: string) => apiClient.post<void>(`${t(slug)}/gate/devices/${id}/revoke`),
   incidents: (slug: string, params: { property_id: string; open?: boolean; cursor?: string; limit?: number }) =>
     apiClient.get<Page<Incident>>(`${t(slug)}/incidents`, params),
   createIncident: (slug: string, body: Partial<Incident>) => apiClient.post<Incident>(`${t(slug)}/incidents`, body),

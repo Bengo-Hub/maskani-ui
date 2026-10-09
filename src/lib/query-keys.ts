@@ -49,7 +49,10 @@ export const qk = {
   vendor: (slug: string, id: string) => [slug, 'vendors', id] as const,
 
   passes: (slug: string) => [slug, 'passes'] as const,
+  pass: (slug: string, id: string) => [slug, 'passes', 'detail', id] as const,
   gateEvents: (slug: string) => [slug, 'gate-events'] as const,
+  gateInside: (slug: string, propertyId?: string) => [slug, 'gate-inside', ...(propertyId ? [propertyId] : [])] as const,
+  gateDevices: (slug: string, propertyId?: string) => [slug, 'gate-devices', ...(propertyId ? [propertyId] : [])] as const,
   incidents: (slug: string) => [slug, 'incidents'] as const,
 
   notices: (slug: string) => [slug, 'notices'] as const,
@@ -92,7 +95,7 @@ export function keysForEvent(slug: string, type: string): readonly (readonly unk
     case 'gate.event':
     case 'walk_in.requested':
     case 'walk_in.decided':
-      return [qk.gateEvents(slug), qk.passes(slug), qk.portalPasses(slug), qk.roleSummary(slug)];
+      return [qk.gateEvents(slug), qk.gateInside(slug), qk.passes(slug), qk.portalPasses(slug), qk.roleSummary(slug)];
     case 'reading.saved':
       return [qk.readings(slug), qk.roleSummary(slug)];
     case 'notice.status':
