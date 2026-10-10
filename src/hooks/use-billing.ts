@@ -235,3 +235,34 @@ export function useAddCollectionNote(accountId: string) {
     },
   });
 }
+
+/** Manual payments by status (the review queue), within the selected property or all. */
+export function useManualPayments(status: string, propertyId: string) {
+  const slug = useSlug();
+  const { canAll } = useAccess();
+  return useKeysetList(
+    qk.manualPayments(slug, `${status}:${propertyId || 'all'}`),
+    (cursor) => billingApi.manualPayments(slug, { status: status || undefined, property_id: propertyId || undefined, cursor, limit: 24 }),
+    { enabled: canAll('billing', 'billing.verify') || canAll('billing', 'billing.collect') },
+  );
+}
+
+export function useManualPaymentReview() {
+  const slug = useSlug();
+  const qc = useQueryClient();
+  const refresh = () => {
+    void qc.invalidateQueries({ queryKey: [slug, 'manual-payments'] });
+    void qc.invalidateQueries({ queryKey: qk.accounts(slug) });
+    void qc.invalidateQueries({ queryKey: qk.dashboard(slug) });
+  };
+  return {
+    approve: useMutation({
+      mutationFn: (v: { id: string; note?: string }) => billingApi.approveManual(slug, v.id, v.note),
+      onSuccess: () => { toast.success('Payment verified and booked'); refresh(); },
+    }),
+    reject: useMutation({
+      mutationFn: (v: { id: string; reason: string }) => billingApi.rejectManual(slug, v.id, v.reason),
+      onSuccess: () => { toast.success('Payment rejected'); refresh(); },
+    }),
+  };
+}

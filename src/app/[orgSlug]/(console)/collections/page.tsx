@@ -2,7 +2,7 @@
 
 import { Suspense, useMemo, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { AlertTriangle, Clock, Inbox, Landmark, PhoneCall, Users, Wallet } from 'lucide-react';
+import { AlertTriangle, ClipboardCheck, Clock, Inbox, Landmark, PhoneCall, Users, Wallet } from 'lucide-react';
 import type { DataTableColumn } from '@bengo-hub/shared-ui-lib/data-table';
 import { DataTable } from '@bengo-hub/shared-ui-lib/data-table';
 import { Button } from '@/components/ui/button';
@@ -20,7 +20,8 @@ import { ArrearsAgeing } from '@/components/dashboard/arrears-ageing';
 import { ExportButtons } from '@/components/common/export-buttons';
 import { useAccess, useSlug } from '@/hooks/use-access';
 import { billingApi } from '@/lib/api/billing';
-import { useArrears, useCallList, useSuspense } from '@/hooks/use-billing';
+import { useArrears, useCallList, useManualPayments, useSuspense } from '@/hooks/use-billing';
+import { ManualReview } from '@/components/billing/manual-review';
 import { CallList } from '@/components/billing/call-list';
 import { useDashboard } from '@/hooks/use-reports';
 import { useUrlParam } from '@/hooks/use-url-param';
@@ -28,7 +29,7 @@ import type { ArrearsRow, SuspenseRow } from '@/lib/api/types';
 import { currentPeriod, fmtDate, fmtDateTime, kes, num } from '@/lib/utils';
 import { useSelectedPropertyId } from '@/store/property';
 
-const TABS = ['suspense', 'arrears', 'calls'] as const;
+const TABS = ['suspense', 'arrears', 'calls', 'verify'] as const;
 type Tab = (typeof TABS)[number];
 
 export default function CollectionsPage() {
@@ -42,7 +43,9 @@ function Collections() {
   const { can } = useAccess();
   const collect = can('billing.collect');
   const propertyId = useSelectedPropertyId(slug);
-  const [tab, setTab] = useUrlParam<Tab>('tab', collect ? 'suspense' : 'arrears', collect ? TABS : ['arrears']);
+  const verifier = can('billing.verify');
+  const [tab, setTab] = useUrlParam<Tab>('tab', collect ? 'suspense' : verifier ? 'verify' : 'arrears', collect ? TABS : verifier ? ['arrears', 'verify'] : ['arrears']);
+  const pendingManual = useManualPayments('pending', propertyId);
   const calls = useCallList(propertyId);
   const [days, setDays] = useUrlParam<string>('days', '60', ['30', '60', '90', '180']);
   const [q, setQ] = useUrlParam('q', '');
@@ -82,6 +85,7 @@ function Collections() {
   const sections: Section<Tab>[] = [
     ...(collect ? [{ value: 'suspense' as Tab, label: 'Unmatched payments', icon: Inbox, count: open.length, hint: 'Paybill payments with no account' }] : []),
     { value: 'arrears', label: 'Arrears', icon: AlertTriangle, count: dash?.accounts_owing, hint: 'Accounts that owe' },
+    ...(collect || verifier ? [{ value: 'verify' as Tab, label: 'To verify', icon: ClipboardCheck, count: pendingManual.rows.length || undefined, hint: 'Bank, cash and cheque payments to check' }] : []),
     ...(collect ? [{ value: 'calls' as Tab, label: 'Call list', icon: PhoneCall, count: calls.data?.length, hint: 'Owners the reminders have not moved' }] : []),
   ];
   const ageing = dash?.arrears_ageing ?? [];
@@ -101,7 +105,7 @@ function Collections() {
       </div>
 
       <SectionLayout sections={sections} value={tab} onChange={(v) => setTab(v, { q: null })}>
-        {tab === 'calls' && collect ? <CallList propertyId={propertyId} /> : tab === 'suspense' && collect ? (
+        {tab === 'verify' && (collect || verifier) ? <ManualReview propertyId={propertyId} /> : tab === 'calls' && collect ? <CallList propertyId={propertyId} /> : tab === 'suspense' && collect ? (
           <div className="space-y-3">
             <div className="flex flex-col gap-2 sm:flex-row">
               <SearchInput value={q} onSearch={(v) => setQ(v)} placeholder="Payer, phone, typed account or ref" className="sm:max-w-sm" />

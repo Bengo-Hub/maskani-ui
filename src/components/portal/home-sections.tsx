@@ -108,7 +108,8 @@ export function UnitCard({ data, slug, email }: { data: PortalUnit; slug: string
               </div>
               {due > 0 && (
                 <PayAccount tenantSlug={slug} accountId={a.id} accountRef={a.account_ref} balance={a.balance} size="lg" email={email}
-                  createIntent={(id, body) => portalApi.pay(slug, id, body)} invalidate={[qk.portal(slug)]} />
+                  createIntent={(id, body) => portalApi.pay(slug, id, body)} submitManual={(id, body) => portalApi.submitManual(slug, id, body)}
+                  invalidate={[qk.portal(slug)]} />
               )}
               {fund?.paybill_shortcode && (
                 <p className="rounded-xl bg-primary/6 px-3 py-2.5 text-sm">

@@ -1,7 +1,7 @@
 import { apiClient } from './client';
 import { tenantBase as t } from '@/lib/config';
 import type {
-  ArrearsRow, BillingPreview, CallRow, CollectionLadder, CollectionNote, BillingRun, BillingRunLine, BillingSchedule, BillingScheduleInput, ChargeRate, ChargeType, ExportFormat, Fund, Page, PayIntent,
+  ArrearsRow, BillingPreview, CallRow, CollectionLadder, CollectionNote, ManualPayment, ManualPaymentInput, BillingRun, BillingRunLine, BillingSchedule, BillingScheduleInput, ChargeRate, ChargeType, ExportFormat, Fund, Page, PayIntent,
   PayRequest, Statement, SuspenseRow, UnitAccount,
 } from './types';
 
@@ -95,6 +95,11 @@ export const billingApi = {
   staffPay: (slug: string, id: string, body: PayRequest) => apiClient.post<PayIntent>(`${t(slug)}/unit-accounts/${id}/pay`, body),
 
   suspense: (slug: string, days = 60) => apiClient.get<{ data: SuspenseRow[] }>(`${t(slug)}/collections/suspense`, { days }),
+  submitManual: (slug: string, accountId: string, body: ManualPaymentInput) => apiClient.post<ManualPayment>(`${t(slug)}/unit-accounts/${accountId}/manual-payments`, body),
+  manualPayments: (slug: string, params: { status?: string; property_id?: string; account_id?: string; cursor?: string; limit?: number }) =>
+    apiClient.get<Page<ManualPayment>>(`${t(slug)}/collections/manual-payments`, params),
+  approveManual: (slug: string, id: string, note?: string) => apiClient.post<ManualPayment>(`${t(slug)}/manual-payments/${id}/approve`, { note }),
+  rejectManual: (slug: string, id: string, reason: string) => apiClient.post<ManualPayment>(`${t(slug)}/manual-payments/${id}/reject`, { reason }),
   callList: (slug: string, propertyId?: string) => apiClient.get<{ data: CallRow[] }>(`${t(slug)}/collections/call-list`, { property_id: propertyId }),
   ladder: (slug: string, accountId: string) => apiClient.get<CollectionLadder>(`${t(slug)}/unit-accounts/${accountId}/collections`),
   addCollectionNote: (slug: string, accountId: string, body: { outcome: CollectionNote['outcome']; promise_date?: string; note?: string }) =>

@@ -65,10 +65,12 @@ export const NAV: NavGroup[] = [
         ],
       },
       {
-        label: 'Collections', path: '/collections', icon: Landmark, modules: ['billing'], perms: ['billing.collect', 'billing.view'],
+        label: 'Collections', path: '/collections', icon: Landmark, modules: ['billing'], perms: ['billing.collect', 'billing.view', 'billing.verify'],
         children: [
           { label: 'Unmatched payments', path: '/collections?tab=suspense', perms: ['billing.collect'] },
           { label: 'Arrears', path: '/collections?tab=arrears' },
+          { label: 'To verify', path: '/collections?tab=verify', perms: ['billing.collect', 'billing.verify'] },
+          { label: 'Call list', path: '/collections?tab=calls', perms: ['billing.collect'] },
         ],
       },
     ],

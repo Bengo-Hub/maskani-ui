@@ -295,3 +295,31 @@ export interface CallRow {
   promise_date?: string;
   last_note?: CollectionNote;
 }
+
+/** A payment recorded by hand (bank, cash, cheque, typed M-Pesa) that waits for review. */
+export interface ManualPayment extends Base {
+  unit_account_id: string;
+  property_id: string;
+  amount: Money;
+  method: 'bank_transfer' | 'cash' | 'cheque' | 'mpesa';
+  reference: string;
+  paid_on: string;
+  payer_name?: string;
+  note?: string;
+  status: 'pending' | 'approved' | 'rejected';
+  submitted_by?: string;
+  submitted_by_name?: string;
+  reviewed_by_name?: string;
+  reviewed_at?: string;
+  review_note?: string;
+  metadata?: { account_ref?: string; unit_code?: string; portal?: boolean };
+}
+
+export interface ManualPaymentInput {
+  amount: number;
+  method: ManualPayment['method'];
+  reference: string;
+  paid_on?: string;
+  payer_name?: string;
+  note?: string;
+}

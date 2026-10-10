@@ -33,6 +33,7 @@ export default function PortalStatementPage({ params }: { params: Promise<{ id: 
             balance={balance}
             email={email}
             createIntent={(accId, body) => portalApi.pay(slug, accId, body)}
+            submitManual={(accId, body) => portalApi.submitManual(slug, accId, body)}
             invalidate={[qk.portal(slug)]}
           />
         ) : undefined}

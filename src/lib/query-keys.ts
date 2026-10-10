@@ -26,6 +26,7 @@ export const qk = {
   billingSchedule: (slug: string, propertyId: string) => [slug, 'billing-schedule', propertyId] as const,
   callList: (slug: string, propertyId?: string) => [slug, 'call-list', propertyId ?? 'all'] as const,
   ladder: (slug: string, accountId: string) => [slug, 'ladder', accountId] as const,
+  manualPayments: (slug: string, key: string) => [slug, 'manual-payments', key] as const,
   runList: (slug: string, propertyId?: string) => [slug, 'billing-runs', 'list', propertyId ?? 'all'] as const,
   run: (slug: string, id: string) => [slug, 'billing-runs', id] as const,
   runLines: (slug: string, id: string) => [slug, 'billing-runs', id, 'lines'] as const,

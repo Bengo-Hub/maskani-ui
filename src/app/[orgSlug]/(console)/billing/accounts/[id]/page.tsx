@@ -37,6 +37,8 @@ export default function AccountStatementPage({ params }: { params: Promise<{ id:
             balance={data.ledger?.balance ?? a.balance}
             label="Collect payment"
             createIntent={(accId, body) => billingApi.staffPay(slug, accId, body)}
+            submitManual={(accId, body) => billingApi.submitManual(slug, accId, body)}
+            staff
             invalidate={[qk.statement(slug, a.id), qk.accounts(slug), qk.dashboard(slug)]}
           />
         ) : undefined}
