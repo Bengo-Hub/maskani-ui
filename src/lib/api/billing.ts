@@ -2,7 +2,7 @@ import { apiClient } from './client';
 import { tenantBase as t } from '@/lib/config';
 import type { BankCsvLine } from '@/lib/bank-csv';
 import type {
-  BankLineResult,
+  Adjustment, AdjustmentInput, BankLineResult, BillQuery,
   ArrearsRow, BillingPreview, CallRow, CollectionLadder, CollectionNote, ManualPayment, ManualPaymentInput, BillingRun, BillingRunLine, BillingSchedule, BillingScheduleInput, ChargeRate, ChargeType, ExportFormat, Fund, Page, PayIntent,
   PayRequest, Statement, SuspenseRow, UnitAccount,
 } from './types';
@@ -103,6 +103,15 @@ export const billingApi = {
     apiClient.get<Page<ManualPayment>>(`${t(slug)}/collections/manual-payments`, params),
   approveManual: (slug: string, id: string, note?: string) => apiClient.post<ManualPayment>(`${t(slug)}/manual-payments/${id}/approve`, { note }),
   rejectManual: (slug: string, id: string, reason: string) => apiClient.post<ManualPayment>(`${t(slug)}/manual-payments/${id}/reject`, { reason }),
+  requestAdjustment: (slug: string, accountId: string, body: AdjustmentInput) => apiClient.post<Adjustment>(`${t(slug)}/unit-accounts/${accountId}/adjustments`, body),
+  adjustments: (slug: string, params: { status?: string; property_id?: string; account_id?: string; cursor?: string; limit?: number }) =>
+    apiClient.get<Page<Adjustment>>(`${t(slug)}/collections/adjustments`, params),
+  approveAdjustment: (slug: string, id: string, note?: string) => apiClient.post<Adjustment>(`${t(slug)}/adjustments/${id}/approve`, { note }),
+  rejectAdjustment: (slug: string, id: string, reason: string) => apiClient.post<Adjustment>(`${t(slug)}/adjustments/${id}/reject`, { reason }),
+  billQueries: (slug: string, params: { status?: string; property_id?: string; cursor?: string; limit?: number }) =>
+    apiClient.get<Page<BillQuery>>(`${t(slug)}/collections/bill-queries`, params),
+  answerBillQuery: (slug: string, id: string, body: { status: 'in_review' | 'resolved' | 'rejected'; resolution?: string }) =>
+    apiClient.post<BillQuery>(`${t(slug)}/bill-queries/${id}/answer`, body),
   importBankLines: (slug: string, body: { fund: string; property_id?: string; lines: BankCsvLine[] }) =>
     apiClient.post<{ data: BankLineResult[] }>(`${t(slug)}/collections/bank-lines`, body),
   callList: (slug: string, propertyId?: string) => apiClient.get<{ data: CallRow[] }>(`${t(slug)}/collections/call-list`, { property_id: propertyId }),

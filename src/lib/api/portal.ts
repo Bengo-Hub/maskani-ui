@@ -1,6 +1,6 @@
 import { apiClient } from './client';
 import { tenantBase as t } from '@/lib/config';
-import type { ExportFormat, ManualPayment, ManualPaymentInput, Notice, Page, PassInput, PayIntent, PayRequest, PortalUnit, SaleContract, Statement, VisitorPass, WorkOrder, WorkPriority } from './types';
+import type { BillQuery, BillQueryInput, ExportFormat, ManualPayment, ManualPaymentInput, Notice, Page, PassInput, PayIntent, PayRequest, PortalUnit, SaleContract, Statement, VisitorPass, WorkOrder, WorkPriority } from './types';
 
 const me = (slug: string) => `${t(slug)}/me`;
 
@@ -12,6 +12,8 @@ export const portalApi = {
   pay: (slug: string, accountId: string, body: PayRequest) => apiClient.post<PayIntent>(`${me(slug)}/accounts/${accountId}/pay`, body),
   /** A bank or cheque reference for an amount an M-Pesa prompt cannot take; staff verify it. */
   submitManual: (slug: string, accountId: string, body: ManualPaymentInput) => apiClient.post<ManualPayment>(`${me(slug)}/accounts/${accountId}/manual-payments`, body),
+  raiseBillQuery: (slug: string, accountId: string, body: BillQueryInput) => apiClient.post<BillQuery>(`${me(slug)}/accounts/${accountId}/bill-queries`, body),
+  billQueries: (slug: string, cursor?: string) => apiClient.get<Page<BillQuery>>(`${me(slug)}/bill-queries`, { cursor, limit: 20 }),
   purchase: (slug: string) => apiClient.get<{ data: SaleContract[] }>(`${me(slug)}/purchase`),
   passes: (slug: string) => apiClient.get<{ data: VisitorPass[] }>(`${me(slug)}/passes`),
   createPass: (slug: string, body: Omit<PassInput, 'property_id'> & { property_id?: string }) =>

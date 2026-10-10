@@ -45,6 +45,7 @@ export function StatementView({ statement, actions }: { statement: Statement; ac
             <ul className="divide-y">
               {entries.map((e, i) => {
                 const paid = num(e.credit) > 0;
+                const credited = e.kind === 'credit';
                 const after = num(e.balance_after);
                 return (
                   <li key={`${e.kind}-${e.reference ?? ''}-${e.date}-${i}`} className="flex items-center justify-between gap-3 px-4 py-3 sm:px-6">
@@ -57,7 +58,7 @@ export function StatementView({ statement, actions }: { statement: Statement; ac
                     </div>
                     <div className="shrink-0 text-right">
                       <p className={paid ? 'font-medium text-success tabular' : 'font-medium tabular'}>
-                        {paid ? `Paid ${kes(e.credit)}` : kes(e.debit)}
+                        {credited ? `Credited ${kes(e.credit)}` : paid ? `Paid ${kes(e.credit)}` : kes(e.debit)}
                       </p>
                       <p className="text-xs text-muted-foreground tabular">
                         {after < 0 ? `${kes(-after)} in credit` : `Balance ${kes(after)}`}

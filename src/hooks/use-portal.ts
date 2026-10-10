@@ -3,7 +3,7 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { toast } from 'sonner';
 import { portalApi } from '@/lib/api/portal';
-import type { PassInput, WorkPriority } from '@/lib/api/types';
+import type { BillQueryInput, PassInput, WorkPriority } from '@/lib/api/types';
 import { qk } from '@/lib/query-keys';
 import { useAuthStore } from '@/store/auth';
 import { useSlug } from './use-access';
@@ -106,4 +106,20 @@ export function usePortalNotices() {
   const slug = useSlug();
   const ready = usePortalReady();
   return useQuery({ queryKey: qk.portalNotices(slug), queryFn: () => portalApi.notices(slug).then((r) => r.data ?? []), enabled: ready });
+}
+
+/** The resident's bill queries and their answers, newest first. */
+export function useMyBillQueries() {
+  const slug = useSlug();
+  const ready = usePortalReady();
+  return useKeysetList(qk.billQueries(slug, 'mine'), (cursor) => portalApi.billQueries(slug, cursor), { enabled: ready });
+}
+
+export function useRaiseBillQuery(accountId: string) {
+  const slug = useSlug();
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (body: BillQueryInput) => portalApi.raiseBillQuery(slug, accountId, body),
+    onSuccess: () => { toast.success('Query sent to the estate office'); void qc.invalidateQueries({ queryKey: qk.billQueries(slug, 'mine') }); },
+  });
 }

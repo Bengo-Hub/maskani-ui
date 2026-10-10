@@ -2,7 +2,7 @@
 
 import { Suspense, useMemo, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { AlertTriangle, ClipboardCheck, Clock, Inbox, Landmark, PhoneCall, Users, Wallet } from 'lucide-react';
+import { AlertTriangle, ClipboardCheck, Clock, Inbox, Landmark, MessageSquareWarning, PhoneCall, ReceiptText, Users, Wallet } from 'lucide-react';
 import type { DataTableColumn } from '@bengo-hub/shared-ui-lib/data-table';
 import { DataTable } from '@bengo-hub/shared-ui-lib/data-table';
 import { Button } from '@/components/ui/button';
@@ -20,16 +20,18 @@ import { ArrearsAgeing } from '@/components/dashboard/arrears-ageing';
 import { ExportButtons } from '@/components/common/export-buttons';
 import { useAccess, useSlug } from '@/hooks/use-access';
 import { billingApi } from '@/lib/api/billing';
-import { useArrears, useCallList, useManualPayments, useSuspense } from '@/hooks/use-billing';
+import { useAdjustments, useArrears, useBillQueries, useCallList, useManualPayments, useSuspense } from '@/hooks/use-billing';
 import { ManualReview } from '@/components/billing/manual-review';
 import { CallList } from '@/components/billing/call-list';
+import { CreditReview } from '@/components/billing/credit-review';
+import { BillQueries } from '@/components/billing/bill-queries';
 import { useDashboard } from '@/hooks/use-reports';
 import { useUrlParam } from '@/hooks/use-url-param';
 import type { ArrearsRow, SuspenseRow } from '@/lib/api/types';
 import { currentPeriod, fmtDate, fmtDateTime, kes, num } from '@/lib/utils';
 import { useSelectedPropertyId } from '@/store/property';
 
-const TABS = ['suspense', 'arrears', 'calls', 'verify'] as const;
+const TABS = ['suspense', 'arrears', 'calls', 'verify', 'credits', 'queries'] as const;
 type Tab = (typeof TABS)[number];
 
 export default function CollectionsPage() {
@@ -44,8 +46,12 @@ function Collections() {
   const collect = can('billing.collect');
   const propertyId = useSelectedPropertyId(slug);
   const verifier = can('billing.verify');
-  const [tab, setTab] = useUrlParam<Tab>('tab', collect ? 'suspense' : verifier ? 'verify' : 'arrears', collect ? TABS : verifier ? ['arrears', 'verify'] : ['arrears']);
+  const credits = can('billing.adjust') || can('billing.approve');
+  const allowed: Tab[] = ['arrears', 'queries', ...(collect ? ['suspense', 'calls'] as Tab[] : []), ...(collect || verifier ? ['verify'] as Tab[] : []), ...(credits ? ['credits'] as Tab[] : [])];
+  const [tab, setTab] = useUrlParam<Tab>('tab', collect ? 'suspense' : verifier ? 'verify' : 'arrears', allowed);
   const pendingManual = useManualPayments('pending', propertyId);
+  const pendingCredits = useAdjustments('pending_approval', propertyId);
+  const newQueries = useBillQueries('open', propertyId);
   const calls = useCallList(propertyId);
   const [days, setDays] = useUrlParam<string>('days', '60', ['30', '60', '90', '180']);
   const [q, setQ] = useUrlParam('q', '');
@@ -87,6 +93,8 @@ function Collections() {
     { value: 'arrears', label: 'Arrears', icon: AlertTriangle, count: dash?.accounts_owing, hint: 'Accounts that owe' },
     ...(collect || verifier ? [{ value: 'verify' as Tab, label: 'To verify', icon: ClipboardCheck, count: pendingManual.rows.length || undefined, hint: 'Bank, cash and cheque payments to check' }] : []),
     ...(collect ? [{ value: 'calls' as Tab, label: 'Call list', icon: PhoneCall, count: calls.data?.length, hint: 'Owners the reminders have not moved' }] : []),
+    ...(credits ? [{ value: 'credits' as Tab, label: 'Credits', icon: ReceiptText, count: pendingCredits.rows.length || undefined, hint: 'Credit notes and waivers to approve' }] : []),
+    { value: 'queries', label: 'Bill queries', icon: MessageSquareWarning, count: newQueries.rows.length || undefined, hint: 'Residents asking about a bill' },
   ];
   const ageing = dash?.arrears_ageing ?? [];
 
@@ -105,7 +113,8 @@ function Collections() {
       </div>
 
       <SectionLayout sections={sections} value={tab} onChange={(v) => setTab(v, { q: null })}>
-        {tab === 'verify' && (collect || verifier) ? <ManualReview propertyId={propertyId} /> : tab === 'calls' && collect ? <CallList propertyId={propertyId} /> : tab === 'suspense' && collect ? (
+        {tab === 'verify' && (collect || verifier) ? <ManualReview propertyId={propertyId} /> : tab === 'credits' && credits ? <CreditReview propertyId={propertyId} />
+          : tab === 'queries' ? <BillQueries propertyId={propertyId} /> : tab === 'calls' && collect ? <CallList propertyId={propertyId} /> : tab === 'suspense' && collect ? (
           <div className="space-y-3">
             <div className="flex flex-col gap-2 sm:flex-row">
               <SearchInput value={q} onSearch={(v) => setQ(v)} placeholder="Payer, phone, typed account or ref" className="sm:max-w-sm" />

@@ -3,7 +3,7 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { toast } from 'sonner';
 import { billingApi, type ChargeTypeInput, type FundInput, type RateInput, type RunInput } from '@/lib/api/billing';
-import type { BillingScheduleInput, CollectionNote, PayRequest } from '@/lib/api/types';
+import type { AdjustmentInput, BillingScheduleInput, CollectionNote, PayRequest } from '@/lib/api/types';
 import type { BankCsvLine } from '@/lib/bank-csv';
 import { qk } from '@/lib/query-keys';
 import { useAccess, useSlug } from './use-access';
@@ -246,6 +246,74 @@ export function useManualPayments(status: string, propertyId: string) {
     (cursor) => billingApi.manualPayments(slug, { status: status || undefined, property_id: propertyId || undefined, cursor, limit: 24 }),
     { enabled: canAll('billing', 'billing.verify') || canAll('billing', 'billing.collect') },
   );
+}
+
+/** Credit notes and waivers by status, newest first (keyset). */
+export function useAdjustments(status: string, propertyId: string) {
+  const slug = useSlug();
+  const { canAll } = useAccess();
+  return useKeysetList(
+    qk.adjustments(slug, `${status}:${propertyId || 'all'}`),
+    (cursor) => billingApi.adjustments(slug, { status: status || undefined, property_id: propertyId || undefined, cursor, limit: 24 }),
+    { enabled: canAll('billing', 'billing.adjust') || canAll('billing', 'billing.approve') },
+  );
+}
+
+/** Asks to credit part of one bill; the statement and queue refresh. */
+export function useRequestAdjustment(accountId: string) {
+  const slug = useSlug();
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (body: AdjustmentInput) => billingApi.requestAdjustment(slug, accountId, body),
+    onSuccess: () => {
+      toast.success('Sent for approval');
+      void qc.invalidateQueries({ queryKey: [slug, 'adjustments'] });
+    },
+  });
+}
+
+export function useAdjustmentReview() {
+  const slug = useSlug();
+  const qc = useQueryClient();
+  const refresh = () => {
+    void qc.invalidateQueries({ queryKey: [slug, 'adjustments'] });
+    void qc.invalidateQueries({ queryKey: qk.accounts(slug) });
+    void qc.invalidateQueries({ queryKey: qk.dashboard(slug) });
+  };
+  return {
+    approve: useMutation({
+      mutationFn: (v: { id: string; note?: string }) => billingApi.approveAdjustment(slug, v.id, v.note),
+      onSuccess: (a) => { toast.success(a.status === 'applied' ? 'Approved; the credit note is raised' : 'Approved; it needs another approver'); refresh(); },
+    }),
+    reject: useMutation({
+      mutationFn: (v: { id: string; reason: string }) => billingApi.rejectAdjustment(slug, v.id, v.reason),
+      onSuccess: () => { toast.success('Credit rejected'); refresh(); },
+    }),
+  };
+}
+
+/** Residents' bill queries by status, newest first (keyset). */
+export function useBillQueries(status: string, propertyId: string) {
+  const slug = useSlug();
+  const { canAll } = useAccess();
+  return useKeysetList(
+    qk.billQueries(slug, `${status}:${propertyId || 'all'}`),
+    (cursor) => billingApi.billQueries(slug, { status: status || undefined, property_id: propertyId || undefined, cursor, limit: 24 }),
+    { enabled: canAll('billing', 'billing.view') },
+  );
+}
+
+export function useAnswerBillQuery() {
+  const slug = useSlug();
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (v: { id: string; status: 'in_review' | 'resolved' | 'rejected'; resolution?: string }) =>
+      billingApi.answerBillQuery(slug, v.id, { status: v.status, resolution: v.resolution }),
+    onSuccess: (q) => {
+      toast.success(q.status === 'in_review' ? 'Query taken' : 'Answer sent to the resident');
+      void qc.invalidateQueries({ queryKey: [slug, 'bill-queries'] });
+    },
+  });
 }
 
 /** Matches bank statement credits to accounts and queues them for review. */

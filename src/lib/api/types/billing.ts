@@ -69,6 +69,8 @@ export interface LedgerInvoice {
   due_date?: string;
   total_amount: Money;
   amount_paid: Money;
+  /** Credit notes and waivers raised against this bill. */
+  amount_credited?: Money;
   payment_status: string;
   public_token?: string;
   description?: string;
@@ -85,7 +87,7 @@ export interface LedgerPayment {
 
 /** One bill or payment of a statement, with the balance after it (worked out by the API). */
 export interface StatementEntry {
-  kind: 'bill' | 'payment';
+  kind: 'bill' | 'credit' | 'payment';
   date: string;
   label: string;
   reference?: string;
@@ -118,6 +120,7 @@ export interface Statement {
     balance: Money;
     total_billed: Money;
     total_paid: Money;
+    total_credited?: Money;
     credit?: Money;
     last_paid_at?: string | null;
     invoices: LedgerInvoice[];
@@ -345,4 +348,49 @@ export interface BankLineResult {
   matched_by?: 'reference' | 'phone';
   manual_payment_id?: string;
   error?: string;
+}
+
+/** A credit note or waiver on one unpaid bill, waiting for approval or applied in treasury. */
+export interface Adjustment extends Base {
+  unit_account_id: string;
+  property_id: string;
+  kind: 'credit_note' | 'waiver' | 'debit' | 'write_off';
+  amount: Money;
+  reason: string;
+  treasury_invoice_id?: string;
+  treasury_credit_note_id?: string;
+  status: 'pending_approval' | 'approved' | 'rejected' | 'applied';
+  requested_by: string;
+  approvals?: { user_id: string; name?: string; at: string; note?: string }[];
+  metadata?: {
+    account_ref?: string; unit_code?: string; invoice_number?: string; requested_by_name?: string;
+    credit_note_number?: string; rejected_by_name?: string; rejected_reason?: string;
+  };
+}
+
+export interface AdjustmentInput {
+  kind: 'credit_note' | 'waiver';
+  invoice_id: string;
+  amount: number;
+  reason: string;
+}
+
+/** A resident's question about a bill, answered by finance. */
+export interface BillQuery extends Base {
+  unit_account_id: string;
+  property_id: string;
+  treasury_invoice_id?: string;
+  subject: string;
+  body: string;
+  status: 'open' | 'in_review' | 'resolved' | 'rejected';
+  assigned_to?: string;
+  due_by?: string;
+  resolution?: string;
+  metadata?: { account_ref?: string; unit_code?: string; invoice_number?: string; raised_by_name?: string; answered_by_name?: string; answered_at?: string };
+}
+
+export interface BillQueryInput {
+  invoice_id?: string;
+  subject: string;
+  body: string;
 }

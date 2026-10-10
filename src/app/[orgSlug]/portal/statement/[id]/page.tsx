@@ -6,6 +6,7 @@ import { PageHeader } from '@/components/common/page-header';
 import { PayAccount } from '@/components/billing/pay-account';
 import { ExportButtons } from '@/components/common/export-buttons';
 import { StatementView } from '@/components/billing/statement-view';
+import { MyBillQueries, QueryBill } from '@/components/portal/bill-query';
 import { useSlug } from '@/hooks/use-access';
 import { usePortalStatement } from '@/hooks/use-portal';
 import { portalApi } from '@/lib/api/portal';
@@ -25,8 +26,9 @@ export default function PortalStatementPage({ params }: { params: Promise<{ id: 
       <PageHeader
         back={{ href: `/${slug}/portal`, label: 'Home' }}
         title={<span>Account <span className="font-mono">{data.account.account_ref}</span></span>}
-        actions={num(balance) > 0 ? (
-          <PayAccount
+        actions={<>
+          <QueryBill accountId={id} invoices={data.ledger?.invoices ?? []} />
+          {num(balance) > 0 && <PayAccount
             tenantSlug={slug}
             accountId={id}
             accountRef={data.account.account_ref}
@@ -35,14 +37,15 @@ export default function PortalStatementPage({ params }: { params: Promise<{ id: 
             createIntent={(accId, body) => portalApi.pay(slug, accId, body)}
             submitManual={(accId, body) => portalApi.submitManual(slug, accId, body)}
             invalidate={[qk.portal(slug)]}
-          />
-        ) : undefined}
+          />}
+        </>}
       />
       <StatementView
         statement={data}
         actions={<ExportButtons name={`statement-${data.account.account_ref}`} title={`Statement for ${data.account.account_ref}`} pdfLabel="Statement PDF"
           fetchFile={(format) => portalApi.statementFile(slug, id, format)} />}
       />
+      <div className="mt-5"><MyBillQueries accountId={id} /></div>
     </div>
   );
 }

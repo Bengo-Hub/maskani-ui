@@ -9,6 +9,7 @@ import { ExportButtons } from '@/components/common/export-buttons';
 import { StatementView } from '@/components/billing/statement-view';
 import { DocumentsPanel } from '@/components/documents/documents-panel';
 import { AccountCollections } from '@/components/billing/call-list';
+import { CreditBill } from '@/components/billing/credit-bill';
 import { useAccess, useSlug } from '@/hooks/use-access';
 import { useStatement } from '@/hooks/use-billing';
 import { billingApi } from '@/lib/api/billing';
@@ -29,8 +30,9 @@ export default function AccountStatementPage({ params }: { params: Promise<{ id:
         back={{ href: `/${slug}/billing/accounts`, label: 'Unit accounts' }}
         title={<span>Account <span className="font-mono">{a.account_ref}</span></span>}
         subtitle={<>{a.customer_name || 'No owner'} &middot; <Link href={`/${slug}/units/${a.unit_id}`} className="text-primary hover:underline">Open the unit</Link></>}
-        actions={can('billing.collect') ? (
-          <PayAccount
+        actions={can('billing.collect') || can('billing.adjust') ? (<>
+          {can('billing.adjust') && <CreditBill accountId={a.id} invoices={data.ledger?.invoices ?? []} />}
+          {can('billing.collect') && <PayAccount
             tenantSlug={slug}
             accountId={a.id}
             accountRef={a.account_ref}
@@ -40,8 +42,8 @@ export default function AccountStatementPage({ params }: { params: Promise<{ id:
             submitManual={(accId, body) => billingApi.submitManual(slug, accId, body)}
             staff
             invalidate={[qk.statement(slug, a.id), qk.accounts(slug), qk.dashboard(slug)]}
-          />
-        ) : undefined}
+          />}
+        </>) : undefined}
       />
       <StatementView
         statement={data}
