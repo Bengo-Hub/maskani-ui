@@ -8,6 +8,7 @@ import { PayAccount } from '@/components/billing/pay-account';
 import { ExportButtons } from '@/components/common/export-buttons';
 import { StatementView } from '@/components/billing/statement-view';
 import { DocumentsPanel } from '@/components/documents/documents-panel';
+import { AccountCollections } from '@/components/billing/call-list';
 import { useAccess, useSlug } from '@/hooks/use-access';
 import { useStatement } from '@/hooks/use-billing';
 import { billingApi } from '@/lib/api/billing';
@@ -45,6 +46,7 @@ export default function AccountStatementPage({ params }: { params: Promise<{ id:
         actions={<ExportButtons name={`statement-${a.account_ref}`} title={`Statement for ${a.account_ref}`} pdfLabel="Statement PDF"
           fetchFile={(format) => billingApi.statementFile(slug, a.id, format)} />}
       />
+      {can('billing.collect') && <div className="mt-5"><AccountCollections account={{ account_id: a.id, account_ref: a.account_ref, customer_name: a.customer_name, balance: data.ledger?.balance ?? a.balance }} /></div>}
       <div className="mt-5"><DocumentsPanel entityType="unit_account" entityId={a.id} title="Letters and certificates" /></div>
     </div>
   );

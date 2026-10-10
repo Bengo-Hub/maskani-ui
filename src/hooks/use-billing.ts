@@ -3,7 +3,7 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { toast } from 'sonner';
 import { billingApi, type ChargeTypeInput, type FundInput, type RateInput, type RunInput } from '@/lib/api/billing';
-import type { BillingScheduleInput, PayRequest } from '@/lib/api/types';
+import type { BillingScheduleInput, CollectionNote, PayRequest } from '@/lib/api/types';
 import { qk } from '@/lib/query-keys';
 import { useAccess, useSlug } from './use-access';
 import { useKeysetList } from './use-keyset-list';
@@ -198,4 +198,40 @@ export function useArrears(propertyId: string, filter: { q?: string; min?: strin
     (cursor) => billingApi.arrears(slug, { property_id: propertyId || undefined, q, min, cursor, limit: 50 }),
     { enabled: canAll('billing', 'reports.view') },
   );
+}
+
+/** Accounts the collections ladder put on the call list that still owe. */
+export function useCallList(propertyId: string) {
+  const slug = useSlug();
+  const { canAll } = useAccess();
+  return useQuery({
+    queryKey: qk.callList(slug, propertyId || undefined),
+    queryFn: () => billingApi.callList(slug, propertyId || undefined).then((r) => r.data ?? []),
+    enabled: canAll('billing', 'billing.collect'),
+  });
+}
+
+/** An account's place on the collections ladder, with its notes. */
+export function useLadder(accountId: string) {
+  const slug = useSlug();
+  const { canAll } = useAccess();
+  return useQuery({
+    queryKey: qk.ladder(slug, accountId),
+    queryFn: () => billingApi.ladder(slug, accountId),
+    enabled: !!accountId && canAll('billing', 'billing.view'),
+  });
+}
+
+export function useAddCollectionNote(accountId: string) {
+  const slug = useSlug();
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (body: { outcome: CollectionNote['outcome']; promise_date?: string; note?: string }) =>
+      billingApi.addCollectionNote(slug, accountId, body),
+    onSuccess: (l) => {
+      toast.success('Call recorded');
+      qc.setQueryData(qk.ladder(slug, accountId), l);
+      void qc.invalidateQueries({ queryKey: [slug, 'call-list'] });
+    },
+  });
 }

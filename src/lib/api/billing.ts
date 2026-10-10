@@ -1,7 +1,7 @@
 import { apiClient } from './client';
 import { tenantBase as t } from '@/lib/config';
 import type {
-  ArrearsRow, BillingPreview, BillingRun, BillingRunLine, BillingSchedule, BillingScheduleInput, ChargeRate, ChargeType, ExportFormat, Fund, Page, PayIntent,
+  ArrearsRow, BillingPreview, CallRow, CollectionLadder, CollectionNote, BillingRun, BillingRunLine, BillingSchedule, BillingScheduleInput, ChargeRate, ChargeType, ExportFormat, Fund, Page, PayIntent,
   PayRequest, Statement, SuspenseRow, UnitAccount,
 } from './types';
 
@@ -95,6 +95,10 @@ export const billingApi = {
   staffPay: (slug: string, id: string, body: PayRequest) => apiClient.post<PayIntent>(`${t(slug)}/unit-accounts/${id}/pay`, body),
 
   suspense: (slug: string, days = 60) => apiClient.get<{ data: SuspenseRow[] }>(`${t(slug)}/collections/suspense`, { days }),
+  callList: (slug: string, propertyId?: string) => apiClient.get<{ data: CallRow[] }>(`${t(slug)}/collections/call-list`, { property_id: propertyId }),
+  ladder: (slug: string, accountId: string) => apiClient.get<CollectionLadder>(`${t(slug)}/unit-accounts/${accountId}/collections`),
+  addCollectionNote: (slug: string, accountId: string, body: { outcome: CollectionNote['outcome']; promise_date?: string; note?: string }) =>
+    apiClient.post<CollectionLadder>(`${t(slug)}/unit-accounts/${accountId}/collection-notes`, body),
   assignSuspense: (slug: string, transId: string, unitAccountId: string) =>
     apiClient.post(`${t(slug)}/collections/suspense/${encodeURIComponent(transId)}/assign`, { unit_account_id: unitAccountId }),
   /** q matches the account reference prefix or the owner's name; min is the smallest balance kept. */

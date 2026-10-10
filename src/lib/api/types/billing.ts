@@ -259,3 +259,39 @@ export interface BillingScheduleInput {
   missing_readings?: 'wait' | 'skip';
   remind_days_before?: number;
 }
+
+/** A collections call or contact recorded on an account. */
+export interface CollectionNote {
+  at: string;
+  by?: string;
+  outcome: 'reached' | 'no_answer' | 'promised' | 'disputed' | 'wrong_number' | 'paid';
+  promise_date?: string;
+  text?: string;
+}
+
+/** An account's place on the collections ladder (GET /unit-accounts/{id}/collections). */
+export interface CollectionLadder {
+  /** The oldest unpaid due date the steps count from. */
+  episode?: string;
+  /** Ladder days already done (1, 7, 14, 30...). */
+  done?: number[];
+  last_day?: string;
+  call_list?: boolean;
+  promise_date?: string;
+  notes?: CollectionNote[];
+}
+
+/** One account on the collections call list. */
+export interface CallRow {
+  account_id: string;
+  account_ref: string;
+  customer_name: string;
+  customer_phone: string;
+  unit_code: string;
+  property_id: string;
+  balance: Money;
+  last_payment_at?: string;
+  oldest_due: string;
+  promise_date?: string;
+  last_note?: CollectionNote;
+}
