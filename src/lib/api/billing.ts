@@ -116,6 +116,9 @@ export const billingApi = {
     apiClient.post<{ data: BankLineResult[] }>(`${t(slug)}/collections/bank-lines`, body),
   callList: (slug: string, propertyId?: string) => apiClient.get<{ data: CallRow[] }>(`${t(slug)}/collections/call-list`, { property_id: propertyId }),
   ladder: (slug: string, accountId: string) => apiClient.get<CollectionLadder>(`${t(slug)}/unit-accounts/${accountId}/collections`),
+  setPlan: (slug: string, accountId: string, body: { instalments: { due: string; amount: number }[]; note?: string }) =>
+    apiClient.put<CollectionLadder>(`${t(slug)}/unit-accounts/${accountId}/payment-plan`, body),
+  cancelPlan: (slug: string, accountId: string) => apiClient.delete<CollectionLadder>(`${t(slug)}/unit-accounts/${accountId}/payment-plan`),
   addCollectionNote: (slug: string, accountId: string, body: { outcome: CollectionNote['outcome']; promise_date?: string; note?: string }) =>
     apiClient.post<CollectionLadder>(`${t(slug)}/unit-accounts/${accountId}/collection-notes`, body),
   assignSuspense: (slug: string, transId: string, unitAccountId: string) =>

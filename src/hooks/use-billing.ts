@@ -223,6 +223,24 @@ export function useLadder(accountId: string) {
   });
 }
 
+/** Agrees or cancels an account's payment plan; the ladder view updates in place. */
+export function usePaymentPlan(accountId: string) {
+  const slug = useSlug();
+  const qc = useQueryClient();
+  const done = (msg: string) => (l: Awaited<ReturnType<typeof billingApi.ladder>>) => {
+    toast.success(msg);
+    qc.setQueryData(qk.ladder(slug, accountId), l);
+    void qc.invalidateQueries({ queryKey: [slug, 'call-list'] });
+  };
+  return {
+    save: useMutation({
+      mutationFn: (body: { instalments: { due: string; amount: number }[]; note?: string }) => billingApi.setPlan(slug, accountId, body),
+      onSuccess: done('Payment plan saved'),
+    }),
+    cancel: useMutation({ mutationFn: () => billingApi.cancelPlan(slug, accountId), onSuccess: done('Payment plan cancelled') }),
+  };
+}
+
 export function useAddCollectionNote(accountId: string) {
   const slug = useSlug();
   const qc = useQueryClient();

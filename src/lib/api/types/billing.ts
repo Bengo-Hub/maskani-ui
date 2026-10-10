@@ -279,7 +279,7 @@ export interface BillingScheduleInput {
 export interface CollectionNote {
   at: string;
   by?: string;
-  outcome: 'reached' | 'no_answer' | 'promised' | 'disputed' | 'wrong_number' | 'paid';
+  outcome: 'reached' | 'no_answer' | 'promised' | 'disputed' | 'wrong_number' | 'paid' | 'plan';
   promise_date?: string;
   text?: string;
 }
@@ -294,6 +294,21 @@ export interface CollectionLadder {
   call_list?: boolean;
   promise_date?: string;
   notes?: CollectionNote[];
+  /** An agreed payment plan; while active it holds the demand letter and escalation. */
+  plan?: PaymentPlan;
+}
+
+export interface PaymentPlan {
+  status: 'active' | 'completed' | 'broken' | 'cancelled';
+  start: string;
+  by?: string;
+  note?: string;
+  instalments: { due: string; amount: Money }[];
+  total: Money;
+  /** Paid since the plan started, as of the last daily check. */
+  paid: Money;
+  checked?: string;
+  closed_on?: string;
 }
 
 /** One account on the collections call list. */

@@ -10,6 +10,7 @@ import { Field, NativeSelect } from '@/components/common/field';
 import { FormSheet } from '@/components/common/form-sheet';
 import { useSlug } from '@/hooks/use-access';
 import { useAddCollectionNote, useCallList, useLadder } from '@/hooks/use-billing';
+import { PaymentPlanPanel } from '@/components/billing/payment-plan';
 import type { CallRow, CollectionNote } from '@/lib/api/types';
 import { fmtDate, kes, num } from '@/lib/utils';
 
@@ -20,8 +21,9 @@ export const OUTCOMES: { value: CollectionNote['outcome']; label: string }[] = [
   { value: 'disputed', label: 'Disputes the amount' },
   { value: 'wrong_number', label: 'Wrong number' },
   { value: 'paid', label: 'Says they have paid' },
+
 ];
-const outcomeLabel = (o?: string) => OUTCOMES.find((x) => x.value === o)?.label ?? o ?? '';
+const outcomeLabel = (o?: string) => (o === 'plan' ? 'Payment plan' : OUTCOMES.find((x) => x.value === o)?.label ?? o ?? '');
 
 /**
  * The collections call list: accounts the ladder flagged (day 30 by default) that still owe,
@@ -151,6 +153,7 @@ export function AccountCollections({ account }: { account: CallTarget }) {
         </div>
         <Button size="sm" variant="outline" onClick={() => setCalling(true)}><PhoneCall /> Record call</Button>
       </div>
+      <PaymentPlanPanel accountId={account.account_id} balance={account.balance} plan={l.plan} />
       {l.promise_date && (
         <p className="border-b bg-success/5 px-5 py-2 text-sm">Promised to pay by <strong>{fmtDate(l.promise_date)}</strong>; the letter and escalation wait until then.</p>
       )}
