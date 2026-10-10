@@ -21,7 +21,11 @@
 - [x] Charges and funds rebuilt: charge types, rates and funds tabs with filters, catalogue sheet, charge form (2026-10-08)
 - [x] Collections, meter readings and water balance redesign with filters and drill-downs (2026-10-08): collections stat tiles from the dashboard, unmatched payments table with a lookback window and search, arrears with the shared ageing bars, minimum owing filter and account drill-down; readings with per-block progress, show and block filters, search, estimate, recheck and accept all clean; water balance chart (supplied against billed, one axis), loss against the estate's own alert setting
 - [x] Portal pay (pending intent, gateway chosen in the modal, paybill fallback) and statement
-- [ ] Statement PDF and CSV export (API not built yet)
+- [x] Statement PDF and spreadsheet export
+- [x] Collections tabs: To verify (manual payments, bank statement import), Call list, Credits (approve or reject credit notes and waivers), Bill queries (take and answer); Credit a bill on the account page; portal Query a bill and answers (2026-10-10)
+- [x] Pay screens: above KES 250,000 a bank or cheque reference goes to review; staff Record payment through the shared SettlementModal; pay instruction box for bank paybills
+- [x] Fund form: paybill account number format with a live preview
+- [ ] Late charge settings screen and payment plan schedule (wave 2.5, after the API)
 - [ ] Gaps from the 2026-10-09 audit: see "Gaps found by the 2026-10-09 audit" in [README.md](README.md) (S2 line and wave 1c fixes)
 
 ## Rules to apply

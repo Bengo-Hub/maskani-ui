@@ -18,6 +18,7 @@
 - [x] CSV import of units and owners with a dry run (`25c5467`)
 - [x] Settings: general, modules with presets, catalogue lists, users and roles
 - [x] Portal sign-in by WhatsApp code (no phone enumeration), terms acceptance by tenant version, home with units and balances
+- [x] Photo gallery on property and unit pages (add, order, cover, remove); covers on property cards (`e64a30e`)
 - [ ] Gaps from the 2026-10-09 audit: see "Gaps found by the 2026-10-09 audit" in [README.md](README.md) (S1 line and wave 1c fixes)
 
 ## Rules to apply
