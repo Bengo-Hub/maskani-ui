@@ -7,6 +7,7 @@ import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { useSlug } from '@/hooks/use-access';
 import { useDecideWalkIn } from '@/hooks/use-portal';
+import { PushPrompt } from '@/components/portal/push-prompt';
 
 type Outcome = 'approved' | 'declined' | 'timeout' | 'guard_approved' | 'guard_declined' | null;
 
@@ -42,6 +43,8 @@ export default function WalkInDecisionPage({ params }: { params: Promise<{ id: s
         <h1 className="font-display text-xl font-semibold">{view.title}</h1>
         <p className="text-sm text-muted-foreground">{view.body}</p>
         <Link href={`/${slug}/portal/visitors`} className="text-sm font-medium text-primary">Create a pass for next time</Link>
+        {/* Next time the ring pops up on the phone instead of waiting for WhatsApp. */}
+        <PushPrompt slug={slug} className="w-full text-left" />
       </Card>
     );
   }
@@ -57,6 +60,7 @@ export default function WalkInDecisionPage({ params }: { params: Promise<{ id: s
         <Button size="lg" className="h-14 text-base" onClick={() => answer(true)} disabled={decide.isPending}><Check /> Let them in</Button>
         <Button size="lg" variant="outline" className="h-14 text-base" onClick={() => answer(false)} disabled={decide.isPending}><X /> Turn them away</Button>
       </div>
+      <PushPrompt slug={slug} className="w-full text-left" />
     </Card>
   );
 }

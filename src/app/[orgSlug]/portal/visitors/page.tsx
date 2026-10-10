@@ -10,6 +10,8 @@ import { Input } from '@/components/ui/input';
 import { Skeleton } from '@/components/ui/skeleton';
 import { ConfirmDialog } from '@/components/common/confirm-dialog';
 import { EmptyState } from '@/components/common/empty-state';
+import { PushPrompt } from '@/components/portal/push-prompt';
+import { useSlug } from '@/hooks/use-access';
 import { Field, NativeSelect } from '@/components/common/field';
 import { FormSheet } from '@/components/common/form-sheet';
 import { PageHeader } from '@/components/common/page-header';
@@ -30,6 +32,7 @@ function localInput(d: Date): string {
 const HOURS: Record<string, number> = { guest_single: 12, delivery: 2, guest_recurring: 24 * 30, domestic_staff: 24 * 90 };
 
 export default function PortalVisitorsPage() {
+  const slug = useSlug();
   const { tenant } = useTenantBranding();
   const { data: passes = [], isLoading } = usePortalPasses();
   const { data: units = [] } = usePortalUnits();
@@ -80,6 +83,7 @@ export default function PortalVisitorsPage() {
   return (
     <div>
       <PageHeader title="Visitors" subtitle="Give each visitor a code for the gate" actions={<Button onClick={openForm} disabled={units.length === 0}><Plus /> New pass</Button>} />
+      <PushPrompt slug={slug} className="mb-4" />
       {isLoading && <Skeleton className="h-40" />}
       {!isLoading && passes.length === 0 && <EmptyState icon={ShieldCheck} title="No passes yet" description="Create a pass and share the code with your visitor before they arrive." />}
       <div className="space-y-2">

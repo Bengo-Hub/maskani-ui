@@ -30,13 +30,40 @@ export function pushCapable(): boolean {
   return typeof window !== 'undefined' && 'serviceWorker' in navigator && 'PushManager' in window && 'Notification' in window;
 }
 
-/** 'on' when this device is registered, 'off' when it can be, 'blocked' or 'unsupported' otherwise. */
-export async function pushState(slug: string): Promise<'on' | 'off' | 'blocked' | 'unsupported'> {
+/** iPhone and iPad allow web push only to a site added to the Home Screen and opened from there. */
+export function needsHomeScreen(): boolean {
+  if (typeof window === 'undefined') return false;
+  const ios = /iPad|iPhone|iPod/.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+  const standalone = window.matchMedia?.('(display-mode: standalone)').matches || (navigator as Navigator & { standalone?: boolean }).standalone === true;
+  return ios && !standalone;
+}
+
+export type PushState = 'on' | 'off' | 'blocked' | 'install' | 'unsupported';
+
+/**
+ * 'on' when this device is subscribed, 'off' when it can be, 'blocked' when the site's
+ * notifications are refused, 'install' on an iPhone not yet opened from the Home Screen.
+ */
+export async function pushState(slug: string): Promise<PushState> {
+  if (needsHomeScreen()) return 'install';
   if (!pushCapable() || !(await vapidKey(slug))) return 'unsupported';
   if (Notification.permission === 'denied') return 'blocked';
   if (Notification.permission !== 'granted') return 'off';
   const reg = await navigator.serviceWorker.getRegistration();
   return (await reg?.pushManager.getSubscription()) ? 'on' : 'off';
+}
+
+let refreshed = false;
+
+/**
+ * Re-sends this device's subscription for the signed-in user once per page load when alerts are
+ * already allowed. The server upserts by subscription, so this repairs a registration that never
+ * reached it or belonged to another account on the same phone, without asking again.
+ */
+export async function refreshPush(slug: string): Promise<void> {
+  if (refreshed || !pushCapable() || Notification.permission !== 'granted') return;
+  refreshed = true;
+  await enablePush(slug);
 }
 
 /**
