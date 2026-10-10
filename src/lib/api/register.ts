@@ -17,6 +17,7 @@ export interface PropertyInput {
   town?: string;
   county?: string;
   amenities?: string[];
+  photos?: string[];
   /** Module switches over the use case preset ({module: on or off}); changing them needs settings.manage. */
   module_overrides?: Record<string, boolean>;
 }
@@ -35,6 +36,7 @@ export interface UnitInput {
   sale_status?: string;
   occupancy_status?: string;
   walking_order?: number;
+  photos?: string[];
 }
 
 export interface UnitFilters {

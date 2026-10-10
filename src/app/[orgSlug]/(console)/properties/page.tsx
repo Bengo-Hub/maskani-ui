@@ -12,6 +12,7 @@ import { StatusBadge } from '@/components/common/status-badge';
 import { PropertyForm } from '@/components/register/property-form';
 import { useAccess, useSlug } from '@/hooks/use-access';
 import { useProperties } from '@/hooks/use-register';
+import { publicPhotoUrl } from '@/lib/media';
 import { titleCase } from '@/lib/utils';
 
 export default function PropertiesPage() {
@@ -40,7 +41,13 @@ export default function PropertiesPage() {
             const occupied = p.occupied_count ?? 0;
             return (
               <Link key={p.id} href={`/${slug}/properties/${p.id}`} className="group">
-                <Card className="h-full gap-3 p-5 transition-colors group-hover:border-primary/40">
+                <Card className="h-full gap-3 overflow-hidden p-5 transition-colors group-hover:border-primary/40">
+                  {p.photos?.[0] && (
+                    <div className="-mx-5 -mt-5 aspect-[16/7] bg-muted">
+                      {/* eslint-disable-next-line @next/next/no-img-element */}
+                      <img src={publicPhotoUrl(p.photos[0])} alt="" loading="lazy" className="h-full w-full object-cover" />
+                    </div>
+                  )}
                   <div className="flex items-start justify-between gap-3">
                     <div className="min-w-0">
                       <p className="truncate font-display text-base font-semibold">{p.name}</p>

@@ -14,6 +14,7 @@ import { PageHeader } from '@/components/common/page-header';
 import { StatusBadge, ToneBadge } from '@/components/common/status-badge';
 import { LinkPartySheet, partyName } from '@/components/register/link-party-sheet';
 import { UnitForm } from '@/components/register/unit-form';
+import { PhotoGallery } from '@/components/register/photo-gallery';
 import { DocumentsPanel } from '@/components/documents/documents-panel';
 import { useAccess, useSlug } from '@/hooks/use-access';
 import { useEndLink, useInviteParty, useUnit } from '@/hooks/use-register';
@@ -136,6 +137,10 @@ export default function UnitDetailPage({ params }: { params: Promise<{ id: strin
             </CardContent>
           </Card>
         )}
+      </div>
+      <div className="mt-5">
+        <PhotoGallery target="unit" id={u.id} photos={u.photos} canEdit={can('units.manage')}
+          published={!!u.edges?.property?.published && (u.sale_status === 'available' || u.sale_status === 'reserved')} />
       </div>
       <div className="mt-5"><DocumentsPanel unitId={u.id} title="Documents about this unit" /></div>
 

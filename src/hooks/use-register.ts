@@ -63,6 +63,22 @@ export function useSaveProperty(id?: string) {
   });
 }
 
+/** Saves a property's or unit's photo gallery (keys in order, the first is the cover). */
+export function useSavePhotos(target: 'property' | 'unit', id: string) {
+  const slug = useSlug();
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: async (photos: string[]): Promise<void> => {
+      if (target === 'property') await registerApi.updateProperty(slug, id, { photos });
+      else await registerApi.updateUnit(slug, id, { photos });
+    },
+    onSuccess: () => {
+      void qc.invalidateQueries({ queryKey: target === 'property' ? qk.property(slug, id) : qk.unit(slug, id) });
+      void qc.invalidateQueries({ queryKey: target === 'property' ? qk.properties(slug) : qk.units(slug) });
+    },
+  });
+}
+
 export function useAddBlock(propertyId: string) {
   const slug = useSlug();
   const qc = useQueryClient();

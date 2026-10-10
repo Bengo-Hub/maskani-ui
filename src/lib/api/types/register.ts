@@ -23,6 +23,8 @@ export interface Property extends Base {
   latitude?: number | null;
   longitude?: number | null;
   amenities?: string[];
+  /** Gallery media keys in order; the first is the cover. */
+  photos?: string[];
   phases?: string[];
   published?: boolean;
   public_slug?: string;
@@ -55,6 +57,8 @@ export interface Unit extends Base {
   sale_status?: SaleStatus;
   occupancy_status?: OccupancyStatus;
   walking_order?: number;
+  /** Gallery media keys in order; the first is the cover. */
+  photos?: string[];
   status?: string;
   account_ref?: string;
   owner_name?: string;

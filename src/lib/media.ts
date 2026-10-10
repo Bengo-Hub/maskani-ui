@@ -1,5 +1,6 @@
 import { mediaApi } from '@/lib/api/operations';
 import type { MediaUpload } from '@/lib/api/types';
+import { API_URL } from '@/lib/config';
 
 export type MediaKind = 'readings' | 'works' | 'properties' | 'units' | 'documents' | 'incidents' | 'vendors' | 'evidence';
 
@@ -29,4 +30,9 @@ export async function resizeImage(file: Blob, maxDim = 1600, quality = 0.82): Pr
 export async function uploadPhoto(slug: string, file: Blob, kind: MediaKind): Promise<MediaUpload> {
   const small = await resizeImage(file);
   return mediaApi.upload(slug, small, kind, 'photo.jpg');
+}
+
+/** Estate and unit photos are published images the API serves without a signed link. */
+export function publicPhotoUrl(key: string): string {
+  return /^https?:\/\//.test(key) ? key : `${API_URL.replace(/\/$/, '')}/media/${key}`;
 }

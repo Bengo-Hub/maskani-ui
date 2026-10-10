@@ -12,6 +12,7 @@ import { StatusBadge } from '@/components/common/status-badge';
 import { PropertyBlocks } from '@/components/register/property-blocks';
 import { PropertyForm } from '@/components/register/property-form';
 import { PropertyStaff } from '@/components/register/property-staff';
+import { PhotoGallery } from '@/components/register/photo-gallery';
 import { useAccess, useSlug } from '@/hooks/use-access';
 import { useProperty } from '@/hooks/use-register';
 import { titleCase } from '@/lib/utils';
@@ -47,6 +48,7 @@ export default function PropertyDetailPage({ params }: { params: Promise<{ id: s
           <p className="flex items-center gap-1 text-sm"><MapPin className="h-3.5 w-3.5" /> {[p.area, p.town, p.county].filter(Boolean).join(', ') || 'Not set'}</p>
         </div>
       </Card>
+      <div className="mb-5"><PhotoGallery target="property" id={p.id} photos={p.photos} canEdit={can('properties.manage')} published={p.published} /></div>
       <Tabs defaultValue="blocks">
         <TabsList className="scrollbar-hide w-full justify-start overflow-x-auto sm:w-auto">
           <TabsTrigger value="blocks">Blocks</TabsTrigger>
