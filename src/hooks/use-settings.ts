@@ -3,7 +3,7 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { toast } from 'sonner';
 import { settingsApi, type StaffInviteInput } from '@/lib/api/operations';
-import type { Role } from '@/lib/api/types';
+import type { ApprovalRuleInput, Role } from '@/lib/api/types';
 import { qk } from '@/lib/query-keys';
 import { useAuthStore } from '@/store/auth';
 import { useAccess, useSlug } from './use-access';
@@ -192,3 +192,30 @@ export const USE_CASES: { value: string; label: string }[] = [
   { value: 'commercial_manager', label: 'Commercial lettings' },
   { value: 'self_managing_landlord', label: 'Landlord, self managed' },
 ];
+
+/** The estate's approval rules for credits. */
+export function useApprovalRules() {
+  const slug = useSlug();
+  const { can } = useAccess();
+  return useQuery({
+    queryKey: qk.approvalRules(slug),
+    queryFn: () => settingsApi.approvalRules(slug).then((r) => r.data ?? []),
+    enabled: can('settings.view') || can('billing.approve'),
+  });
+}
+
+export function useSaveApprovalRule() {
+  const slug = useSlug();
+  const qc = useQueryClient();
+  const refresh = () => void qc.invalidateQueries({ queryKey: qk.approvalRules(slug) });
+  return {
+    save: useMutation({
+      mutationFn: (v: { id?: string; body: ApprovalRuleInput }) => (v.id ? settingsApi.updateApprovalRule(slug, v.id, v.body) : settingsApi.createApprovalRule(slug, v.body)),
+      onSuccess: () => { toast.success('Approval rule saved'); refresh(); },
+    }),
+    remove: useMutation({
+      mutationFn: (id: string) => settingsApi.deleteApprovalRule(slug, id),
+      onSuccess: () => { toast.success('Approval rule removed'); refresh(); },
+    }),
+  };
+}

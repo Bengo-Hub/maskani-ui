@@ -78,6 +78,7 @@ export const qk = {
   catalogue: (slug: string, kind: string) => [slug, 'catalogue', kind] as const,
   users: (slug: string, kind?: string) => [slug, 'users', kind ?? 'all'] as const,
   roles: (slug: string) => [slug, 'roles'] as const,
+  approvalRules: (slug: string) => [slug, 'approval-rules'] as const,
   permissions: (slug: string) => [slug, 'permissions'] as const,
 
   portal: (slug: string) => [slug, 'portal'] as const,

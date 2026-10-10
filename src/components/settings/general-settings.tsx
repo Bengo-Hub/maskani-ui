@@ -10,6 +10,7 @@ import { useAccess } from '@/hooks/use-access';
 import { useEstateSettings, useUpdateEstateSettings } from '@/hooks/use-settings';
 import { ArrearsLadder } from './arrears-ladder';
 import { LateChargeSettings } from './late-charge';
+import { ApprovalRules } from './approval-rules';
 
 interface Settings {
   billing_day?: number; due_day?: number; reading_window_start?: number; reading_window_end?: number;
@@ -91,6 +92,7 @@ export function GeneralSettings() {
       </Group>
       <ArrearsLadder />
       <LateChargeSettings />
+      <ApprovalRules />
       <Group icon={MessageSquare} title="Messages" hint="Routine reminders wait until quiet hours end; urgent alerts always go">
         {input('quiet_hours_start', 'Quiet hours from', undefined, 'time')}
         {input('quiet_hours_end', 'Quiet hours until', undefined, 'time')}

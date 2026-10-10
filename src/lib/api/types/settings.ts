@@ -71,3 +71,23 @@ export interface ModulesState {
   released?: Record<string, boolean>;
   dependencies?: Record<string, string[]>;
 }
+
+/** Who approves a credit in an amount band (GET /settings/approval-rules). */
+export interface ApprovalRule {
+  id: string;
+  action: 'credit_note' | 'adjustment';
+  min_amount: string | number;
+  max_amount?: string | number | null;
+  levels: number;
+  approver_roles?: string[];
+  active: boolean;
+}
+
+export interface ApprovalRuleInput {
+  action: ApprovalRule['action'];
+  min_amount: number;
+  max_amount?: number | null;
+  levels: number;
+  approver_roles: string[];
+  active: boolean;
+}
