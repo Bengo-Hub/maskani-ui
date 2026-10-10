@@ -48,6 +48,7 @@ export function InsideNow({ propertyId }: { propertyId: string }) {
                   <span>{[p.unit_code, p.block].filter(Boolean).join(', ') || 'Estate visitor'}</span>
                   {p.vehicle_plate && <span className="inline-flex items-center gap-1 font-mono"><Car className="h-3 w-3" />{p.vehicle_plate}</span>}
                   <ToneBadge tone={p.walk_in ? 'warning' : 'primary'}>{p.walk_in ? 'Walk-in' : 'Pass'}</ToneBadge>
+                  {(p.guard_name || p.gate_name) && <span>let in{p.guard_name ? ` by ${p.guard_name}` : ''}{p.gate_name ? ` at ${p.gate_name}` : ''}</span>}
                 </p>
               </li>
             ))}

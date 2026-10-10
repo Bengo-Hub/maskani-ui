@@ -1,5 +1,5 @@
 import { apiClient } from '@/lib/api/client';
-import type { VisitorPass } from '@/lib/api/types';
+import type { InsidePerson, VisitorPass } from '@/lib/api/types';
 import type { GateDeviceCreds } from './device';
 import type { CachedPass } from './queue';
 
@@ -58,19 +58,8 @@ export interface WalkInState {
   rings?: number;
 }
 
-/** Someone let in who has not been recorded leaving. */
-export interface InsidePerson {
-  event_id: string;
-  visitor_name: string;
-  vehicle_plate?: string;
-  host_unit_id?: string;
-  unit_code?: string;
-  block?: string;
-  since: string;
-  pass_id?: string;
-  visitor_id?: string;
-  walk_in: boolean;
-}
+/** Someone let in who has not been recorded leaving (the console's type). */
+export type { InsidePerson } from '@/lib/api/types';
 
 const g = (d: GateDeviceCreds) => ({
   verify: (body: { code?: string; qr?: string }) => apiClient.device<VerifyResult>('post', '/api/v1/gate/verify', d.deviceKey, body),

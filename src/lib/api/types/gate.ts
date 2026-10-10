@@ -91,6 +91,9 @@ export interface InsidePerson {
   pass_id?: string;
   visitor_id?: string;
   walk_in: boolean;
+  /** Who let them in, at which gate. */
+  guard_name?: string;
+  gate_name?: string;
 }
 
 export interface Incident extends Base {
