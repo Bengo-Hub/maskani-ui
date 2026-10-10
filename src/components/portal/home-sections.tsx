@@ -7,6 +7,7 @@ import { Bell, ChevronRight, Droplets, FileSignature, Receipt, ShieldCheck, Wren
 import { Card } from '@/components/ui/card';
 import { Progress } from '@/components/ui/progress';
 import { PayAccount } from '@/components/billing/pay-account';
+import { PayInstructionNote } from '@/components/billing/pay-instruction';
 import { portalApi } from '@/lib/api/portal';
 import type { PortalUnit, VisitorPass, WorkOrder, Notice } from '@/lib/api/types';
 import { qk } from '@/lib/query-keys';
@@ -111,11 +112,7 @@ export function UnitCard({ data, slug, email }: { data: PortalUnit; slug: string
                   createIntent={(id, body) => portalApi.pay(slug, id, body)} submitManual={(id, body) => portalApi.submitManual(slug, id, body)}
                   invalidate={[qk.portal(slug)]} />
               )}
-              {fund?.paybill_shortcode && (
-                <p className="rounded-xl bg-primary/6 px-3 py-2.5 text-sm">
-                  Or pay by M-Pesa: Paybill <strong className="tabular">{fund.paybill_shortcode}</strong>, account <strong className="font-mono">{a.account_ref}</strong>
-                </p>
-              )}
+              <PayInstructionNote pay={data.pay?.[a.id]} prefix="Or pay by M-Pesa" />
             </div>
           );
         })}

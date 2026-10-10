@@ -5,6 +5,7 @@ import { FileText } from 'lucide-react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { EmptyState } from '@/components/common/empty-state';
 import { StatusBadge } from '@/components/common/status-badge';
+import { PayInstructionNote } from '@/components/billing/pay-instruction';
 import type { Statement } from '@/lib/api/types';
 import { fmtDate, kes, num } from '@/lib/utils';
 
@@ -28,6 +29,7 @@ export function StatementView({ statement, actions }: { statement: Statement; ac
         <Card className="p-4"><p className="text-xs text-muted-foreground">Paid</p><p className="font-display text-xl font-semibold tabular">{kes(ledger.total_paid)}</p></Card>
         <Card className="p-4"><p className="text-xs text-muted-foreground">Credit</p><p className="font-display text-xl font-semibold tabular">{kes(ledger.credit ?? 0)}</p></Card>
       </div>
+      <PayInstructionNote pay={statement.pay} />
       <Card>
         <CardHeader className="flex flex-row flex-wrap items-start justify-between gap-3">
           <div className="space-y-1">

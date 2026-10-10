@@ -2,12 +2,13 @@
 
 import { useMemo, useState } from 'react';
 import Link from 'next/link';
-import { Check, X } from 'lucide-react';
+import { Check, FileSpreadsheet, X } from 'lucide-react';
 import type { DataTableColumn } from '@bengo-hub/shared-ui-lib/data-table';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Field, NativeSelect } from '@/components/common/field';
 import { FormSheet } from '@/components/common/form-sheet';
+import { BankImport } from '@/components/billing/bank-import';
 import { KeysetTable } from '@/components/common/keyset-table';
 import { StatusBadge } from '@/components/common/status-badge';
 import { useAccess, useSlug } from '@/hooks/use-access';
@@ -30,6 +31,8 @@ export function ManualReview({ propertyId }: { propertyId: string }) {
   const { can } = useAccess();
   const myId = useAuthStore((s) => s.me?.id);
   const verify = can('billing.verify');
+  const collect = can('billing.collect');
+  const [importing, setImporting] = useState(false);
   const [status, setStatus] = useState<'pending' | 'approved' | 'rejected'>('pending');
   const list = useManualPayments(status, propertyId);
   const review = useManualPaymentReview();
@@ -73,12 +76,16 @@ export function ManualReview({ propertyId }: { propertyId: string }) {
     <div className="space-y-3">
       <div className="flex flex-wrap items-center justify-between gap-2">
         <p className="text-sm text-muted-foreground">Check the money reached the bank or till before verifying; it is then booked against the account.</p>
-        <NativeSelect value={status} onChange={(e) => setStatus(e.target.value as typeof status)} className="w-44" aria-label="Show">
-          <option value="pending">Waiting for review</option>
-          <option value="approved">Verified</option>
-          <option value="rejected">Rejected</option>
-        </NativeSelect>
+        <div className="flex flex-wrap items-center gap-2">
+          {collect && <Button variant="outline" onClick={() => setImporting(true)}><FileSpreadsheet /> Import bank statement</Button>}
+          <NativeSelect value={status} onChange={(e) => setStatus(e.target.value as typeof status)} className="w-44" aria-label="Show">
+            <option value="pending">Waiting for review</option>
+            <option value="approved">Verified</option>
+            <option value="rejected">Rejected</option>
+          </NativeSelect>
+        </div>
       </div>
+      <BankImport open={importing} onClose={() => setImporting(false)} propertyId={propertyId} />
       <KeysetTable
         columns={columns}
         rows={list.rows}

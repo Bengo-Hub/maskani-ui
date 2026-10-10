@@ -1,6 +1,8 @@
 import { apiClient } from './client';
 import { tenantBase as t } from '@/lib/config';
+import type { BankCsvLine } from '@/lib/bank-csv';
 import type {
+  BankLineResult,
   ArrearsRow, BillingPreview, CallRow, CollectionLadder, CollectionNote, ManualPayment, ManualPaymentInput, BillingRun, BillingRunLine, BillingSchedule, BillingScheduleInput, ChargeRate, ChargeType, ExportFormat, Fund, Page, PayIntent,
   PayRequest, Statement, SuspenseRow, UnitAccount,
 } from './types';
@@ -46,6 +48,7 @@ export interface FundInput {
   paybill_shortcode?: string;
   account_prefix?: string;
   cost_center_code?: string;
+  paybill_account_format?: string;
 }
 
 export interface RateInput {
@@ -100,6 +103,8 @@ export const billingApi = {
     apiClient.get<Page<ManualPayment>>(`${t(slug)}/collections/manual-payments`, params),
   approveManual: (slug: string, id: string, note?: string) => apiClient.post<ManualPayment>(`${t(slug)}/manual-payments/${id}/approve`, { note }),
   rejectManual: (slug: string, id: string, reason: string) => apiClient.post<ManualPayment>(`${t(slug)}/manual-payments/${id}/reject`, { reason }),
+  importBankLines: (slug: string, body: { fund: string; property_id?: string; lines: BankCsvLine[] }) =>
+    apiClient.post<{ data: BankLineResult[] }>(`${t(slug)}/collections/bank-lines`, body),
   callList: (slug: string, propertyId?: string) => apiClient.get<{ data: CallRow[] }>(`${t(slug)}/collections/call-list`, { property_id: propertyId }),
   ladder: (slug: string, accountId: string) => apiClient.get<CollectionLadder>(`${t(slug)}/unit-accounts/${accountId}/collections`),
   addCollectionNote: (slug: string, accountId: string, body: { outcome: CollectionNote['outcome']; promise_date?: string; note?: string }) =>

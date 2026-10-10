@@ -95,8 +95,20 @@ export interface StatementEntry {
   balance_after: Money;
 }
 
+/** How to pay an account at its fund's paybill (worked out by the API from the fund). */
+export interface PayInstruction {
+  paybill?: string;
+  /** What to type as the account number. */
+  pay_account?: string;
+  /** The unit reference to quote when the account number is the bank account alone. */
+  pay_reference?: string;
+  /** Confirmations do not reach us, so payments are matched from the bank side. */
+  bank_matched?: boolean;
+}
+
 export interface Statement {
   account: UnitAccount;
+  pay?: PayInstruction;
   /** Newest first. */
   entries: StatementEntry[];
   /** Treasury's list was full, so older history exists beyond these entries. */
@@ -322,4 +334,15 @@ export interface ManualPaymentInput {
   paid_on?: string;
   payer_name?: string;
   note?: string;
+}
+
+/** What happened to one bank statement line on import. */
+export interface BankLineResult {
+  line: { date: string; amount: Money; reference: string; description: string; payer: string };
+  status: 'queued' | 'duplicate' | 'unmatched' | 'invalid';
+  account_id?: string;
+  account_ref?: string;
+  matched_by?: 'reference' | 'phone';
+  manual_payment_id?: string;
+  error?: string;
 }

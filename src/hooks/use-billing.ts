@@ -4,6 +4,7 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { toast } from 'sonner';
 import { billingApi, type ChargeTypeInput, type FundInput, type RateInput, type RunInput } from '@/lib/api/billing';
 import type { BillingScheduleInput, CollectionNote, PayRequest } from '@/lib/api/types';
+import type { BankCsvLine } from '@/lib/bank-csv';
 import { qk } from '@/lib/query-keys';
 import { useAccess, useSlug } from './use-access';
 import { useKeysetList } from './use-keyset-list';
@@ -245,6 +246,16 @@ export function useManualPayments(status: string, propertyId: string) {
     (cursor) => billingApi.manualPayments(slug, { status: status || undefined, property_id: propertyId || undefined, cursor, limit: 24 }),
     { enabled: canAll('billing', 'billing.verify') || canAll('billing', 'billing.collect') },
   );
+}
+
+/** Matches bank statement credits to accounts and queues them for review. */
+export function useImportBankLines() {
+  const slug = useSlug();
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (body: { fund: string; property_id?: string; lines: BankCsvLine[] }) => billingApi.importBankLines(slug, body).then((r) => r.data ?? []),
+    onSuccess: () => { void qc.invalidateQueries({ queryKey: [slug, 'manual-payments'] }); },
+  });
 }
 
 export function useManualPaymentReview() {

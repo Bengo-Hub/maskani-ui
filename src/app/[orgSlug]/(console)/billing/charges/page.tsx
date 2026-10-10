@@ -142,7 +142,7 @@ function Charges() {
       key: 'paybill', header: 'Paybill', accessor: (f) => f.paybill_shortcode ?? '',
       render: (f) => f.paybill_shortcode ? <span className="tabular">{f.paybill_shortcode}</span> : <span className="inline-flex items-center gap-1 text-sm text-warning"><AlertTriangle className="h-3.5 w-3.5" /> Not set</span>,
     },
-    { key: 'prefix', header: 'Account numbers', hideBelow: 'md', accessor: (f) => `${f.account_prefix ?? ''}B07`, render: (f) => <span className="font-mono text-sm">{f.account_prefix ?? ''}B07</span> },
+    { key: 'prefix', header: 'Account numbers', hideBelow: 'md', accessor: (f) => fundAccountSample(f), render: (f) => <span className="font-mono text-sm">{fundAccountSample(f)}</span> },
     { key: 'charges', header: 'Charges', hideBelow: 'md', accessor: (f) => active.filter((c) => c.fund_code === f.code).length },
     { key: 'cc', header: 'Cost centre', hideBelow: 'lg', accessor: (f) => f.cost_center_code ?? '' },
     ...(manage ? [{ key: 'actions', header: '', mobileAction: true, accessor: () => '', render: (f: Fund) => <Button size="sm" variant="outline" onClick={() => setFundEdit(f)}><Pencil /> Edit</Button> }] : []),
@@ -235,4 +235,12 @@ function CatalogueSheet({ open, onOpenChange, fundName }: { open: boolean; onOpe
       )}
     </FormSheet>
   );
+}
+
+/** A sample paybill account number for the fund (bank paybills show the bank account and reference). */
+function fundAccountSample(f: Fund): string {
+  const ref = `${f.account_prefix ?? ''}B07`;
+  const format = typeof f.metadata?.paybill_account_format === 'string' ? f.metadata.paybill_account_format : '';
+  if (!format || format === '{ref}') return ref;
+  return format.includes('{ref}') ? format.replace('{ref}', ref) : `${format}, ref ${ref}`;
 }
