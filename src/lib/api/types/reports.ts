@@ -5,8 +5,8 @@ export interface Dashboard {
   period: string;
   from?: string;
   to?: string;
-  /** "property" when a block or fund is chosen: collections are kept per property, so they ignore those two. */
-  collections_scope?: 'filtered' | 'property';
+  /** "accounts" when a block or fund is chosen: collections come from per-account totals and follow both. */
+  collections_scope?: 'filtered' | 'property' | 'accounts';
   billed: Money;
   collected: Money;
   collection_rate?: Money | number | null;
