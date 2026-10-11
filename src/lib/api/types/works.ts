@@ -81,4 +81,6 @@ export interface Vendor extends Base {
   personnel?: VendorPersonnel[];
   next_expiry?: string | null;
   expired_documents?: number;
+  /** Older documents of a type uploaded again since; kept for the record, they no longer count. */
+  replaced_documents?: string[];
 }

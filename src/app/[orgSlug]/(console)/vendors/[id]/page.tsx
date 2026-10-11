@@ -1,6 +1,6 @@
 'use client';
 
-import { use, useState } from 'react';
+import { use, useMemo, useState } from 'react';
 import { Plus } from 'lucide-react';
 import { DataTable, type DataTableColumn } from '@bengo-hub/shared-ui-lib/data-table';
 import { Button } from '@/components/ui/button';
@@ -18,7 +18,8 @@ import type { VendorDocument } from '@/lib/api/types';
 import { apiDate, daysUntil, fmtDate } from '@/lib/utils';
 import { ExpiryBadge } from '@/components/works/expiry-badge';
 
-const DOC_COLUMNS: DataTableColumn<VendorDocument>[] = [
+/** Document columns; a document replaced by a newer one of its type reads "Replaced", never "Expired". */
+const docColumns = (replaced: Set<string>): DataTableColumn<VendorDocument>[] => [
   { key: 'type', header: 'Document', primary: true, accessor: (d) => d.doc_type.replace(/_/g, ' '), render: (d) => <span className="font-medium uppercase">{d.doc_type.replace(/_/g, ' ')}</span> },
   { key: 'number', header: 'Number', accessor: (d) => d.number ?? '' },
   { key: 'issued', header: 'Issued', hideBelow: 'md', accessor: (d) => d.issued_at ?? '', render: (d) => fmtDate(d.issued_at) },
@@ -29,7 +30,7 @@ const DOC_COLUMNS: DataTableColumn<VendorDocument>[] = [
       return (
         <span className="flex items-center gap-2 text-sm">
           {fmtDate(d.expires_at) || 'No expiry'}
-          {left !== null && (left < 0 ? <ToneBadge tone="danger">Expired</ToneBadge> : left <= 30 ? <ToneBadge tone="warning">{left} days</ToneBadge> : null)}
+          {replaced.has(d.id) ? <ToneBadge tone="neutral">Replaced</ToneBadge> : left !== null && (left < 0 ? <ToneBadge tone="danger">Expired</ToneBadge> : left <= 30 ? <ToneBadge tone="warning">{left} days</ToneBadge> : null)}
         </span>
       );
     },
@@ -45,6 +46,8 @@ export default function VendorPage({ params }: { params: Promise<{ id: string }>
   const addDoc = useAddVendorDocument(id);
   const [docOpen, setDocOpen] = useState(false);
   const [d, setD] = useState({ doc_type: '', number: '', issued_at: '', expires_at: '' });
+  const replaced = v?.replaced_documents;
+  const columns = useMemo(() => docColumns(new Set(replaced ?? [])), [replaced]);
 
   if (isLoading || !v) return <div className="mx-auto max-w-7xl space-y-3"><Skeleton className="h-10 w-56" /><Skeleton className="h-64" /></div>;
 
@@ -58,7 +61,7 @@ export default function VendorPage({ params }: { params: Promise<{ id: string }>
             {manage && <Button size="sm" variant="outline" onClick={() => { setD({ doc_type: '', number: '', issued_at: '', expires_at: '' }); setDocOpen(true); }}><Plus /> Add document</Button>}
           </CardHeader>
           <CardContent>
-            <DataTable columns={DOC_COLUMNS} rows={v.documents ?? []} rowKey={(doc) => doc.id} emptyText="No documents recorded." maxBodyHeight={false} />
+            <DataTable columns={columns} rows={v.documents ?? []} rowKey={(doc) => doc.id} emptyText="No documents recorded." maxBodyHeight={false} />
           </CardContent>
         </Card>
         <Card>
