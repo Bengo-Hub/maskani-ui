@@ -8,6 +8,7 @@ import { Input } from '@/components/ui/input';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Switch } from '@/components/ui/switch';
 import { EmptyState } from '@/components/common/empty-state';
+import { CatalogueCombobox } from '@/components/common/catalogue-combobox';
 import { Field } from '@/components/common/field';
 import { FormSheet } from '@/components/common/form-sheet';
 import { IconButton } from '@/components/common/icon-button';
@@ -16,6 +17,7 @@ import { PropertyRequired, usePropertyOrSingle } from '@/components/common/prope
 import { StatusBadge } from '@/components/common/status-badge';
 import { useAccess } from '@/hooks/use-access';
 import { useCreatePriceList, usePriceLists } from '@/hooks/use-sales';
+import { useCatalogue } from '@/hooks/use-settings';
 import { apiErrorMessage } from '@/lib/api/errors';
 import type { PriceList, PriceListItem } from '@/lib/api/types';
 import { apiDate, fmtDate, kes, num, titleCase, todayInput } from '@/lib/utils';
@@ -34,6 +36,10 @@ export default function PriceListsPage() {
   const propertyId = usePropertyOrSingle();
   const { can } = useAccess();
   const { data: lists = [], isLoading } = usePriceLists(propertyId);
+  // The estate's unit types (Settings, Lists): the same codes units carry, which is how a price
+  // line finds its units.
+  const { data: unitTypes = [] } = useCatalogue('unit_type');
+  const typeName = (code?: string) => unitTypes.find((t) => t.code === code)?.name ?? titleCase(code);
   const create = useCreatePriceList(propertyId);
   const [form, setForm] = useState<{ name: string; phase: string; from: string; activate: boolean; rows: Row[] } | null>(null);
   const [error, setError] = useState('');
@@ -53,7 +59,8 @@ export default function PriceListsPage() {
   const setRow = (i: number, patch: Partial<Row>) => form && setForm({ ...form, rows: form.rows.map((r, j) => (j === i ? { ...r, ...patch } : r)) });
   // The API takes a missing or zero deposit as 20%, so a deposit must be above 0 and at most 100.
   const rowProblem = (r: Row): string => {
-    if (!r.unit_type.trim()) return 'Name the unit type';
+    if (!r.unit_type.trim()) return 'Choose the unit type';
+    if (form && form.rows.filter((x) => x.unit_type === r.unit_type).length > 1) return 'Each unit type appears once in a list';
     if (!(num(r.price) > 0)) return 'Give a price';
     if (num(r.reservation_fee) >= num(r.price)) return 'The reservation fee must be below the price';
     const dep = num(r.deposit_pct);
@@ -104,7 +111,7 @@ export default function PriceListsPage() {
                   <tbody className="divide-y">
                     {itemsOf(l).map((i, k) => (
                       <tr key={k}>
-                        <td className="py-1.5">{titleCase(i.unit_type) || 'One unit'}</td>
+                        <td className="py-1.5">{i.unit_type ? typeName(i.unit_type) : 'One unit'}</td>
                         <td className="py-1.5 text-right tabular">{kes(i.price)}</td>
                         <td className="hidden py-1.5 text-right tabular sm:table-cell">{kes(i.reservation_fee ?? 0)}</td>
                         <td className="py-1.5 text-right tabular">{num(i.deposit_pct)}%</td>
@@ -142,7 +149,7 @@ export default function PriceListsPage() {
               </div>
               {form.rows.map((r, i) => (
                 <div key={i} className="grid grid-cols-2 gap-2 rounded-lg border p-2 md:grid-cols-[minmax(0,1.4fr)_repeat(4,minmax(0,1fr))_2.25rem] md:border-0 md:p-0">
-                  <Input aria-label="Unit type" placeholder="2 bedroom" className="col-span-2 md:col-span-1" value={r.unit_type} onChange={(e) => setRow(i, { unit_type: e.target.value })} />
+                  <CatalogueCombobox kind="unit_type" className="col-span-2 md:col-span-1" value={r.unit_type} onChange={(code) => setRow(i, { unit_type: code })} placeholder="Choose a unit type" />
                   <Input aria-label="Price" inputMode="decimal" placeholder="Price" value={r.price} onChange={(e) => setRow(i, { price: digits(e.target.value) })} />
                   <Input aria-label="Reservation fee" inputMode="decimal" placeholder="Reservation fee" value={r.reservation_fee} onChange={(e) => setRow(i, { reservation_fee: digits(e.target.value) })} />
                   <Input aria-label="Deposit percent" inputMode="decimal" placeholder="Deposit %" value={r.deposit_pct} onChange={(e) => setRow(i, { deposit_pct: digits(e.target.value) })} />
