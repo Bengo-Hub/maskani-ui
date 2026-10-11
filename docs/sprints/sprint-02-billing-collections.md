@@ -25,7 +25,7 @@
 - [x] Collections tabs: To verify (manual payments, bank statement import), Call list, Credits (approve or reject credit notes and waivers), Bill queries (take and answer); Credit a bill on the account page; portal Query a bill and answers (2026-10-10)
 - [x] Pay screens: above KES 250,000 a bank or cheque reference goes to review; staff Record payment through the shared SettlementModal; pay instruction box for bank paybills
 - [x] Fund form: paybill account number format with a live preview
-- [ ] Late charge settings screen and payment plan schedule (wave 2.5, after the API)
+- [x] Late charge settings, payment plans on the account collections panel, approval rules with ordered steps, central Approvals inbox (2026-10-10)
 - [ ] Gaps from the 2026-10-09 audit: see "Gaps found by the 2026-10-09 audit" in [README.md](README.md) (S2 line and wave 1c fixes)
 
 ## Rules to apply
