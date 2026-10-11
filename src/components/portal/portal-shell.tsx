@@ -3,7 +3,7 @@
 import { useEffect, type ReactNode } from 'react';
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
-import { Bell, FileText, Home, ShieldCheck, Wrench, Users } from 'lucide-react';
+import { Bell, FileText, Home, Lock, ShieldCheck, Wrench, Users } from 'lucide-react';
 import { MobileBottomNav, type MobileNavTab } from '@bengo-hub/shared-ui-lib/navigation';
 import { useTenantBranding } from '@bengo-hub/shared-ui-lib/tenant';
 import { AppSplash } from '@/components/layout/app-splash';
@@ -55,9 +55,11 @@ export function PortalShell({ children }: { children: ReactNode }) {
     { key: 'notices', label: 'Notices', hint: 'News from the estate', href: `${base}/notices`, icon: Bell, active: pathname.startsWith(`${base}/notices`) },
     { key: 'documents', label: 'Documents', hint: 'Letters and certificates', href: `${base}/documents`, icon: FileText, active: pathname.startsWith(`${base}/documents`) },
     { key: 'household', label: 'Household', hint: 'Family, staff and cars', href: `${base}/household`, icon: Users, active: pathname.startsWith(`${base}/household`) },
+    { key: 'privacy', label: 'Privacy', hint: 'Your data and consents', href: `${base}/privacy`, icon: Lock, active: pathname.startsWith(`${base}/privacy`) },
   ];
-  // The bottom bar keeps five tabs; Household is reached from the home page and the sidebar.
-  const mobileTabs: MobileNavTab[] = tabs.filter((t) => t.key !== 'household').map(({ key, label, href, icon, active }) => ({ key, label, href, icon, active }));
+  // The bottom bar keeps five tabs; Household is reached from the home page and the sidebar,
+  // Privacy from the sidebar and the account menu.
+  const mobileTabs: MobileNavTab[] = tabs.filter((t) => t.key !== 'household' && t.key !== 'privacy').map(({ key, label, href, icon, active }) => ({ key, label, href, icon, active }));
   const person = { name: me.user?.name, contact: me.email || me.user?.email || me.user?.phone };
   const signOut = () => void logout(slug);
 
@@ -82,7 +84,7 @@ export function PortalShell({ children }: { children: ReactNode }) {
       <header className="sticky top-0 z-30 px-3 pt-[calc(env(safe-area-inset-top)+0.5rem)] lg:hidden">
         <div className="glass-strong flex h-16 items-center justify-between gap-3 rounded-2xl px-3">
           <PortalBrand logoUrl={tenant?.logoUrl} orgName={tenant?.orgName} href={base} compact />
-          <AccountMenu person={person} onSignOut={signOut} />
+          <AccountMenu person={person} privacyHref={`${base}/privacy`} onSignOut={signOut} />
         </div>
       </header>
 

@@ -33,8 +33,12 @@ export const portalApi = {
     apiClient.post<WorkOrder>(`${me(slug)}/requests/${id}/actions`, body),
   notices: (slug: string) => apiClient.get<{ data: Notice[] }>(`${me(slug)}/notices`),
   acceptTerms: (slug: string, version: string) => apiClient.post(`${me(slug)}/terms/accept`, { version }),
+  termsHistory: (slug: string) => apiClient.get<{ data: TermsAcceptance[] }>(`${me(slug)}/terms`),
   decideWalkIn: (slug: string, id: string, approve: boolean) => apiClient.post(`${me(slug)}/walk-ins/${id}/decide`, { approve }),
 };
+
+/** One acceptance of the estate's terms and privacy notice (GET /me/terms). */
+export interface TermsAcceptance { version: string; privacy_version?: string; at: string; ip?: string }
 
 /** A unit's household, domestic staff and vehicles (GET /me/units/{id}/household). */
 export interface Household {

@@ -89,6 +89,7 @@ export const qk = {
   portalPasses: (slug: string) => [slug, 'portal', 'passes'] as const,
   portalRequests: (slug: string) => [slug, 'portal', 'requests'] as const,
   portalNotices: (slug: string) => [slug, 'portal', 'notices'] as const,
+  portalTerms: (slug: string) => [slug, 'portal', 'terms'] as const,
 
   subscription: (tenantId: string) => ['subscription', tenantId] as const,
 };

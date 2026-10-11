@@ -17,11 +17,22 @@ function usePortalReady() {
 /** Records the terms version the resident accepted, then reloads /auth/me so the gate closes. */
 export function useAcceptTerms() {
   const slug = useSlug();
+  const qc = useQueryClient();
   const refreshMe = useAuthStore((s) => s.refreshMe);
   return useMutation({
     mutationFn: (version: string) => portalApi.acceptTerms(slug, version),
-    onSuccess: () => refreshMe(slug),
+    onSuccess: () => {
+      void qc.invalidateQueries({ queryKey: qk.portalTerms(slug) });
+      return refreshMe(slug);
+    },
   });
+}
+
+/** Every acceptance of the terms and privacy notice, newest first. */
+export function useTermsHistory() {
+  const slug = useSlug();
+  const ready = usePortalReady();
+  return useQuery({ queryKey: qk.portalTerms(slug), queryFn: () => portalApi.termsHistory(slug).then((r) => r.data ?? []), enabled: ready });
 }
 
 export function usePortalUnits() {

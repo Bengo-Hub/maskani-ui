@@ -3,7 +3,7 @@
 import { useEffect, useRef, useState } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
-import { ChevronDown, LogOut, UserRound, type LucideIcon } from 'lucide-react';
+import { ChevronDown, Lock, LogOut, UserRound, type LucideIcon } from 'lucide-react';
 import { AUTH_UI_URL } from '@/lib/config';
 import { cn, estateName, initials } from '@/lib/utils';
 
@@ -87,7 +87,7 @@ export function AccountCard({ person, onSignOut }: { person: Person; onSignOut: 
 }
 
 /** Phone header account button with a small menu; closes on outside tap and Escape. */
-export function AccountMenu({ person, onSignOut }: { person: Person; onSignOut: () => void }) {
+export function AccountMenu({ person, privacyHref, onSignOut }: { person: Person; privacyHref: string; onSignOut: () => void }) {
   const [open, setOpen] = useState(false);
   const box = useRef<HTMLDivElement>(null);
   useEffect(() => {
@@ -125,6 +125,9 @@ export function AccountMenu({ person, onSignOut }: { person: Person; onSignOut: 
           <a role="menuitem" href={`${AUTH_UI_URL}/dashboard/profile`} className="flex min-h-11 items-center gap-2 rounded-xl px-2 text-sm hover:bg-primary/8">
             <UserRound className="h-4 w-4" aria-hidden /> Profile and security
           </a>
+          <Link role="menuitem" href={privacyHref} onClick={() => setOpen(false)} className="flex min-h-11 items-center gap-2 rounded-xl px-2 text-sm hover:bg-primary/8">
+            <Lock className="h-4 w-4" aria-hidden /> Your data and privacy
+          </Link>
           <div className="my-1 border-t border-border/60" />
           <button role="menuitem" type="button" onClick={onSignOut} className="flex min-h-11 w-full cursor-pointer items-center gap-2 rounded-xl px-2 text-sm text-destructive hover:bg-destructive/8">
             <LogOut className="h-4 w-4" aria-hidden /> Sign out
