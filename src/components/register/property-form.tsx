@@ -92,9 +92,9 @@ export function PropertyForm({ open, onOpenChange, property, onSaved }: {
     >
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
         <Field label="Name" htmlFor="p-name" required>
-          <Input id="p-name" value={form.name} onChange={(e) => set('name', e.target.value)} placeholder="Shaba Village" />
+          <Input id="p-name" value={form.name} onChange={(e) => set('name', e.target.value)} placeholder="Mvumo Gardens" />
         </Field>
-        <Field label="Code" htmlFor="p-code" required hint="Short code used in references, e.g. SHABA">
+        <Field label="Code" htmlFor="p-code" required hint="Short code used in references, e.g. MVUMO">
           <Input id="p-code" value={form.code} onChange={(e) => set('code', e.target.value)} disabled={!!property} className="uppercase" />
         </Field>
         <Field label="Type" htmlFor="p-type">
@@ -106,13 +106,13 @@ export function PropertyForm({ open, onOpenChange, property, onSaved }: {
           </NativeSelect>
         </Field>
         <Field label="Area" htmlFor="p-area">
-          <Input id="p-area" value={form.area} onChange={(e) => set('area', e.target.value)} placeholder="Syokimau" />
+          <Input id="p-area" value={form.area} onChange={(e) => set('area', e.target.value)} placeholder="Kitengela" />
         </Field>
         <Field label="Town" htmlFor="p-town">
           <Input id="p-town" value={form.town} onChange={(e) => set('town', e.target.value)} />
         </Field>
         <Field label="County" htmlFor="p-county">
-          <Input id="p-county" value={form.county} onChange={(e) => set('county', e.target.value)} placeholder="Machakos" />
+          <Input id="p-county" value={form.county} onChange={(e) => set('county', e.target.value)} placeholder="Kajiado" />
         </Field>
         <Field label="Address" htmlFor="p-address">
           <Input id="p-address" value={form.address} onChange={(e) => set('address', e.target.value)} />

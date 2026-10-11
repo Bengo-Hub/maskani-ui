@@ -49,7 +49,7 @@ export function EstateLauncher() {
             id="estate"
             value={estate}
             onChange={(e) => setEstate(e.target.value)}
-            placeholder="for example shaba-village"
+            placeholder="for example mvumo-gardens"
             autoCapitalize="none"
             autoCorrect="off"
             spellCheck={false}

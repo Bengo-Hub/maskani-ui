@@ -6,7 +6,7 @@
 | Performance | Portal initial transfer under 200 KB excluding images, LCP under 2.5 s on a mid-range Android over 3G |
 | Offline gate test | Network removed for 2 hours; verify from cache, queue, sync without loss |
 | Cross-browser | Android Chrome, iOS Safari, desktop for owner, buyer, caretaker, guard, vendor and finance journeys (Playwright) |
-| UAT fixes | From Shaba staff and pilot owners |
+| UAT fixes | From Mvumo staff and pilot owners |
 | Docs capture | Service guide screenshots following the established docs-capture pattern |
 
 ## Progress
