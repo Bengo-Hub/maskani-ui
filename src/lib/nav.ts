@@ -30,7 +30,11 @@ export const NAV: NavGroup[] = [
     label: 'Overview',
     // Open to every staff role: it is where sign-in lands. Reports inside need reports.view;
     // the role queues at the top follow each panel's own permission.
-    items: [{ label: 'Dashboard', path: '/dashboard', icon: Gauge }],
+    items: [
+      { label: 'Dashboard', path: '/dashboard', icon: Gauge },
+      // One inbox for every workflow that needs sign-off (central approvals engine).
+      { label: 'Approvals', path: '/approvals', icon: ShieldCheck, perms: ['billing.approve', 'billing.verify', 'works.manage', 'settings.view'] },
+    ],
   },
   {
     label: 'Register',

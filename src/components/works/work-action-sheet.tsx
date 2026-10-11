@@ -12,7 +12,7 @@ import { useVendors, useWorkAction } from '@/hooks/use-works';
 import type { WorkAction } from '@/lib/api/types';
 
 const TITLES: Record<WorkAction, string> = {
-  assign: 'Assign', quote: 'Record a quote', approve_quote: 'Approve the quote', start: 'Start work',
+  assign: 'Assign', quote: 'Record a quote', approve_quote: 'Approve the quote', reject_quote: 'Reject the quote', start: 'Start work',
   complete: 'Mark complete', confirm: 'Confirm on behalf of the resident', reopen: 'Reopen', cancel: 'Cancel work order', close: 'Close',
 };
 
@@ -33,7 +33,7 @@ export function WorkActionSheet({ workOrderId, action, onClose }: { workOrderId:
   if (!action) return null;
   const needsVendor = action === 'assign';
   const needsAmount = action === 'quote' || action === 'complete';
-  const valid = (!needsVendor || !!vendorId) && (action !== 'quote' || amount !== '');
+  const valid = (!needsVendor || !!vendorId) && (action !== 'quote' || amount !== '') && (action !== 'reject_quote' || note.trim() !== '');
 
   const submit = () => act.mutate({
     action,

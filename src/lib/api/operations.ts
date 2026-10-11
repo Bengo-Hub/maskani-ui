@@ -1,7 +1,7 @@
 import { apiClient } from './client';
 import { tenantBase as t } from '@/lib/config';
 import type {
-  ApprovalRule, ApprovalRuleInput,
+  ApprovalRequest, ApprovalRule, ApprovalRuleInput,
   AvailabilityGroup, ContractInput, Dashboard, DashboardFilters, ExportFormat, GateDevice, GateDeviceView, GateEvent, GateEventKind, Incident,
   InsidePerson, MediaUpload, Meter, MeterReading,
   Notice, NoticeDelivery, Page, PassInput, PriceList, PriceListItem, ReadingRound, Reservation, SaleContract,
@@ -137,10 +137,14 @@ export const reportsApi = {
 export const settingsApi = {
   settings: (slug: string) => apiClient.get<Record<string, unknown>>(`${t(slug)}/settings`),
   updateSettings: (slug: string, body: Record<string, unknown>) => apiClient.put(`${t(slug)}/settings`, body),
-  approvalRules: (slug: string) => apiClient.get<{ data: ApprovalRule[] }>(`${t(slug)}/settings/approval-rules`),
-  createApprovalRule: (slug: string, body: ApprovalRuleInput) => apiClient.post<ApprovalRule>(`${t(slug)}/settings/approval-rules`, body),
-  updateApprovalRule: (slug: string, id: string, body: ApprovalRuleInput) => apiClient.put<ApprovalRule>(`${t(slug)}/settings/approval-rules/${id}`, body),
-  deleteApprovalRule: (slug: string, id: string) => apiClient.delete<void>(`${t(slug)}/settings/approval-rules/${id}`),
+  approvalRules: (slug: string) => apiClient.get<{ data: ApprovalRule[] }>(`${t(slug)}/approvals/rules`),
+  createApprovalRule: (slug: string, body: ApprovalRuleInput) => apiClient.post<ApprovalRule>(`${t(slug)}/approvals/rules`, body),
+  updateApprovalRule: (slug: string, id: string, body: ApprovalRuleInput) => apiClient.put<ApprovalRule>(`${t(slug)}/approvals/rules/${id}`, body),
+  deleteApprovalRule: (slug: string, id: string) => apiClient.delete<void>(`${t(slug)}/approvals/rules/${id}`),
+  approvals: (slug: string, params: { status?: string; module?: string; property_id?: string; mine?: boolean; cursor?: string; limit?: number }) =>
+    apiClient.get<Page<ApprovalRequest>>(`${t(slug)}/approvals`, { ...params, mine: params.mine ? 'true' : undefined }),
+  decideApproval: (slug: string, id: string, decision: 'approve' | 'reject', comment?: string) =>
+    apiClient.post<ApprovalRequest>(`${t(slug)}/approvals/${id}/${decision}`, { comment }),
   modules: (slug: string) => apiClient.get<ModulesState>(`${t(slug)}/settings/modules`),
   setModules: (slug: string, body: { modules: string[] } | { preset: string }) =>
     apiClient.put<ModulesState>(`${t(slug)}/settings/modules`, body),

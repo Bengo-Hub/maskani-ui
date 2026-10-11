@@ -10,6 +10,7 @@ import { Field, NativeSelect } from '@/components/common/field';
 import { FormSheet } from '@/components/common/form-sheet';
 import { KeysetTable } from '@/components/common/keyset-table';
 import { StatusBadge } from '@/components/common/status-badge';
+import { ApprovalProgress } from '@/components/approvals/approval-progress';
 import { useAccess, useSlug } from '@/hooks/use-access';
 import { useAdjustmentReview, useAdjustments } from '@/hooks/use-billing';
 import type { Adjustment } from '@/lib/api/types';
@@ -52,8 +53,8 @@ export function CreditReview({ propertyId }: { propertyId: string }) {
       render: (a) => <div className="text-sm"><p>{a.metadata?.requested_by_name || 'Finance'}</p><p className="text-xs text-muted-foreground">{fmtDate(a.created_at)}</p></div>,
     },
     {
-      key: 'approvals', header: 'Approvals', hideBelow: 'md', accessor: (a) => a.approvals?.length ?? 0,
-      render: (a) => (a.approvals?.length ? <span className="text-sm">{a.approvals.map((x) => x.name || 'Approver').join(', ')}</span> : <span className="text-xs text-muted-foreground">None yet</span>),
+      key: 'approval', header: 'Approval', hideBelow: 'md', accessor: (a) => a.approval?.current_sequence ?? 0,
+      render: (a) => <ApprovalProgress request={a.approval} compact />,
     },
     { key: 'amt', header: 'Amount', align: 'right', accessor: (a) => num(a.amount), render: (a) => <span className="font-semibold tabular">{kes(a.amount)}</span> },
     status === 'pending_approval' || status === 'approved'

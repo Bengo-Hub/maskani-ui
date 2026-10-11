@@ -7,6 +7,7 @@ import type { ApprovalRuleInput, Role } from '@/lib/api/types';
 import { qk } from '@/lib/query-keys';
 import { useAuthStore } from '@/store/auth';
 import { useAccess, useSlug } from './use-access';
+import { useKeysetList } from './use-keyset-list';
 
 /** Catalogue entries (property_type, unit_type, wo_category, pass_type, ...), cached for 30 minutes. */
 export function useCatalogue(kind: string) {
@@ -218,4 +219,30 @@ export function useSaveApprovalRule() {
       onSuccess: () => { toast.success('Approval rule removed'); refresh(); },
     }),
   };
+}
+
+/** The central approvals inbox: requests by status and workflow, optionally only those waiting for me. */
+export function useApprovals(f: { status: string; module: string; mine: boolean; propertyId: string }) {
+  const slug = useSlug();
+  const { can } = useAccess();
+  return useKeysetList(
+    qk.approvals(slug, `${f.status}:${f.module}:${f.mine}:${f.propertyId || 'all'}`),
+    (cursor) => settingsApi.approvals(slug, { status: f.status || undefined, module: f.module || undefined, mine: f.mine,
+      property_id: f.propertyId || undefined, cursor, limit: 24 }),
+    { enabled: can('billing.approve') || can('billing.verify') || can('settings.view') },
+  );
+}
+
+/** Approves or rejects a request's current step; every queue that shows approvals refreshes. */
+export function useDecideApproval() {
+  const slug = useSlug();
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (v: { id: string; decision: 'approve' | 'reject'; comment?: string }) => settingsApi.decideApproval(slug, v.id, v.decision, v.comment),
+    onSuccess: (r) => {
+      toast.success(r.status === 'approved' ? 'Approved' : r.status === 'rejected' ? 'Rejected' : 'Approved; it moves to the next step');
+      for (const k of ['approvals', 'adjustments', 'manual-payments', 'work-orders']) void qc.invalidateQueries({ queryKey: [slug, k] });
+      void qc.invalidateQueries({ queryKey: qk.accounts(slug) });
+    },
+  });
 }

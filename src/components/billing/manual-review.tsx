@@ -11,6 +11,7 @@ import { FormSheet } from '@/components/common/form-sheet';
 import { BankImport } from '@/components/billing/bank-import';
 import { KeysetTable } from '@/components/common/keyset-table';
 import { StatusBadge } from '@/components/common/status-badge';
+import { ApprovalProgress } from '@/components/approvals/approval-progress';
 import { useAccess, useSlug } from '@/hooks/use-access';
 import { useManualPaymentReview, useManualPayments } from '@/hooks/use-billing';
 import type { ManualPayment } from '@/lib/api/types';
@@ -52,6 +53,7 @@ export function ManualReview({ propertyId }: { propertyId: string }) {
       render: (m) => <div><p>{METHOD_LABEL[m.method]}</p><p className="font-mono text-xs text-muted-foreground">{m.reference}</p></div>,
     },
     { key: 'on', header: 'Paid on', hideBelow: 'md', accessor: (m) => m.paid_on, render: (m) => fmtDate(m.paid_on) },
+    { key: 'approval', header: 'Verification', hideBelow: 'md', accessor: (m) => m.approval?.current_sequence ?? 0, render: (m) => <ApprovalProgress request={m.approval} compact /> },
     { key: 'by', header: 'Recorded by', hideBelow: 'lg', accessor: (m) => m.submitted_by_name ?? '', render: (m) => <div className="text-sm"><p>{m.submitted_by_name || 'Unknown'}</p><p className="text-xs text-muted-foreground">{fmtDate(m.created_at)}</p></div> },
     { key: 'amt', header: 'Amount', align: 'right', accessor: (m) => num(m.amount), render: (m) => <span className="font-semibold tabular">{kes(m.amount)}</span> },
     status === 'pending'

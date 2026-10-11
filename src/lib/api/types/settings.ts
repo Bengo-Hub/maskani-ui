@@ -72,22 +72,55 @@ export interface ModulesState {
   dependencies?: Record<string, string[]>;
 }
 
-/** Who approves a credit in an amount band (GET /settings/approval-rules). */
+export type ApprovalModule =
+  | 'credit_note' | 'adjustment' | 'manual_payment' | 'work_order_quote'
+  | 'restructure' | 'vendor_bill' | 'refund' | 'deposit_deduction' | 'remittance' | 'write_off';
+
+export interface ApprovalStep { sequence: number; name: string; approver_role?: string; permission?: string }
+
+/** An approval rule: a workflow's amount band and its ordered steps (GET /approvals/rules). */
 export interface ApprovalRule {
   id: string;
-  action: 'credit_note' | 'adjustment';
+  module: ApprovalModule;
+  name: string;
   min_amount: string | number;
   max_amount?: string | number | null;
-  levels: number;
-  approver_roles?: string[];
-  active: boolean;
+  steps: ApprovalStep[];
+  is_active: boolean;
 }
 
 export interface ApprovalRuleInput {
-  action: ApprovalRule['action'];
+  module: ApprovalModule;
+  name: string;
   min_amount: number;
   max_amount?: number | null;
-  levels: number;
-  approver_roles: string[];
-  active: boolean;
+  steps: { name: string; approver_role: string }[];
+  is_active: boolean;
+}
+
+export interface ApprovalAction extends ApprovalStep {
+  status: 'pending' | 'approved' | 'rejected' | 'skipped';
+  acted_by?: string;
+  acted_by_name?: string;
+  acted_at?: string;
+  comment?: string;
+}
+
+/** One object's approval on the central engine (GET /approvals). */
+export interface ApprovalRequest {
+  id: string;
+  module: ApprovalModule;
+  object_id: string;
+  object_reference: string;
+  amount: string | number;
+  property_id?: string;
+  status: 'pending' | 'approved' | 'rejected' | 'cancelled';
+  current_sequence: number;
+  current_approver: string;
+  actions: ApprovalAction[];
+  submitted_by?: string;
+  submitted_by_name?: string;
+  decided_at?: string;
+  created_at: string;
+  metadata?: { label?: string; account_ref?: string; unit_code?: string; account_id?: string; work_order_id?: string; reason?: string };
 }

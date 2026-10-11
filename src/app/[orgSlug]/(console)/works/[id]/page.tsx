@@ -22,7 +22,7 @@ const NEXT: Partial<Record<WorkStatus, WorkAction[]>> = {
   triaged: ['assign', 'cancel'],
   reopened: ['assign', 'start', 'cancel'],
   assigned: ['quote', 'start', 'cancel'],
-  quoted: ['approve_quote', 'cancel'],
+  quoted: ['approve_quote', 'reject_quote', 'cancel'],
   approved: ['start'],
   in_progress: ['complete'],
   completed: ['confirm', 'reopen', 'close'],
@@ -30,7 +30,7 @@ const NEXT: Partial<Record<WorkStatus, WorkAction[]>> = {
 };
 
 const ACTION_LABEL: Record<WorkAction, string> = {
-  assign: 'Assign', quote: 'Record quote', approve_quote: 'Approve quote', start: 'Start', complete: 'Complete',
+  assign: 'Assign', quote: 'Record quote', approve_quote: 'Approve quote', reject_quote: 'Reject quote', start: 'Start', complete: 'Complete',
   confirm: 'Confirm', reopen: 'Reopen', cancel: 'Cancel', close: 'Close',
 };
 

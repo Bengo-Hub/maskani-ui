@@ -1,4 +1,5 @@
 import type { Base, Money } from './common';
+import type { ApprovalRequest } from './settings';
 import type { Unit } from './register';
 
 export interface Fund extends Base {
@@ -343,6 +344,8 @@ export interface ManualPayment extends Base {
   reviewed_at?: string;
   review_note?: string;
   metadata?: { account_ref?: string; unit_code?: string; portal?: boolean };
+  /** Its verification on the central engine (joined by the list call). */
+  approval?: ApprovalRequest;
 }
 
 export interface ManualPaymentInput {
@@ -376,7 +379,8 @@ export interface Adjustment extends Base {
   treasury_credit_note_id?: string;
   status: 'pending_approval' | 'approved' | 'rejected' | 'applied';
   requested_by: string;
-  approvals?: { user_id: string; name?: string; at: string; note?: string }[];
+  /** Its approval on the central engine (joined by the list call). */
+  approval?: ApprovalRequest;
   metadata?: {
     account_ref?: string; unit_code?: string; invoice_number?: string; requested_by_name?: string;
     credit_note_number?: string; rejected_by_name?: string; rejected_reason?: string;

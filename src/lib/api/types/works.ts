@@ -5,7 +5,7 @@ export type WorkStatus =
   | 'requested' | 'triaged' | 'assigned' | 'quoted' | 'approved' | 'in_progress'
   | 'completed' | 'confirmed' | 'reopened' | 'closed' | 'cancelled';
 export type WorkAction =
-  | 'assign' | 'quote' | 'approve_quote' | 'start' | 'complete' | 'confirm' | 'reopen' | 'cancel' | 'close';
+  | 'assign' | 'quote' | 'approve_quote' | 'reject_quote' | 'start' | 'complete' | 'confirm' | 'reopen' | 'cancel' | 'close';
 
 export interface WorkOrderEvent {
   id: string;

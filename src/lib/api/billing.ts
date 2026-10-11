@@ -2,10 +2,18 @@ import { apiClient } from './client';
 import { tenantBase as t } from '@/lib/config';
 import type { BankCsvLine } from '@/lib/bank-csv';
 import type {
-  Adjustment, AdjustmentInput, BankLineResult, BillQuery,
+  Adjustment, AdjustmentInput, ApprovalRequest, BankLineResult, BillQuery,
   ArrearsRow, BillingPreview, CallRow, CollectionLadder, CollectionNote, ManualPayment, ManualPaymentInput, BillingRun, BillingRunLine, BillingSchedule, BillingScheduleInput, ChargeRate, ChargeType, ExportFormat, Fund, Page, PayIntent,
   PayRequest, Statement, SuspenseRow, UnitAccount,
 } from './types';
+
+/** A queue page with each row's latest approval request beside it. */
+type WithApprovals<T> = Page<T> & { approvals?: Record<string, ApprovalRequest> };
+
+/** Puts each row's approval on the row, so the shared keyset list stays flat. */
+function joinApprovals<T extends { id: string }>(r: WithApprovals<T>): Page<T & { approval?: ApprovalRequest }> {
+  return { ...r, data: (r.data ?? []).map((row) => ({ ...row, approval: r.approvals?.[row.id] })) };
+}
 
 export interface RunInput {
   property_id: string;
@@ -100,12 +108,12 @@ export const billingApi = {
   suspense: (slug: string, days = 60) => apiClient.get<{ data: SuspenseRow[] }>(`${t(slug)}/collections/suspense`, { days }),
   submitManual: (slug: string, accountId: string, body: ManualPaymentInput) => apiClient.post<ManualPayment>(`${t(slug)}/unit-accounts/${accountId}/manual-payments`, body),
   manualPayments: (slug: string, params: { status?: string; property_id?: string; account_id?: string; cursor?: string; limit?: number }) =>
-    apiClient.get<Page<ManualPayment>>(`${t(slug)}/collections/manual-payments`, params),
+    apiClient.get<WithApprovals<ManualPayment>>(`${t(slug)}/collections/manual-payments`, params).then(joinApprovals),
   approveManual: (slug: string, id: string, note?: string) => apiClient.post<ManualPayment>(`${t(slug)}/manual-payments/${id}/approve`, { note }),
   rejectManual: (slug: string, id: string, reason: string) => apiClient.post<ManualPayment>(`${t(slug)}/manual-payments/${id}/reject`, { reason }),
   requestAdjustment: (slug: string, accountId: string, body: AdjustmentInput) => apiClient.post<Adjustment>(`${t(slug)}/unit-accounts/${accountId}/adjustments`, body),
   adjustments: (slug: string, params: { status?: string; property_id?: string; account_id?: string; cursor?: string; limit?: number }) =>
-    apiClient.get<Page<Adjustment>>(`${t(slug)}/collections/adjustments`, params),
+    apiClient.get<WithApprovals<Adjustment>>(`${t(slug)}/collections/adjustments`, params).then(joinApprovals),
   approveAdjustment: (slug: string, id: string, note?: string) => apiClient.post<Adjustment>(`${t(slug)}/adjustments/${id}/approve`, { note }),
   rejectAdjustment: (slug: string, id: string, reason: string) => apiClient.post<Adjustment>(`${t(slug)}/adjustments/${id}/reject`, { reason }),
   billQueries: (slug: string, params: { status?: string; property_id?: string; cursor?: string; limit?: number }) =>
