@@ -123,3 +123,28 @@ export function useRaiseBillQuery(accountId: string) {
     onSuccess: () => { toast.success('Query sent to the estate office'); void qc.invalidateQueries({ queryKey: qk.billQueries(slug, 'mine') }); },
   });
 }
+
+/** A unit's household, staff and vehicles, managed by its owners and occupants. */
+export function useHousehold(unitId: string) {
+  const slug = useSlug();
+  const ready = usePortalReady();
+  return useQuery({ queryKey: [slug, 'household', unitId], queryFn: () => portalApi.household(slug, unitId), enabled: ready && !!unitId });
+}
+
+export function useHouseholdActions(unitId: string) {
+  const slug = useSlug();
+  const qc = useQueryClient();
+  const refresh = (msg: string) => () => { toast.success(msg); void qc.invalidateQueries({ queryKey: [slug, 'household', unitId] }); };
+  return {
+    addPerson: useMutation({
+      mutationFn: (body: { name: string; phone?: string; role: 'household_member' | 'domestic_staff' }) => portalApi.addHousehold(slug, unitId, body),
+      onSuccess: refresh('Added'),
+    }),
+    endPerson: useMutation({ mutationFn: (linkId: string) => portalApi.endHousehold(slug, unitId, linkId), onSuccess: refresh('Removed') }),
+    addVehicle: useMutation({
+      mutationFn: (body: { plate: string; make?: string; model?: string; colour?: string }) => portalApi.addVehicle(slug, unitId, body),
+      onSuccess: refresh('Vehicle added'),
+    }),
+    removeVehicle: useMutation({ mutationFn: (vehicleId: string) => portalApi.removeVehicle(slug, unitId, vehicleId), onSuccess: refresh('Vehicle removed') }),
+  };
+}

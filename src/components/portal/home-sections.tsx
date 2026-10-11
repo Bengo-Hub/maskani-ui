@@ -3,7 +3,7 @@
 import Image from 'next/image';
 import Link from 'next/link';
 import type { ReactNode } from 'react';
-import { Bell, ChevronRight, Droplets, FileSignature, Receipt, ShieldCheck, Wrench, type LucideIcon } from 'lucide-react';
+import { Bell, ChevronRight, Droplets, FileSignature, Receipt, ShieldCheck, Wrench, Users, type LucideIcon } from 'lucide-react';
 import { Card } from '@/components/ui/card';
 import { Progress } from '@/components/ui/progress';
 import { PayAccount } from '@/components/billing/pay-account';
@@ -57,6 +57,7 @@ export function HomeHero({ name, estate, units }: { name?: string; estate?: stri
 export function QuickActions({ base }: { base: string }) {
   const items: { href: string; icon: LucideIcon; label: string; hint: string }[] = [
     { href: `${base}/portal/visitors?new=1`, icon: ShieldCheck, label: 'Add a visitor', hint: 'Send a gate pass' },
+    { href: `${base}/portal/household`, icon: Users, label: 'Household', hint: 'Family, staff and cars' },
     { href: `${base}/portal/requests?new=1`, icon: Wrench, label: 'Report a problem', hint: 'Leaks, faults, repairs' },
     { href: `${base}/portal/notices`, icon: Bell, label: 'Notices', hint: 'From the estate office' },
     { href: `${base}/portal/purchase`, icon: FileSignature, label: 'Purchase plan', hint: 'Instalments and balance' },
