@@ -34,6 +34,7 @@ As of 2026-10-08.
 - [x] Every dropdown on the shared-ui-lib SearchableCombobox (through `NativeSelect`); open lists creatable with `CatalogueCombobox`; long text on the shared rich text editor (`7af613d`)
 - [x] Settings on a URL-driven section rail: General, Branding, Modules, Lists (`7af613d`)
 - [x] Staff page with S2S invite and suspend; Roles and permissions matrix (2026-10-08)
+- [x] Tenant and property selection like treasury: tenant switcher for the platform owner (`GET /platform/tenants`), property switcher opening on the API's default property (head office outlet's, else first by name) through `useDefaultProperty`, so the header and every page (reports, water trend) share one selection (2026-10-11)
 
 ## Rules to apply
 

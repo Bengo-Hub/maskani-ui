@@ -153,7 +153,11 @@ export const reportsApi = {
     apiClient.get<Dashboard>(`${t(slug)}/reports/dashboard`, { ...params }, { suppressErrorToast: true }),
 };
 
+export interface TenantOption { id: string; slug: string; name: string }
+
 export const settingsApi = {
+  /** Tenants that use Maskani, for the platform owner's tenant switcher (403 for anyone else). */
+  platformTenants: (slug: string) => apiClient.get<{ data: TenantOption[] }>(`${t(slug)}/platform/tenants`),
   settings: (slug: string) => apiClient.get<Record<string, unknown>>(`${t(slug)}/settings`),
   updateSettings: (slug: string, body: Record<string, unknown>) => apiClient.put(`${t(slug)}/settings`, body),
   auditLogs: (slug: string, params: { target_type?: string; from?: string; to?: string; cursor?: string; limit?: number }) =>

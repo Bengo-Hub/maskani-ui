@@ -9,6 +9,7 @@ key screens). API contract: `maskani-api/docs/api-spec.md`.
 
 | Area | Screens | Module |
 |---|---|---|
+| Header | Tenant switcher for the platform owner; property switcher that opens on the default property (head office outlet's, else the first by name) | always |
 | Dashboard | Collections this month (billed vs collected), arrears over 60 days, open work orders and past SLA, water loss, vendors due for renewal, quick actions | always |
 | Properties | Property list, property detail (blocks, units, staff, meters, documents), block editor | properties |
 | Units | Unit list with filters (block, sale status, occupancy, arrears), unit detail with timeline, parties, accounts, readings, works | properties |

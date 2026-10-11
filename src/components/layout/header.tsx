@@ -13,6 +13,7 @@ import { AUTH_UI_URL, TREASURY_UI_URL } from '@/lib/config';
 import { initials } from '@/lib/utils';
 import { useAuthStore, hasPermission } from '@/store/auth';
 import { PropertySwitcher } from './property-switcher';
+import { TenantSwitcher } from './tenant-switcher';
 
 // Literal env expressions so the bundler inlines them (see shared-ui-lib service-registry docs).
 const SERVICE_URLS = {
@@ -46,10 +47,11 @@ export function Header({ title, onMenu }: { title?: string; onMenu: () => void }
       </IconButton>
       <div className="flex min-w-0 flex-1 items-center gap-3">
         {title && <span className="truncate font-display text-base font-semibold lg:hidden">{title}</span>}
-        <div className="hidden min-w-0 lg:block"><PropertySwitcher /></div>
+        {/* Platform owner: tenant first, then that tenant's properties (treasury's tenant and outlet filters). */}
+        <div className="hidden min-w-0 items-center gap-2 lg:flex"><TenantSwitcher /><PropertySwitcher /></div>
       </div>
       <div className="flex shrink-0 items-center gap-1">
-        <div className="lg:hidden"><PropertySwitcher /></div>
+        <div className="flex items-center gap-1 lg:hidden"><TenantSwitcher /><PropertySwitcher /></div>
         <IconButton
           label={resolvedTheme === 'dark' ? 'Switch to light theme' : 'Switch to dark theme'}
           side="bottom"

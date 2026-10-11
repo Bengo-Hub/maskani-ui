@@ -8,6 +8,7 @@ export const qk = {
   importJob: (slug: string, id: string) => [slug, 'imports', id] as const,
 
   properties: (slug: string) => [slug, 'properties'] as const,
+  platformTenants: () => ['platform', 'tenants'] as const,
   property: (slug: string, id: string) => [slug, 'properties', id] as const,
   propertyStaff: (slug: string, id: string) => [slug, 'properties', id, 'staff'] as const,
   units: (slug: string) => [slug, 'units'] as const,

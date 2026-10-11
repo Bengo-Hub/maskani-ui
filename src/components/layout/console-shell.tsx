@@ -8,6 +8,7 @@ import { MobileBottomNav, type MobileNavTab } from '@bengo-hub/shared-ui-lib/nav
 import { FeatureLock } from '@bengo-hub/shared-ui-lib/subscription';
 import { AppSplash } from './app-splash';
 import { Header } from './header';
+import { useDefaultProperty } from '@/hooks/use-default-property';
 import { ModuleReadOnly } from './module-read-only';
 import { Sidebar } from './sidebar';
 import { EmptyState } from '@/components/common/empty-state';
@@ -49,6 +50,7 @@ export function ConsoleShell({ children }: { children: ReactNode }) {
   const me = useAuthStore((s) => s.me);
   const [collapsed, setCollapsed] = useState(false);
   const [drawer, setDrawer] = useState(false);
+  useDefaultProperty();
 
   useEffect(() => {
     try { setCollapsed(localStorage.getItem(COLLAPSE_KEY) === '1'); } catch { /* storage blocked */ }

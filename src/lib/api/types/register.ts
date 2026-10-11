@@ -31,6 +31,8 @@ export interface Property extends Base {
   status?: string;
   outlet_id?: string;
   unit_count?: number;
+  /** The property the console opens on: the head office outlet's, else the first by name. */
+  is_default?: boolean;
   occupied_count?: number;
   sold_count?: number;
   edges?: { blocks?: Block[] };

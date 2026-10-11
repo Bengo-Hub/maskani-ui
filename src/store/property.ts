@@ -25,3 +25,8 @@ export const usePropertyStore = create<PropertyState>()(
 export function useSelectedPropertyId(slug: string): string {
   return usePropertyStore((s) => s.byTenant[slug] ?? '');
 }
+
+/** The stored choice as is: undefined until someone (or the default) picks, '' for all properties. */
+export function useStoredPropertyChoice(slug: string): string | undefined {
+  return usePropertyStore((s) => s.byTenant[slug]);
+}

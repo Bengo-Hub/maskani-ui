@@ -79,8 +79,15 @@ keeping the console plain and dense. maskani-commerce follows the same rules.
   route guard. Kiosk paths (`/gate`, `/portal/sign-in`) render without console chrome.
 - The shell's `<main>` owns page padding. Pages wrap content in `max-w-7xl mx-auto` (lists and boards)
   or `max-w-4xl mx-auto` (detail and forms), with no extra padding.
-- Header: tenant name, property switcher (portalled dropdown via `AnchoredPortal`), app switcher,
-  account panel. Any header dropdown goes through `AnchoredPortal`.
+- Header: tenant switcher (platform owner only), property switcher (portalled dropdowns via
+  `AnchoredPortal`), app switcher, account panel. Any header dropdown goes through `AnchoredPortal`.
+- Tenant and property selection follow treasury's tenant and outlet filters. The platform owner
+  (`is_platform_owner` on `/auth/me`) gets a tenant switcher fed by `GET /platform/tenants`; picking
+  a tenant opens the same page in that tenant's console. Tenant staff see only the property
+  switcher. The selected property is stored per tenant slug and `useDefaultProperty` (mounted once
+  in the console shell) preselects the API's `is_default` property when nothing was chosen or the
+  saved one is gone, so the header, dashboard, reports (the water trend needs one property) and
+  every page read the same selection. "All properties" stays a choice where there is more than one.
 - Sidebar: groups Overview, Register, Money, Operations, Security, Communication, Reports, Settings;
   collapsible to icons; built from `src/lib/nav.ts` filtered by module and permission.
 
