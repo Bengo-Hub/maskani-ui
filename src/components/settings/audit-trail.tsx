@@ -24,6 +24,8 @@ const ACTION: Record<string, string> = {
   'adjustment.reject': 'Rejected a credit', 'payment.suspense_assign': 'Assigned an unmatched payment', 'payment.bank_statement_import': 'Imported a bank statement',
   'payment_plan.agree': 'Agreed a payment plan', 'payment_plan.cancel': 'Cancelled a payment plan', 'billing.run_without_readings': 'Ran billing without readings',
   'unit.link_end': "Ended someone's link to a unit", 'unit.transfer': 'Transferred a unit', 'register.import_commit': 'Imported the register',
+  'privacy.verify': "Confirmed a person's identity for a privacy request", 'privacy.export': "Downloaded a person's data",
+  'privacy.erase': "Erased a person's details", 'privacy.reject': 'Rejected a privacy request',
 };
 
 const AREAS = [
@@ -32,6 +34,7 @@ const AREAS = [
   { value: 'settings', label: 'Settings' }, { value: 'approval_rule', label: 'Approval rules' }, { value: 'fund', label: 'Funds and paybills' },
   { value: 'approval', label: 'Approvals' }, { value: 'manual_payment', label: 'Manual payments' }, { value: 'adjustment', label: 'Credits' },
   { value: 'payment', label: 'Payments' }, { value: 'unit', label: 'Units and ownership' }, { value: 'gate', label: 'Gate tablets' },
+  { value: 'privacy', label: 'Personal data' },
 ];
 
 /**
@@ -54,7 +57,7 @@ export function AuditTrail() {
     <section className="space-y-3">
       <div>
         <h2 className="text-base font-semibold">Audit trail</h2>
-        <p className="text-sm text-muted-foreground">Changes to access, settings, money decisions and ownership. Routine work is not recorded here.</p>
+        <p className="text-sm text-muted-foreground">Changes to access, settings, money decisions, ownership and personal data. Routine work is not recorded here.</p>
       </div>
       <div className="flex flex-wrap items-end gap-2">
         <NativeSelect className="w-48" value={area} onChange={(e) => setArea(e.target.value)} aria-label="Area">

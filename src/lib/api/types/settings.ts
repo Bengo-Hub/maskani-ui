@@ -125,6 +125,34 @@ export interface ApprovalRequest {
   metadata?: { label?: string; account_ref?: string; unit_code?: string; account_id?: string; work_order_id?: string; reason?: string };
 }
 
+export type PrivacyKind = 'access' | 'correction' | 'deletion';
+export type PrivacyStatus = 'received' | 'verified' | 'in_progress' | 'completed' | 'rejected';
+
+/** A data subject request (GET /privacy/requests, GET /me/privacy-requests). */
+export interface PrivacyRequest {
+  id: string;
+  party_id?: string;
+  requester_name?: string;
+  requester_phone?: string;
+  kind: PrivacyKind;
+  status: PrivacyStatus;
+  received_at: string;
+  due_at: string;
+  completed_at?: string;
+  notes?: string;
+  created_at: string;
+  metadata?: {
+    source?: 'portal' | 'office';
+    verified_by?: 'portal' | 'code' | 'in_person';
+    verified_note?: string;
+    otp_expires_at?: string;
+    otp_attempts?: number;
+    codes_sent?: number;
+    outcome?: string;
+    reason?: string;
+  };
+}
+
 /** One audit trail entry: a critical security workflow (GET /audit-logs). */
 export interface AuditEntry {
   id: string;

@@ -18,7 +18,7 @@ export function partyName(p?: Party | null): string {
  * Find a person by name or phone (search runs on Enter) or add a new one inline. The single picker
  * for linking owners, reserving units and naming buyers.
  */
-export function PartyPicker({ value, onChange }: { value: Party | null; onChange: (p: Party | null) => void }) {
+export function PartyPicker({ value, onChange, allowNew = true }: { value: Party | null; onChange: (p: Party | null) => void; allowNew?: boolean }) {
   const [q, setQ] = useState('');
   const [adding, setAdding] = useState(false);
   const results = useParties(q);
@@ -27,12 +27,12 @@ export function PartyPicker({ value, onChange }: { value: Party | null; onChange
     <div className="space-y-2">
       <div className="flex flex-col gap-2 sm:flex-row">
         <SearchInput value={q} onSearch={setQ} placeholder="Name or phone, then Enter" className="sm:flex-1" />
-        <Button type="button" variant="outline" onClick={() => setAdding(true)}><UserPlus /> New person</Button>
+        {allowNew && <Button type="button" variant="outline" onClick={() => setAdding(true)}><UserPlus /> New person</Button>}
       </div>
       {q && (
         <ul className="max-h-56 divide-y overflow-y-auto rounded-lg border">
           {results.isLoading && <li className="px-3 py-2 text-sm text-muted-foreground">Searching...</li>}
-          {!results.isLoading && results.rows.length === 0 && <li className="px-3 py-2 text-sm text-muted-foreground">Nobody found. Add them as a new person.</li>}
+          {!results.isLoading && results.rows.length === 0 && <li className="px-3 py-2 text-sm text-muted-foreground">{allowNew ? 'Nobody found. Add them as a new person.' : 'Nobody found.'}</li>}
           {results.rows.map((p) => (
             <li key={p.id}>
               <button type="button" onClick={() => onChange(p)} className={cn('flex w-full items-center justify-between gap-2 px-3 py-2.5 text-left text-sm hover:bg-muted', value?.id === p.id && 'bg-primary/5')}>
@@ -44,7 +44,7 @@ export function PartyPicker({ value, onChange }: { value: Party | null; onChange
         </ul>
       )}
       {value && <p className="rounded-lg bg-muted px-3 py-2 text-sm">Selected: <strong>{partyName(value)}</strong> {value.phone}</p>}
-      <PartyForm open={adding} onOpenChange={setAdding} onSaved={(p) => { onChange(p); setQ(p.phone ?? ''); }} />
+      {allowNew && <PartyForm open={adding} onOpenChange={setAdding} onSaved={(p) => { onChange(p); setQ(p.phone ?? ''); }} />}
     </div>
   );
 }

@@ -1,6 +1,6 @@
 import { apiClient } from './client';
 import { tenantBase as t } from '@/lib/config';
-import type { BillQuery, BillQueryInput, ExportFormat, ManualPayment, ManualPaymentInput, Notice, Page, PassInput, PayIntent, PayRequest, PortalUnit, SaleContract, Statement, VisitorPass, WorkOrder, WorkPriority } from './types';
+import type { BillQuery, BillQueryInput, ExportFormat, ManualPayment, ManualPaymentInput, Notice, Page, PrivacyKind, PrivacyRequest, PassInput, PayIntent, PayRequest, PortalUnit, SaleContract, Statement, VisitorPass, WorkOrder, WorkPriority } from './types';
 
 const me = (slug: string) => `${t(slug)}/me`;
 
@@ -34,6 +34,9 @@ export const portalApi = {
   notices: (slug: string) => apiClient.get<{ data: Notice[] }>(`${me(slug)}/notices`),
   acceptTerms: (slug: string, version: string) => apiClient.post(`${me(slug)}/terms/accept`, { version }),
   termsHistory: (slug: string) => apiClient.get<{ data: TermsAcceptance[] }>(`${me(slug)}/terms`),
+  privacyRequests: (slug: string) => apiClient.get<{ data: PrivacyRequest[] }>(`${me(slug)}/privacy-requests`),
+  createPrivacyRequest: (slug: string, body: { kind: PrivacyKind; notes?: string }) => apiClient.post<PrivacyRequest>(`${me(slug)}/privacy-requests`, body),
+  privacyExport: (slug: string, id: string) => apiClient.getBlob(`${me(slug)}/privacy-requests/${id}/export`, 'my-data.zip'),
   decideWalkIn: (slug: string, id: string, approve: boolean) => apiClient.post(`${me(slug)}/walk-ins/${id}/decide`, { approve }),
 };
 

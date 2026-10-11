@@ -3,7 +3,7 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { toast } from 'sonner';
 import { portalApi } from '@/lib/api/portal';
-import type { BillQueryInput, PassInput, WorkPriority } from '@/lib/api/types';
+import type { BillQueryInput, PassInput, PrivacyKind, WorkPriority } from '@/lib/api/types';
 import { qk } from '@/lib/query-keys';
 import { useAuthStore } from '@/store/auth';
 import { useSlug } from './use-access';
@@ -24,6 +24,25 @@ export function useAcceptTerms() {
     onSuccess: () => {
       void qc.invalidateQueries({ queryKey: qk.portalTerms(slug) });
       return refreshMe(slug);
+    },
+  });
+}
+
+/** The resident's own privacy requests, newest first. */
+export function useMyPrivacyRequests() {
+  const slug = useSlug();
+  const ready = usePortalReady();
+  return useQuery({ queryKey: qk.portalPrivacy(slug), queryFn: () => portalApi.privacyRequests(slug).then((r) => r.data ?? []), enabled: ready });
+}
+
+export function useCreateMyPrivacyRequest() {
+  const slug = useSlug();
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (b: { kind: PrivacyKind; notes?: string }) => portalApi.createPrivacyRequest(slug, b),
+    onSuccess: () => {
+      toast.success('Request sent to the estate office');
+      void qc.invalidateQueries({ queryKey: qk.portalPrivacy(slug) });
     },
   });
 }

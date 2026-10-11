@@ -3,7 +3,7 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { toast } from 'sonner';
 import { settingsApi, type StaffInviteInput } from '@/lib/api/operations';
-import type { ApprovalRuleInput, Role } from '@/lib/api/types';
+import type { ApprovalRuleInput, PrivacyKind, PrivacyStatus, Role } from '@/lib/api/types';
 import { qk } from '@/lib/query-keys';
 import { useAuthStore } from '@/store/auth';
 import { useAccess, useSlug } from './use-access';
@@ -230,6 +230,39 @@ export function useAuditLogs(f: { targetType: string; from: string; to: string }
     (cursor) => settingsApi.auditLogs(slug, { target_type: f.targetType || undefined, from: f.from || undefined, to: f.to || undefined, cursor, limit: 50 }),
     { enabled: can('settings.manage') },
   );
+}
+
+/** Data subject requests for the office, newest first. */
+export function usePrivacyRequests(f: { status: PrivacyStatus | ''; overdue: boolean }) {
+  const slug = useSlug();
+  const { can } = useAccess();
+  return useKeysetList(
+    [slug, 'privacy-requests', f.status, f.overdue],
+    (cursor) => settingsApi.privacyRequests(slug, { status: f.status || undefined, overdue: f.overdue, cursor, limit: 50 }),
+    { enabled: can('privacy.manage') },
+  );
+}
+
+/** Every office step on a privacy request; each refreshes the list. */
+export function usePrivacyActions() {
+  const slug = useSlug();
+  const qc = useQueryClient();
+  const done = (msg: string) => () => {
+    toast.success(msg);
+    void qc.invalidateQueries({ queryKey: [slug, 'privacy-requests'] });
+  };
+  return {
+    create: useMutation({ mutationFn: (b: { party_id: string; kind: PrivacyKind; notes?: string }) => settingsApi.createPrivacyRequest(slug, b), onSuccess: done('Request recorded') }),
+    sendCode: useMutation({ mutationFn: (id: string) => settingsApi.sendPrivacyCode(slug, id), onSuccess: done('Code sent to the phone and email on record') }),
+    verify: useMutation({
+      mutationFn: (v: { id: string; code?: string; in_person?: boolean; note?: string }) => settingsApi.verifyPrivacyRequest(slug, v.id, v),
+      onSuccess: done('Identity confirmed'),
+    }),
+    close: useMutation({
+      mutationFn: (v: { id: string; action: 'complete' | 'reject' | 'anonymise'; text?: string }) => settingsApi.closePrivacyRequest(slug, v.id, v.action, v.text),
+      onSuccess: (_r, v) => done(v.action === 'reject' ? 'Request rejected' : v.action === 'anonymise' ? 'Details erased' : 'Request completed')(),
+    }),
+  };
 }
 
 /** The central approvals inbox: requests by status and workflow, optionally only those waiting for me. */

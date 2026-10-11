@@ -1,7 +1,7 @@
 import { apiClient } from './client';
 import { tenantBase as t } from '@/lib/config';
 import type {
-  ApprovalRequest, ApprovalRule, ApprovalRuleInput, AuditEntry,
+  ApprovalRequest, ApprovalRule, ApprovalRuleInput, AuditEntry, PrivacyKind, PrivacyRequest, PrivacyStatus,
   AvailabilityGroup, ContractInput, Dashboard, DashboardFilters, ExportFormat, GateDevice, GateDeviceView, GateEvent, GateEventKind, Incident,
   InsidePerson, MediaUpload, Meter, MeterReading,
   Notice, NoticeDelivery, Page, PassInput, PriceList, PriceListItem, ReadingRound, Reservation, SaleContract,
@@ -141,6 +141,16 @@ export const settingsApi = {
   updateSettings: (slug: string, body: Record<string, unknown>) => apiClient.put(`${t(slug)}/settings`, body),
   auditLogs: (slug: string, params: { target_type?: string; from?: string; to?: string; cursor?: string; limit?: number }) =>
     apiClient.get<Page<AuditEntry>>(`${t(slug)}/audit-logs`, params),
+  privacyRequests: (slug: string, params: { status?: PrivacyStatus; overdue?: boolean; cursor?: string; limit?: number }) =>
+    apiClient.get<Page<PrivacyRequest>>(`${t(slug)}/privacy/requests`, { ...params, overdue: params.overdue ? 'true' : undefined }),
+  createPrivacyRequest: (slug: string, body: { party_id: string; kind: PrivacyKind; notes?: string }) =>
+    apiClient.post<PrivacyRequest>(`${t(slug)}/privacy/requests`, body),
+  sendPrivacyCode: (slug: string, id: string) => apiClient.post(`${t(slug)}/privacy/requests/${id}/send-code`, {}),
+  verifyPrivacyRequest: (slug: string, id: string, body: { code?: string; in_person?: boolean; note?: string }) =>
+    apiClient.post<PrivacyRequest>(`${t(slug)}/privacy/requests/${id}/verify`, body),
+  closePrivacyRequest: (slug: string, id: string, action: 'complete' | 'reject' | 'anonymise', text?: string) =>
+    apiClient.post<PrivacyRequest>(`${t(slug)}/privacy/requests/${id}/${action}`, { text }),
+  privacyExport: (slug: string, id: string) => apiClient.getBlob(`${t(slug)}/privacy/requests/${id}/export`, 'personal-data.zip'),
   approvalRules: (slug: string) => apiClient.get<{ data: ApprovalRule[] }>(`${t(slug)}/approvals/rules`),
   createApprovalRule: (slug: string, body: ApprovalRuleInput) => apiClient.post<ApprovalRule>(`${t(slug)}/approvals/rules`, body),
   updateApprovalRule: (slug: string, id: string, body: ApprovalRuleInput) => apiClient.put<ApprovalRule>(`${t(slug)}/approvals/rules/${id}`, body),

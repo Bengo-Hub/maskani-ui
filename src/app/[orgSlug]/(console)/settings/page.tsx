@@ -1,7 +1,7 @@
 'use client';
 
 import { Suspense } from 'react';
-import { Blocks, FileText, History, ListTree, Palette, SlidersHorizontal } from 'lucide-react';
+import { Blocks, FileText, History, ListTree, Lock, Palette, SlidersHorizontal } from 'lucide-react';
 import { Skeleton } from '@/components/ui/skeleton';
 import { PageHeader } from '@/components/common/page-header';
 import { SectionLayout, type Section } from '@/components/common/section-nav';
@@ -11,10 +11,11 @@ import { CatalogueSettings } from '@/components/settings/catalogue-settings';
 import { DocumentTemplates } from '@/components/settings/document-templates';
 import { GeneralSettings } from '@/components/settings/general-settings';
 import { ModuleSettings } from '@/components/settings/module-settings';
+import { PrivacyRequests } from '@/components/settings/privacy-requests';
 import { useAccess } from '@/hooks/use-access';
 import { useUrlParam } from '@/hooks/use-url-param';
 
-const TABS = ['general', 'branding', 'modules', 'lists', 'documents', 'audit'] as const;
+const TABS = ['general', 'branding', 'modules', 'lists', 'documents', 'privacy', 'audit'] as const;
 type Tab = (typeof TABS)[number];
 
 const SECTIONS: Section<Tab>[] = [
@@ -25,6 +26,7 @@ const SECTIONS: Section<Tab>[] = [
   { value: 'documents', label: 'Documents', icon: FileText, hint: 'Letters and certificates' },
 ];
 
+const PRIVACY: Section<Tab> = { value: 'privacy', label: 'Privacy requests', icon: Lock, hint: 'Copies, corrections, erasure' };
 const AUDIT: Section<Tab> = { value: 'audit', label: 'Audit trail', icon: History, hint: 'Access, settings and money changes' };
 
 export default function SettingsPage() {
@@ -34,16 +36,20 @@ export default function SettingsPage() {
 function Settings() {
   const { can } = useAccess();
   const admin = can('settings.manage');
-  const [tab, setTab] = useUrlParam<Tab>('tab', 'general', admin ? TABS : TABS.filter((t) => t !== 'audit'));
+  const privacy = can('privacy.manage');
+  const allowed = TABS.filter((t) => (t !== 'audit' || admin) && (t !== 'privacy' || privacy));
+  const sections = [...SECTIONS, ...(privacy ? [PRIVACY] : []), ...(admin ? [AUDIT] : [])];
+  const [tab, setTab] = useUrlParam<Tab>('tab', 'general', allowed);
   return (
     <div className="mx-auto max-w-7xl">
       <PageHeader title="Settings" subtitle="How Maskani runs for this estate" />
-      <SectionLayout sections={admin ? [...SECTIONS, AUDIT] : SECTIONS} value={tab} onChange={(v) => setTab(v, { kind: null })}>
+      <SectionLayout sections={sections} value={tab} onChange={(v) => setTab(v, { kind: null })}>
         {tab === 'general' && <GeneralSettings />}
         {tab === 'branding' && <BrandingSettings />}
         {tab === 'modules' && <ModuleSettings />}
         {tab === 'lists' && <CatalogueSettings />}
         {tab === 'documents' && <DocumentTemplates />}
+        {tab === 'privacy' && privacy && <PrivacyRequests />}
         {tab === 'audit' && admin && <AuditTrail />}
       </SectionLayout>
     </div>
