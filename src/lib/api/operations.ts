@@ -1,7 +1,7 @@
 import { apiClient } from './client';
 import { tenantBase as t } from '@/lib/config';
 import type {
-  ApprovalRequest, ApprovalRule, ApprovalRuleInput,
+  ApprovalRequest, ApprovalRule, ApprovalRuleInput, AuditEntry,
   AvailabilityGroup, ContractInput, Dashboard, DashboardFilters, ExportFormat, GateDevice, GateDeviceView, GateEvent, GateEventKind, Incident,
   InsidePerson, MediaUpload, Meter, MeterReading,
   Notice, NoticeDelivery, Page, PassInput, PriceList, PriceListItem, ReadingRound, Reservation, SaleContract,
@@ -139,6 +139,8 @@ export const reportsApi = {
 export const settingsApi = {
   settings: (slug: string) => apiClient.get<Record<string, unknown>>(`${t(slug)}/settings`),
   updateSettings: (slug: string, body: Record<string, unknown>) => apiClient.put(`${t(slug)}/settings`, body),
+  auditLogs: (slug: string, params: { target_type?: string; from?: string; to?: string; cursor?: string; limit?: number }) =>
+    apiClient.get<Page<AuditEntry>>(`${t(slug)}/audit-logs`, params),
   approvalRules: (slug: string) => apiClient.get<{ data: ApprovalRule[] }>(`${t(slug)}/approvals/rules`),
   createApprovalRule: (slug: string, body: ApprovalRuleInput) => apiClient.post<ApprovalRule>(`${t(slug)}/approvals/rules`, body),
   updateApprovalRule: (slug: string, id: string, body: ApprovalRuleInput) => apiClient.put<ApprovalRule>(`${t(slug)}/approvals/rules/${id}`, body),

@@ -221,6 +221,17 @@ export function useSaveApprovalRule() {
   };
 }
 
+/** The audit trail of critical security workflows, newest first (administrators). */
+export function useAuditLogs(f: { targetType: string; from: string; to: string }) {
+  const slug = useSlug();
+  const { can } = useAccess();
+  return useKeysetList(
+    [slug, 'audit-logs', f.targetType, f.from, f.to],
+    (cursor) => settingsApi.auditLogs(slug, { target_type: f.targetType || undefined, from: f.from || undefined, to: f.to || undefined, cursor, limit: 50 }),
+    { enabled: can('settings.manage') },
+  );
+}
+
 /** The central approvals inbox: requests by status and workflow, optionally only those waiting for me. */
 export function useApprovals(f: { status: string; module: string; mine: boolean; propertyId: string }) {
   const slug = useSlug();

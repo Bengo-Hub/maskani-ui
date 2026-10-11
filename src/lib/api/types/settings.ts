@@ -124,3 +124,16 @@ export interface ApprovalRequest {
   created_at: string;
   metadata?: { label?: string; account_ref?: string; unit_code?: string; account_id?: string; work_order_id?: string; reason?: string };
 }
+
+/** One audit trail entry: a critical security workflow (GET /audit-logs). */
+export interface AuditEntry {
+  id: string;
+  actor_user_id: string;
+  actor_email?: string;
+  action: string;
+  target_type: string;
+  target_id: string;
+  ip?: string;
+  request_id?: string;
+  created_at: string;
+}
