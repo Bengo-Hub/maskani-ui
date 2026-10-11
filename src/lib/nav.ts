@@ -34,6 +34,7 @@ export const NAV: NavGroup[] = [
       { label: 'Dashboard', path: '/dashboard', icon: Gauge },
       // One inbox for every workflow that needs sign-off (central approvals engine).
       { label: 'Approvals', path: '/approvals', icon: ShieldCheck, perms: ['billing.approve', 'billing.verify', 'works.manage', 'settings.view'] },
+      { label: 'Reports', path: '/reports', icon: BarChart3, perms: ['reports.view'] },
     ],
   },
   {
