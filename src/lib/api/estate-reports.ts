@@ -20,11 +20,29 @@ export interface EstateReport {
   note?: string;
 }
 
-export interface EstateReportParams { from?: string; to?: string; property_id?: string }
+/** One report in the catalog. */
+export interface CatalogReport {
+  id: string;
+  name: string;
+  description: string;
+  module: string;
+  /** estate: a table on screen; arrears: the arrears list; file: download only. */
+  source: 'estate' | 'arrears' | 'file';
+  filters: ('range' | 'property' | 'period' | 'min_owing')[];
+  formats: ExportFormat[];
+  export_path: string;
+  needs_property?: boolean;
+}
+
+export interface CatalogModule { module: string; display_name: string; reports: CatalogReport[] }
+
+export interface ReportParams { from?: string; to?: string; period?: string; property_id?: string }
 
 export const estateReportsApi = {
-  kinds: (slug: string) => apiClient.get<{ data: { kind: string; title: string }[] }>(`${t(slug)}/reports/estate`),
-  report: (slug: string, kind: string, params: EstateReportParams) => apiClient.get<EstateReport>(`${t(slug)}/reports/estate/${kind}`, { ...params }),
-  file: (slug: string, kind: string, params: EstateReportParams, format: ExportFormat) =>
-    apiClient.getBlob(`${t(slug)}/reports/estate/${kind}/export`, `${kind}.${format}`, { ...params, format }),
+  /** Every report grouped by module, already narrowed to the tenant's modules and the caller's rights. */
+  catalog: (slug: string) => apiClient.get<{ modules: CatalogModule[] }>(`${t(slug)}/reports/catalog`),
+  report: (slug: string, kind: string, params: ReportParams) => apiClient.get<EstateReport>(`${t(slug)}/reports/estate/${kind}`, { ...params }),
+  /** Downloads any catalog report through its own export path. */
+  file: (slug: string, r: CatalogReport, params: ReportParams, format: ExportFormat) =>
+    apiClient.getBlob(`${t(slug)}${r.export_path}`, `${r.id}.${format}`, { ...params, format }),
 };

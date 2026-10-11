@@ -1,11 +1,23 @@
 'use client';
 
 import { keepPreviousData, useQuery } from '@tanstack/react-query';
-import { estateReportsApi, type EstateReportParams } from '@/lib/api/estate-reports';
+import { estateReportsApi, type ReportParams } from '@/lib/api/estate-reports';
 import { useAccess, useSlug } from './use-access';
 
+/** The report catalog: every report the caller may run, grouped by module. */
+export function useReportCatalog() {
+  const slug = useSlug();
+  const { can } = useAccess();
+  return useQuery({
+    queryKey: [slug, 'report-catalog'],
+    queryFn: () => estateReportsApi.catalog(slug).then((r) => r.modules ?? []),
+    enabled: can('reports.view'),
+    staleTime: 10 * 60 * 1000,
+  });
+}
+
 /** One estate report for a month range and property; kept on screen while the next one loads. */
-export function useEstateReport(kind: string, params: EstateReportParams) {
+export function useEstateReport(kind: string, params: ReportParams) {
   const slug = useSlug();
   const { can } = useAccess();
   return useQuery({
