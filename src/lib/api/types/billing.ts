@@ -232,6 +232,8 @@ export interface PayIntent {
   checkout_request_id?: string;
   authorization_url?: string;
   instructions?: string;
+  /** Treasury's initiate link (tenant UUID), handed to the payment modal so it finds the gateways. */
+  initiate_url?: string;
 }
 
 /** A property's billing schedule and where its next scheduled run stands (GET /billing-schedule). */

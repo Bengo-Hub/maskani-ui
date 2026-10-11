@@ -55,7 +55,7 @@ export function PayAccount({
   const [recordOpen, setRecordOpen] = useState(false);
   const [amount, setAmount] = useState('');
   const [busy, setBusy] = useState(false);
-  const [intent, setIntent] = useState<{ id: string; amount: number } | null>(null);
+  const [intent, setIntent] = useState<{ id: string; amount: number; initiateUrl?: string } | null>(null);
   const [manual, setManual] = useState({ method: 'bank_transfer' as ManualPaymentInput['method'], reference: '', paidOn: todayInput() });
   // One idempotency key per Pay attempt, so a double tap never creates two intents.
   const keyRef = useRef('');
@@ -75,7 +75,7 @@ export function PayAccount({
       // phone on file before the payer has chosen anything.
       const res = await createIntent(accountId, { amount: value, payment_method: 'pending', idempotency_key: keyRef.current, email });
       setAskOpen(false);
-      setIntent({ id: res.intent_id, amount: num(res.amount) || value });
+      setIntent({ id: res.intent_id, amount: num(res.amount) || value, initiateUrl: res.initiate_url });
     } catch {
       /* the mutation layer already showed the error */
     } finally {
@@ -189,6 +189,7 @@ export function PayAccount({
           open
           onOpenChange={(o) => { if (!o) close(); }}
           paymentIntentId={intent.id}
+          initiateUrl={intent.initiateUrl}
           tenantSlug={tenantSlug}
           amount={intent.amount}
           currency="KES"
