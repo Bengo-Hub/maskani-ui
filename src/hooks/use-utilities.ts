@@ -1,6 +1,7 @@
 'use client';
 
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { toast } from 'sonner';
 import { utilitiesApi } from '@/lib/api/operations';
 import { qk } from '@/lib/query-keys';
 import { useAccess, useSlug } from './use-access';
@@ -31,6 +32,17 @@ export function useVerifyReading(propertyId: string, period: string) {
   return useMutation({
     mutationFn: (v: { readingId: string; action: 'accept' | 'reject' | 'recheck' }) => utilitiesApi.verifyReading(slug, v.readingId, v.action),
     onSuccess: () => void qc.invalidateQueries({ queryKey: qk.round(slug, propertyId, period) }),
+  });
+}
+
+/** Replaces a meter (closing and opening readings); the round shows the new meter. */
+export function useReplaceMeter(propertyId: string, period: string) {
+  const slug = useSlug();
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (v: { meterId: string; body: { period: string; closing_reading: number; new_serial: string; new_make?: string; opening_reading: number; notes?: string } }) =>
+      utilitiesApi.replaceMeter(slug, v.meterId, v.body),
+    onSuccess: () => { toast.success('Meter replaced'); void qc.invalidateQueries({ queryKey: qk.round(slug, propertyId, period) }); },
   });
 }
 

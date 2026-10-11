@@ -1,7 +1,7 @@
 'use client';
 
 import { Suspense, useMemo, useState } from 'react';
-import { AlertTriangle, Calculator, Camera, Check, CheckCheck, Droplets, Hourglass } from 'lucide-react';
+import { AlertTriangle, Calculator, Camera, Check, CheckCheck, Droplets, Hourglass, RefreshCw } from 'lucide-react';
 import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
@@ -16,6 +16,7 @@ import { SearchInput } from '@/components/common/search-input';
 import { StatTile } from '@/components/common/stat-tile';
 import { StatusBadge } from '@/components/common/status-badge';
 import { ReadingCapture } from '@/components/utilities/reading-capture';
+import { ReplaceMeter } from '@/components/utilities/replace-meter';
 import { ReadingMaths } from '@/components/utilities/reading-maths';
 import { useAccess } from '@/hooks/use-access';
 import { useUrlParam } from '@/hooks/use-url-param';
@@ -51,6 +52,7 @@ function ReadingRound() {
   const verify = useVerifyReading(propertyId, period);
   const estimate = useEstimateReading(propertyId, period);
   const [capture, setCapture] = useState<RoundRow | null>(null);
+  const [replacing, setReplacing] = useState<RoundRow | null>(null);
   const [accepting, setAccepting] = useState(false);
 
   const rows = useMemo(() => round?.rows ?? [], [round]);
@@ -173,6 +175,7 @@ function ReadingRound() {
                         </div>
                       ) : (
                         <div className="flex shrink-0 items-center gap-2">
+                          {manage && <IconButton label="Replace this meter" onClick={() => setReplacing(r)}><RefreshCw /></IconButton>}
                           {manage && <IconButton label="Estimate this reading at the 3-month average" onClick={() => estimate.mutate(r.meter_id)} disabled={estimate.isPending}><Calculator /></IconButton>}
                           <Button size="lg" className="h-11" onClick={() => setCapture(r)}><Camera /> Read</Button>
                         </div>
@@ -186,6 +189,7 @@ function ReadingRound() {
         </>
       )}
       <ReadingCapture row={capture} propertyId={propertyId} period={period} onDone={() => setCapture(null)} />
+      <ReplaceMeter row={replacing} propertyId={propertyId} period={period} onDone={() => setReplacing(null)} />
     </div>
   );
 }

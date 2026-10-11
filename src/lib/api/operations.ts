@@ -18,6 +18,8 @@ export const utilitiesApi = {
     apiClient.post<MeterReading>(`${t(slug)}/meters/${meterId}/readings`, body),
   estimate: (slug: string, meterId: string, period: string) =>
     apiClient.post<MeterReading>(`${t(slug)}/meters/${meterId}/estimate`, { period }),
+  replaceMeter: (slug: string, meterId: string, body: { period: string; closing_reading: number; new_serial: string; new_make?: string; opening_reading: number; notes?: string }) =>
+    apiClient.post<Meter>(`${t(slug)}/meters/${meterId}/replace`, body),
   verifyReading: (slug: string, readingId: string, action: 'accept' | 'reject' | 'recheck') =>
     apiClient.post<MeterReading>(`${t(slug)}/meter-readings/${readingId}/verify`, { action }),
   waterBalance: (slug: string, propertyId: string, period?: string) =>
