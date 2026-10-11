@@ -1,7 +1,7 @@
 'use client';
 
 import { keepPreviousData, useQuery } from '@tanstack/react-query';
-import { estateReportsApi, type ReportParams } from '@/lib/api/estate-reports';
+import { estateReportsApi, type ReportParams } from '@/lib/api/report-catalog';
 import { useAccess, useSlug } from './use-access';
 
 /** The report catalog: every report the caller may run, grouped by module. */

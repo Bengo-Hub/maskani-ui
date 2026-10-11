@@ -26,8 +26,8 @@ export interface CatalogReport {
   name: string;
   description: string;
   module: string;
-  /** estate: a table on screen; arrears: the arrears list; file: download only. */
-  source: 'estate' | 'arrears' | 'file';
+  /** table: a table on screen; arrears: the arrears list; file: download only. */
+  source: 'table' | 'arrears' | 'file';
   filters: ('range' | 'property' | 'period' | 'min_owing')[];
   formats: ExportFormat[];
   export_path: string;
@@ -41,7 +41,7 @@ export interface ReportParams { from?: string; to?: string; period?: string; pro
 export const estateReportsApi = {
   /** Every report grouped by module, already narrowed to the tenant's modules and the caller's rights. */
   catalog: (slug: string) => apiClient.get<{ modules: CatalogModule[] }>(`${t(slug)}/reports/catalog`),
-  report: (slug: string, kind: string, params: ReportParams) => apiClient.get<EstateReport>(`${t(slug)}/reports/estate/${kind}`, { ...params }),
+  report: (slug: string, id: string, params: ReportParams) => apiClient.get<EstateReport>(`${t(slug)}/reports/${id}/table`, { ...params }),
   /** Downloads any catalog report through its own export path. */
   file: (slug: string, r: CatalogReport, params: ReportParams, format: ExportFormat) =>
     apiClient.getBlob(`${t(slug)}${r.export_path}`, `${r.id}.${format}`, { ...params, format }),

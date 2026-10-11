@@ -13,9 +13,9 @@ import { NativeSelect } from '@/components/common/field';
 import { PageHeader } from '@/components/common/page-header';
 import { SectionLayout, type Section } from '@/components/common/section-nav';
 import { useSlug } from '@/hooks/use-access';
-import { useEstateReport, useReportCatalog } from '@/hooks/use-estate-reports';
+import { useEstateReport, useReportCatalog } from '@/hooks/use-report-catalog';
 import { useUrlParam } from '@/hooks/use-url-param';
-import { estateReportsApi, type CatalogReport, type EstateReport, type ReportColumn, type ReportParams } from '@/lib/api/estate-reports';
+import { estateReportsApi, type CatalogReport, type EstateReport, type ReportColumn, type ReportParams } from '@/lib/api/report-catalog';
 import { currentPeriod, kes } from '@/lib/utils';
 import { useSelectedPropertyId } from '@/store/property';
 
@@ -148,7 +148,7 @@ function Reports() {
                     )}
                     {blocked && <p className="text-xs text-muted-foreground">Pick a property at the top to run this one.</p>}
                     <div className="flex flex-wrap items-center gap-2">
-                      {r.source === 'estate' && (
+                      {r.source === 'table' && (
                         <Button size="sm" variant="outline" disabled={blocked} onClick={() => setReportId(r.id)}><Eye /> Open</Button>
                       )}
                       {r.source === 'arrears' && (
