@@ -19,6 +19,9 @@ const INPUT_LABELS: Record<string, { label: string; type: string; hint?: string 
   instalments: { label: 'Number of instalments', type: 'number' },
   instalment_amount: { label: 'Amount per instalment (KES)', type: 'number' },
   first_due: { label: 'First instalment due', type: 'date' },
+  occupant_name: { label: 'Occupant who pays', type: 'text' },
+  charges: { label: 'Charges they pay', type: 'text', hint: 'For example: water and garbage' },
+  from_date: { label: 'From', type: 'date' },
 };
 
 /**
