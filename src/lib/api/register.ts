@@ -92,6 +92,8 @@ export const registerApi = {
   unit: (slug: string, id: string) => apiClient.get<Unit>(`${t(slug)}/units/${id}`),
   createUnit: (slug: string, body: UnitInput) => apiClient.post<Unit>(`${t(slug)}/units`, body),
   updateUnit: (slug: string, id: string, body: Partial<UnitInput>) => apiClient.patch<Unit>(`${t(slug)}/units/${id}`, body),
+  transferUnit: (slug: string, unitId: string, body: TransferInput) =>
+    apiClient.post<TransferResult>(`${t(slug)}/units/${unitId}/transfer`, body),
   linkParty: (slug: string, unitId: string, body: LinkPartyInput) =>
     apiClient.post<UnitParty>(`${t(slug)}/units/${unitId}/parties`, body),
   endLink: (slug: string, linkId: string, body: { end_date: string }) =>
@@ -106,3 +108,12 @@ export const registerApi = {
   updateParty: (slug: string, id: string, body: Partial<PartyInput>) => apiClient.patch<Party>(`${t(slug)}/parties/${id}`, body),
   invite: (slug: string, id: string) => apiClient.post(`${t(slug)}/parties/${id}/invite`, {}),
 };
+
+export interface TransferInput { new_owner_id: string; date?: string; reading?: number; invite?: boolean; note?: string }
+
+/** What a unit transfer did (POST /units/{id}/transfer). */
+export interface TransferResult {
+  ended_links: number;
+  invited: boolean;
+  apportion: { period: string; days_in_period: number; outgoing_days: number; incoming_days: number; handover_use?: string | number };
+}

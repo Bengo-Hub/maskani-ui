@@ -2,7 +2,7 @@
 
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { toast } from 'sonner';
-import { registerApi, type LinkPartyInput, type PartyInput, type PropertyInput, type UnitFilters, type UnitInput } from '@/lib/api/register';
+import { registerApi, type LinkPartyInput, type PartyInput, type PropertyInput, type UnitFilters, type UnitInput, type TransferInput } from '@/lib/api/register';
 import type { PropertyRole } from '@/lib/api/types';
 import { qk } from '@/lib/query-keys';
 import { useAccess, useSlug } from './use-access';
@@ -142,6 +142,20 @@ export function useSaveParty(id?: string) {
     onSuccess: () => {
       toast.success(id ? 'Details saved' : 'Person added');
       void qc.invalidateQueries({ queryKey: qk.parties(slug) });
+    },
+  });
+}
+
+/** Transfers a unit to a new owner once every account is clear. */
+export function useTransferUnit(unitId: string) {
+  const slug = useSlug();
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (body: TransferInput) => registerApi.transferUnit(slug, unitId, body),
+    onSuccess: () => {
+      toast.success('Ownership transferred');
+      void qc.invalidateQueries({ queryKey: qk.unit(slug, unitId) });
+      void qc.invalidateQueries({ queryKey: qk.accounts(slug) });
     },
   });
 }

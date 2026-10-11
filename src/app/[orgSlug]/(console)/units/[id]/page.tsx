@@ -3,7 +3,7 @@
 import { use, useMemo, useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { Pencil, Send, UserPlus, Wallet } from 'lucide-react';
+import { ArrowRightLeft, Pencil, Send, UserPlus, Wallet } from 'lucide-react';
 import { DataTable, type DataTableColumn } from '@bengo-hub/shared-ui-lib/data-table';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -13,6 +13,7 @@ import { EmptyState } from '@/components/common/empty-state';
 import { PageHeader } from '@/components/common/page-header';
 import { StatusBadge, ToneBadge } from '@/components/common/status-badge';
 import { LinkPartySheet, partyName } from '@/components/register/link-party-sheet';
+import { TransferSheet } from '@/components/register/transfer-sheet';
 import { UnitForm } from '@/components/register/unit-form';
 import { PhotoGallery } from '@/components/register/photo-gallery';
 import { DocumentsPanel } from '@/components/documents/documents-panel';
@@ -39,6 +40,7 @@ export default function UnitDetailPage({ params }: { params: Promise<{ id: strin
   const { data: u, isLoading } = useUnit(id);
   const [edit, setEdit] = useState(false);
   const [linking, setLinking] = useState(false);
+  const [transferring, setTransferring] = useState(false);
   const [ending, setEnding] = useState<UnitParty | null>(null);
   const endLink = useEndLink(id);
   const invite = useInviteParty();
@@ -94,7 +96,12 @@ export default function UnitDetailPage({ params }: { params: Promise<{ id: strin
         <Card>
           <CardHeader className="flex flex-row items-center justify-between gap-2">
             <CardTitle>People</CardTitle>
-            {can('parties.manage') && <Button size="sm" variant="outline" onClick={() => setLinking(true)}><UserPlus /> Link a person</Button>}
+            {can('parties.manage') && (
+              <div className="flex gap-2">
+                <Button size="sm" variant="outline" onClick={() => setTransferring(true)}><ArrowRightLeft /> Transfer ownership</Button>
+                <Button size="sm" variant="outline" onClick={() => setLinking(true)}><UserPlus /> Link a person</Button>
+              </div>
+            )}
           </CardHeader>
           <CardContent className="p-0">
             {current.length === 0 ? (
@@ -146,6 +153,7 @@ export default function UnitDetailPage({ params }: { params: Promise<{ id: strin
 
       <UnitForm open={edit} onOpenChange={setEdit} unit={u} />
       <LinkPartySheet open={linking} onOpenChange={setLinking} unitId={u.id} unitCode={u.code} />
+      <TransferSheet open={transferring} onOpenChange={setTransferring} unitId={u.id} unitCode={u.code} />
       <ConfirmDialog
         open={!!ending}
         onOpenChange={(o) => !o && setEnding(null)}
