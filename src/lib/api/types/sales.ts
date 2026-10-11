@@ -10,6 +10,16 @@ export interface PriceListItem {
   max_term_months?: number;
 }
 
+/** One line of a new price list (POST /price-lists): numbers, not decimal strings. */
+export interface PriceItemInput {
+  unit_type?: string;
+  unit_id?: string;
+  price: number;
+  reservation_fee?: number;
+  deposit_pct?: number;
+  max_term_months?: number;
+}
+
 export interface PriceList extends Base {
   property_id: string;
   name: string;
@@ -46,8 +56,16 @@ export interface Reservation extends Base {
   unit_id: string;
   party_id: string;
   status: 'pending_payment' | 'active' | 'converted' | 'expired' | 'cancelled';
-  fee?: Money;
+  price?: Money;
+  fee_amount?: Money;
+  fee_paid_at?: string | null;
+  reserved_at?: string;
   expires_at?: string;
+  sale_contract_id?: string | null;
+  /** List view (GET /reservations). */
+  unit_code?: string;
+  property_id?: string;
+  buyer_name?: string;
 }
 
 export type ContractStatus =
@@ -92,6 +110,90 @@ export interface SaleContract extends Base {
   instalments?: Instalment[];
   next_due?: Instalment | null;
   balance?: Money;
+  /** An approved new plan waiting for the buyer to accept. */
+  pending_plan?: PlanVersion | null;
+  /** The unit's handover once booked. */
+  handover?: Handover | null;
+}
+
+/** One version of a contract's payment plan (GET /sale-contracts/{id}/schedules). */
+export interface PlanVersion extends Base {
+  contract_id: string;
+  version: number;
+  status: 'proposed' | 'active' | 'superseded' | 'rejected';
+  reason?: string;
+  approved_at?: string | null;
+  buyer_accepted_at?: string | null;
+  metadata?: {
+    proposed_by_name?: string;
+    replaces_version?: number;
+    accepted_via?: 'code' | 'portal';
+    code_sent_at?: string;
+    [k: string]: unknown;
+  };
+  instalments: Instalment[];
+  total: Money;
+}
+
+export interface RestructureInput {
+  reason: string;
+  option: 'instalments' | 'outright';
+  frequency?: 'monthly' | 'quarterly';
+  term_months?: number;
+  /** YYYY-MM-DD */
+  first_due: string;
+}
+
+export interface Snag {
+  id?: string;
+  description: string;
+  location?: string;
+  photos?: string[];
+  status: 'open' | 'fixed';
+  fixed_at?: string;
+}
+
+export interface ChecklistItem { item: string; ok: boolean; note?: string }
+export interface HandoverKey { label: string; count: number }
+
+export interface Handover extends Base {
+  contract_id: string;
+  unit_id: string;
+  scheduled_at?: string | null;
+  completed_at?: string | null;
+  keys?: HandoverKey[];
+  readings?: { meter_id: string; reading: Money; serial?: string }[];
+  checklist?: ChecklistItem[];
+  snag_items?: Snag[];
+  status: 'scheduled' | 'in_progress' | 'completed' | 'cancelled';
+}
+
+export interface HandoverInput {
+  scheduled_at?: string;
+  keys?: HandoverKey[];
+  checklist?: ChecklistItem[];
+  snags?: Snag[];
+}
+
+export type TitleStageStatus = 'pending' | 'in_progress' | 'done' | 'blocked';
+
+export interface TitleStage {
+  code: string;
+  name: string;
+  status: TitleStageStatus;
+  stage_date?: string | null;
+  reference?: string;
+  document_id?: string | null;
+  notes?: string;
+}
+
+export interface TitleStageInput {
+  status: TitleStageStatus;
+  stage_date?: string;
+  reference?: string;
+  /** Sent back unchanged so saving a stage never drops its document. */
+  document_id?: string | null;
+  notes?: string;
 }
 
 export interface ContractInput {

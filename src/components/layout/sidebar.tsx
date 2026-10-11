@@ -26,13 +26,13 @@ interface Loc {
 function branchActive(item: NavItem, loc: Loc): boolean {
   // A parent matches its own page exactly; deeper pages belong to whichever child owns them, so
   // /settings/users lights "Users and roles", not "Settings".
-  if (navPathActive(item.path, loc.path, loc.search, !!item.children?.length)) return true;
+  if (navPathActive(item.path, loc.path, loc.search, !!item.children?.length || !!item.exact)) return true;
   return !!item.children?.some((c) => branchActive(c, loc));
 }
 
 /** Leaf highlight: the deepest item matching the location, so a parent and its child never both fill. */
 function leafActive(item: NavItem, loc: Loc): boolean {
-  if (!navPathActive(item.path, loc.path, loc.search, !!item.children?.length)) return false;
+  if (!navPathActive(item.path, loc.path, loc.search, !!item.children?.length || !!item.exact)) return false;
   return !item.children?.some((c) => branchActive(c, loc));
 }
 

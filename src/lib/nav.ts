@@ -1,6 +1,6 @@
 import {
-  BarChart3, Building2, DoorOpen, Droplets, FileSignature, FileUp, Gauge, Home, KeyRound, Landmark, LayoutGrid,
-  ListTree, Megaphone, Receipt, ScrollText, Settings, ShieldAlert, ShieldCheck, Tablet, UserCog, Users, Wallet,
+  BarChart3, Building2, CalendarClock, DoorOpen, Droplets, FileSignature, FileUp, Gauge, Home, KeyRound, Landmark, LayoutGrid,
+  ListTree, Megaphone, Receipt, ScrollText, Settings, ShieldAlert, ShieldCheck, Tablet, Tags, UserCog, Users, Wallet,
   Wrench, Truck, type LucideIcon,
 } from 'lucide-react';
 import type { MaskaniMe } from '@/lib/api/types';
@@ -12,6 +12,8 @@ export interface NavItem {
   /** Path under /{orgSlug}, optionally with a query (`?tab=arrears`) for a tab or filter child. */
   path: string;
   icon?: LucideIcon;
+  /** Active on its own path only, when sibling items sit under it (Availability at /sales). */
+  exact?: boolean;
   /** Any of these modules must be on (empty: always). Children inherit their parent's gate. */
   modules?: string[];
   /** Any of these permissions (empty: any signed-in staff). */
@@ -92,8 +94,10 @@ export const NAV: NavGroup[] = [
   {
     label: 'Sales',
     items: [
-      { label: 'Availability', path: '/sales', icon: Home, modules: ['sales'], perms: ['sales.view'] },
+      { label: 'Availability', path: '/sales', exact: true, icon: Home, modules: ['sales'], perms: ['sales.view'] },
+      { label: 'Reservations', path: '/sales/reservations', icon: CalendarClock, modules: ['sales'], perms: ['sales.view'] },
       { label: 'Sale contracts', path: '/sales/contracts', icon: FileSignature, modules: ['sales'], perms: ['sales.view'] },
+      { label: 'Price lists', path: '/sales/price-lists', icon: Tags, modules: ['sales'], perms: ['sales.view'] },
     ],
   },
   {

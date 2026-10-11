@@ -25,7 +25,8 @@ const STATUS_TONE: Record<string, Tone> = {
   recheck: 'warning', requested: 'warning', reopened: 'warning', high: 'warning', open: 'warning',
   unreconciled: 'warning', scheduled: 'neutral',
   in_default: 'danger', overdue: 'danger', failed: 'danger', rejected: 'danger', terminated: 'danger', emergency: 'danger',
-  denied: 'danger',
+  denied: 'danger', blocked: 'danger',
+  proposed: 'warning', superseded: 'neutral', done: 'success',
 };
 
 export function ToneBadge({ tone = 'neutral', className, children }: { tone?: Tone; className?: string; children: React.ReactNode }) {

@@ -37,6 +37,8 @@ function objectLink(slug: string, r: ApprovalRequest): string | undefined {
       return acc ? `/${slug}/billing/accounts/${acc}` : undefined;
     case 'work_order_quote':
       return `/${slug}/works/${r.object_id}`;
+    case 'restructure':
+      return r.metadata?.contract_id ? `/${slug}/sales/contracts/${r.metadata.contract_id}` : undefined;
   }
   return undefined;
 }

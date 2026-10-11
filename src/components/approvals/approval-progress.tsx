@@ -13,7 +13,7 @@ export const APPROVAL_MODULE: Record<ApprovalModule, string> = {
 };
 
 /** The workflows an estate can set rules for today (the rest arrive with their flows). */
-export const RULE_MODULES: ApprovalModule[] = ['credit_note', 'adjustment', 'manual_payment', 'work_order_quote'];
+export const RULE_MODULES: ApprovalModule[] = ['credit_note', 'adjustment', 'manual_payment', 'work_order_quote', 'restructure'];
 
 const PERMISSION: Record<string, string> = {
   'maskani.billing.approve': 'someone who approves credits',

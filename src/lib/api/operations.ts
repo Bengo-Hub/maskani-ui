@@ -4,7 +4,8 @@ import type {
   ApprovalRequest, ApprovalRule, ApprovalRuleInput, AuditEntry, PrivacyKind, PrivacyRequest, PrivacyStatus,
   AvailabilityGroup, ContractInput, Dashboard, DashboardFilters, ExportFormat, GateDevice, GateDeviceView, GateEvent, GateEventKind, Incident,
   InsidePerson, MediaUpload, Meter, MeterReading,
-  Notice, NoticeDelivery, Page, PassInput, PriceList, PriceListItem, ReadingRound, Reservation, SaleContract,
+  Handover, HandoverInput, Instalment, Notice, NoticeDelivery, Page, PassInput, PlanVersion, PriceItemInput, PriceList, ReadingRound, Reservation, RestructureInput, SaleContract,
+  TitleStage, TitleStageInput,
   SalesPosition, Vendor, VendorDocument, VendorPersonnel, VisitorPass, WaterBalanceRow, WorkAction, WorkOrder,
   WorkPriority, CatalogEntry, StaffUser, Role, Permission, ModulesState,
 } from './types';
@@ -30,7 +31,7 @@ export const utilitiesApi = {
 
 export const salesApi = {
   priceLists: (slug: string, propertyId: string) => apiClient.get<{ data: PriceList[] }>(`${t(slug)}/price-lists`, { property_id: propertyId }),
-  createPriceList: (slug: string, body: { property_id: string; name: string; phase?: string; effective_from: string; activate?: boolean; items: PriceListItem[] }) =>
+  createPriceList: (slug: string, body: { property_id: string; name: string; phase?: string; effective_from: string; activate?: boolean; items: PriceItemInput[] }) =>
     apiClient.post<PriceList>(`${t(slug)}/price-lists`, body),
   availability: (slug: string, propertyId: string, status?: string) =>
     apiClient.get<{ groups: AvailabilityGroup[] }>(`${t(slug)}/availability`, { property_id: propertyId, status }),
@@ -46,6 +47,22 @@ export const salesApi = {
     apiClient.post<SaleContract>(`${t(slug)}/sale-contracts/${id}/activate`, { signed_at: signedAt }),
   position: (slug: string, propertyId?: string) =>
     apiClient.get<SalesPosition>(`${t(slug)}/reports/sales-position`, { property_id: propertyId }),
+  releaseMilestone: (slug: string, instalmentId: string, evidenceKey?: string) =>
+    apiClient.post<Instalment>(`${t(slug)}/instalments/${instalmentId}/release`, { evidence_key: evidenceKey ?? '' }),
+  /** Every plan version, newest first. */
+  plans: (slug: string, contractId: string) => apiClient.get<{ data: PlanVersion[] }>(`${t(slug)}/sale-contracts/${contractId}/schedules`),
+  restructure: (slug: string, contractId: string, body: RestructureInput) =>
+    apiClient.post<PlanVersion>(`${t(slug)}/sale-contracts/${contractId}/restructure`, body),
+  sendPlanCode: (slug: string, planId: string) => apiClient.post<{ status: string }>(`${t(slug)}/schedules/${planId}/send-code`, {}),
+  acceptPlanWithCode: (slug: string, planId: string, code: string) => apiClient.post<PlanVersion>(`${t(slug)}/schedules/${planId}/accept`, { code }),
+  startHandover: (slug: string, contractId: string, scheduledAt?: string) =>
+    apiClient.post<Handover>(`${t(slug)}/sale-contracts/${contractId}/handover`, { scheduled_at: scheduledAt || null }),
+  updateHandover: (slug: string, id: string, body: HandoverInput) => apiClient.patch<Handover>(`${t(slug)}/handovers/${id}`, body),
+  completeHandover: (slug: string, id: string, body: { handed_over_at?: string; readings: { meter_id: string; reading: number }[] }) =>
+    apiClient.post<Handover>(`${t(slug)}/handovers/${id}/complete`, body),
+  title: (slug: string, contractId: string) => apiClient.get<{ data: TitleStage[] }>(`${t(slug)}/sale-contracts/${contractId}/title`),
+  setTitleStage: (slug: string, contractId: string, code: string, body: TitleStageInput) =>
+    apiClient.put<{ data: TitleStage[] }>(`${t(slug)}/sale-contracts/${contractId}/title/${code}`, body),
 };
 
 export interface WorkOrderInput {

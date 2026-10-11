@@ -22,6 +22,8 @@ export const portalApi = {
   removeVehicle: (slug: string, unitId: string, vehicleId: string) => apiClient.post(`${me(slug)}/units/${unitId}/vehicles/${vehicleId}/remove`, {}),
   billQueries: (slug: string, cursor?: string) => apiClient.get<Page<BillQuery>>(`${me(slug)}/bill-queries`, { cursor, limit: 20 }),
   purchase: (slug: string) => apiClient.get<{ data: SaleContract[] }>(`${me(slug)}/purchase`),
+  /** The buyer accepts an approved new payment plan on their own contract. */
+  acceptPlan: (slug: string, planId: string) => apiClient.post(`${me(slug)}/plans/${planId}/accept`, {}),
   passes: (slug: string) => apiClient.get<{ data: VisitorPass[] }>(`${me(slug)}/passes`),
   createPass: (slug: string, body: Omit<PassInput, 'property_id'> & { property_id?: string }) =>
     apiClient.post<VisitorPass>(`${me(slug)}/passes`, body),

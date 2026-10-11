@@ -12,10 +12,15 @@ import { Field } from '@/components/common/field';
 import { FormSheet } from '@/components/common/form-sheet';
 import { PageHeader } from '@/components/common/page-header';
 import { StatusBadge } from '@/components/common/status-badge';
+import { ConfirmDialog } from '@/components/common/confirm-dialog';
+import { HandoverPanel } from '@/components/sales/handover-panel';
 import { InstalmentSchedule } from '@/components/sales/instalment-schedule';
+import { PlanPanel } from '@/components/sales/plan-panel';
+import { TitlePanel } from '@/components/sales/title-panel';
 import { DocumentsPanel } from '@/components/documents/documents-panel';
 import { useAccess, useSlug } from '@/hooks/use-access';
-import { useActivateContract, useContract } from '@/hooks/use-sales';
+import { useActivateContract, useContract, useReleaseMilestone } from '@/hooks/use-sales';
+import type { Instalment } from '@/lib/api/types';
 import { apiDate, fmtDate, kes, num, titleCase, todayInput } from '@/lib/utils';
 
 export default function ContractPage({ params }: { params: Promise<{ id: string }> }) {
@@ -26,6 +31,8 @@ export default function ContractPage({ params }: { params: Promise<{ id: string 
   const activate = useActivateContract(id);
   const [signing, setSigning] = useState(false);
   const [signedAt, setSignedAt] = useState(todayInput);
+  const release = useReleaseMilestone(id);
+  const [releasing, setReleasing] = useState<Instalment | null>(null);
 
   if (isLoading || !c) return <div className="mx-auto max-w-7xl space-y-3"><Skeleton className="h-10 w-56" /><Skeleton className="h-64" /></div>;
   const net = num(c.net_price);
@@ -59,11 +66,33 @@ export default function ContractPage({ params }: { params: Promise<{ id: string 
         <Card>
           <CardHeader><CardTitle>Payment schedule</CardTitle></CardHeader>
           <CardContent>
-            {c.instalments?.length ? <InstalmentSchedule instalments={c.instalments} /> : <p className="text-sm text-muted-foreground">The schedule is created when the contract is activated.</p>}
+            {c.instalments?.length
+              ? <InstalmentSchedule instalments={c.instalments} onRelease={can('sales.manage') && c.status === 'active' ? setReleasing : undefined} />
+              : <p className="text-sm text-muted-foreground">The schedule is created when the contract is activated.</p>}
           </CardContent>
         </Card>
       </div>
+      {c.pending_plan && (
+        <p className="mt-4 rounded-lg border border-warning/40 bg-warning/5 px-3 py-2 text-sm">
+          An approved new plan waits for the buyer. Until they accept it, the schedule above stays in force.
+        </p>
+      )}
+      <div className="mt-5 grid grid-cols-1 items-start gap-4 lg:grid-cols-2">
+        <PlanPanel contract={c} />
+        <HandoverPanel contract={c} />
+        <TitlePanel contract={c} />
+      </div>
       <div className="mt-5"><DocumentsPanel entityType="sale_contract" entityId={c.id} title="Letters" /></div>
+      <ConfirmDialog
+        open={!!releasing}
+        onOpenChange={(o) => !o && setReleasing(null)}
+        title={`Release ${releasing?.milestone_label || 'this milestone'}?`}
+        description={releasing ? `The buyer is billed ${kes(releasing.amount)} now. Do this once the stage is reached.` : undefined}
+        confirmLabel="Release and bill"
+        variant="warning"
+        loading={release.isPending}
+        onConfirm={() => releasing && release.mutate(releasing.id, { onSuccess: () => setReleasing(null) })}
+      />
       <FormSheet
         open={signing}
         onOpenChange={setSigning}

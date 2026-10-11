@@ -49,6 +49,8 @@ export const qk = {
   contracts: (slug: string) => [slug, 'contracts'] as const,
   contractList: (slug: string, filters: object) => [slug, 'contracts', 'list', filters] as const,
   contract: (slug: string, id: string) => [slug, 'contracts', id] as const,
+  contractPlans: (slug: string, id: string) => [slug, 'contracts', id, 'plans'] as const,
+  contractTitle: (slug: string, id: string) => [slug, 'contracts', id, 'title'] as const,
   salesPosition: (slug: string, propertyId?: string) => [slug, 'sales-position', propertyId ?? 'all'] as const,
 
   workOrders: (slug: string) => [slug, 'work-orders'] as const,

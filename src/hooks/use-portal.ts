@@ -71,6 +71,19 @@ export function usePortalPurchase() {
   return useQuery({ queryKey: qk.portalPurchase(slug), queryFn: () => portalApi.purchase(slug).then((r) => r.data ?? []), enabled: ready });
 }
 
+/** The buyer accepts an approved new payment plan. */
+export function useAcceptPortalPlan() {
+  const slug = useSlug();
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (planId: string) => portalApi.acceptPlan(slug, planId),
+    onSuccess: () => {
+      toast.success('Thank you. Your new payment plan is in force.');
+      void qc.invalidateQueries({ queryKey: qk.portalPurchase(slug) });
+    },
+  });
+}
+
 export function usePortalPasses() {
   const slug = useSlug();
   const ready = usePortalReady();
