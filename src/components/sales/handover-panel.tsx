@@ -11,9 +11,9 @@ import { FormSheet } from '@/components/common/form-sheet';
 import { IconButton } from '@/components/common/icon-button';
 import { StatusBadge } from '@/components/common/status-badge';
 import { useAccess } from '@/hooks/use-access';
-import { useHandover, useUnitMeters } from '@/hooks/use-sales';
+import { useHandover } from '@/hooks/use-sales';
 import { apiErrorMessage } from '@/lib/api/errors';
-import type { ChecklistItem, Handover, HandoverKey, SaleContract, Snag } from '@/lib/api/types';
+import type { ChecklistItem, Handover, HandoverKey, HandoverMeter, SaleContract, Snag } from '@/lib/api/types';
 import { apiDate, fmtDate, num, todayInput } from '@/lib/utils';
 
 const dayOf = (v?: string | null) => (v ? todayInput(new Date(v)) : '');
@@ -66,7 +66,7 @@ function HandoverEditor({ ho, manage, save, onComplete }: {
 }) {
   const done = ho.status === 'completed';
   const [when, setWhen] = useState(dayOf(ho.scheduled_at));
-  const [keys, setKeys] = useState<HandoverKey[]>(ho.keys?.length ? ho.keys : [{ label: 'Door keys', count: 2 }]);
+  const [keys, setKeys] = useState<HandoverKey[]>(ho.keys?.length ? ho.keys : [{ item: 'Door keys', count: 2 }]);
   const [checklist, setChecklist] = useState<ChecklistItem[]>(ho.checklist ?? []);
   const [snags, setSnags] = useState<Snag[]>(ho.snag_items ?? []);
   const [newItem, setNewItem] = useState('');
@@ -78,7 +78,7 @@ function HandoverEditor({ ho, manage, save, onComplete }: {
     setError('');
     const body = done
       ? { snags }
-      : { scheduled_at: when ? apiDate(when) : undefined, keys: keys.filter((k) => k.label.trim()), checklist, snags };
+      : { scheduled_at: when ? apiDate(when) : undefined, keys: keys.filter((k) => k.item.trim()), checklist, snags };
     save.mutate({ id: ho.id, body }, { onSuccess: () => onDone?.(), onError: (e) => setError(apiErrorMessage(e)) });
   };
 
@@ -87,7 +87,7 @@ function HandoverEditor({ ho, manage, save, onComplete }: {
       {done ? (
         <dl className="grid grid-cols-2 gap-3 text-sm sm:grid-cols-4">
           <div><dt className="text-xs text-muted-foreground">Handed over</dt><dd>{fmtDate(ho.completed_at)}</dd></div>
-          <div><dt className="text-xs text-muted-foreground">Keys</dt><dd>{(ho.keys ?? []).map((k) => `${k.count} ${k.label}`).join(', ') || 'None'}</dd></div>
+          <div><dt className="text-xs text-muted-foreground">Keys</dt><dd>{(ho.keys ?? []).map((k) => `${k.count} ${k.item}`).join(', ') || 'None'}</dd></div>
           <div className="col-span-2"><dt className="text-xs text-muted-foreground">Meter readings</dt><dd>{(ho.readings ?? []).map((r) => `${r.serial ?? 'Meter'}: ${num(r.reading)}`).join(', ') || 'None taken'}</dd></div>
         </dl>
       ) : (
@@ -98,12 +98,12 @@ function HandoverEditor({ ho, manage, save, onComplete }: {
               <p className="text-sm font-medium">Keys and items handed over</p>
               {keys.map((k, i) => (
                 <div key={i} className="flex items-center gap-2">
-                  <Input aria-label="Item" value={k.label} disabled={!editable} onChange={(e) => setKeys(keys.map((x, j) => (j === i ? { ...x, label: e.target.value } : x)))} />
+                  <Input aria-label="Item" value={k.item} disabled={!editable} onChange={(e) => setKeys(keys.map((x, j) => (j === i ? { ...x, item: e.target.value } : x)))} />
                   <Input aria-label="How many" className="w-20" inputMode="numeric" value={k.count} disabled={!editable} onChange={(e) => setKeys(keys.map((x, j) => (j === i ? { ...x, count: Number(e.target.value.replace(/\D/g, '')) || 0 } : x)))} />
                   {editable && <IconButton label="Remove this item" onClick={() => setKeys(keys.filter((_, j) => j !== i))}><Trash2 /></IconButton>}
                 </div>
               ))}
-              {editable && <Button size="sm" variant="outline" onClick={() => setKeys([...keys, { label: '', count: 1 }])}><Plus /> Add an item</Button>}
+              {editable && <Button size="sm" variant="outline" onClick={() => setKeys([...keys, { item: '', count: 1 }])}><Plus /> Add an item</Button>}
             </div>
           </div>
           <div className="space-y-2">
@@ -132,13 +132,13 @@ function HandoverEditor({ ho, manage, save, onComplete }: {
         {snags.length === 0 && <p className="text-sm text-muted-foreground">No snags recorded.</p>}
         {snags.map((s, i) => (
           <div key={s.id ?? `new-${i}`} className="grid grid-cols-1 gap-2 sm:grid-cols-[minmax(0,2fr)_minmax(0,1fr)_auto] sm:items-center">
-            <Input aria-label="What needs fixing" placeholder="What needs fixing" value={s.description} disabled={!manage || !!s.id && s.status === 'fixed'}
+            <Input aria-label="What needs fixing" placeholder="What needs fixing" maxLength={500} value={s.description} disabled={!manage || !!s.id && s.status === 'fixed'}
               onChange={(e) => setSnags(snags.map((x, j) => (j === i ? { ...x, description: e.target.value } : x)))} />
             <Input aria-label="Where" placeholder="Where (room)" value={s.location ?? ''} disabled={!manage || !!s.id && s.status === 'fixed'}
               onChange={(e) => setSnags(snags.map((x, j) => (j === i ? { ...x, location: e.target.value } : x)))} />
             <div className="flex items-center gap-2">
               {s.status === 'fixed'
-                ? <StatusBadge status="done" label={`Fixed ${fmtDate(s.fixed_at)}`} />
+                ? <StatusBadge status="done" label={s.fixed_at ? `Fixed ${fmtDate(s.fixed_at)}` : 'Fixed (save to keep)'} />
                 : manage && <Button size="sm" variant="outline" onClick={() => setSnags(snags.map((x, j) => (j === i ? { ...x, status: 'fixed' } : x)))}><CheckCircle2 /> Fixed</Button>}
               {manage && !s.id && <IconButton label="Remove this snag" onClick={() => setSnags(snags.filter((_, j) => j !== i))}><Trash2 /></IconButton>}
             </div>
@@ -151,7 +151,7 @@ function HandoverEditor({ ho, manage, save, onComplete }: {
       {manage && (
         <div className="flex flex-wrap gap-2">
           <Button variant="outline" onClick={() => persist()} disabled={save.isPending || snags.some((s) => !s.description.trim())}>{save.isPending ? 'Saving...' : 'Save'}</Button>
-          {!done && <Button onClick={() => persist(onComplete)} disabled={save.isPending || !keys.some((k) => k.label.trim())}>Complete the handover</Button>}
+          {!done && <Button onClick={() => persist(onComplete)} disabled={save.isPending || !keys.some((k) => k.item.trim())}>Complete the handover</Button>}
         </div>
       )}
     </div>
@@ -165,14 +165,29 @@ function CompleteSheet({ ho, contract, complete, onClose }: {
   complete: ReturnType<typeof useHandover>['complete'];
   onClose: () => void;
 }) {
-  const { data: meters = [] } = useUnitMeters(contract.property_id, contract.unit_id, true);
-  const [on, setOn] = useState(dayOf(ho.scheduled_at) || todayInput());
+  // The unit's working meters come with the contract, so a sales officer needs no access to meters.
+  const meters = contract.handover_meters ?? [];
+  // The booked day, unless that is still ahead: a handover cannot be completed in the future.
+  const [on, setOn] = useState(() => {
+    const booked = dayOf(ho.scheduled_at);
+    return booked && booked <= todayInput() ? booked : todayInput();
+  });
   const [readings, setReadings] = useState<Record<string, string>>({});
   const [error, setError] = useState('');
 
+  const entered = meters.filter((m) => readings[m.id]?.trim());
+  const invalid = (m: HandoverMeter) => {
+    const v = readings[m.id]?.trim();
+    if (!v) return '';
+    if (!Number.isFinite(Number(v))) return 'Enter a number, for example 1085.5';
+    return Number(v) < num(m.last_reading) ? `Cannot be below the last reading, ${num(m.last_reading)}` : '';
+  };
+  const badReading = entered.some((m) => invalid(m) !== '');
+
   const submit = () => {
     setError('');
-    const rows = meters.filter((m) => readings[m.id]?.trim()).map((m) => ({ meter_id: m.id, reading: Number(readings[m.id]) }));
+    if (badReading) return;
+    const rows = entered.map((m) => ({ meter_id: m.id, reading: Number(readings[m.id]) }));
     complete.mutate({ id: ho.id, handedOverAt: apiDate(on), readings: rows }, { onSuccess: onClose, onError: (e) => setError(apiErrorMessage(e)) });
   };
 
@@ -185,15 +200,16 @@ function CompleteSheet({ ho, contract, complete, onClose }: {
       description="The buyer becomes the owner, estate billing starts from this date (prorated) and water is billed from these readings."
       footer={<>
         <Button variant="outline" onClick={onClose}>Cancel</Button>
-        <Button onClick={submit} disabled={!on || complete.isPending}>{complete.isPending ? 'Completing...' : 'Complete'}</Button>
+        <Button onClick={submit} disabled={!on || on > todayInput() || badReading || complete.isPending}>{complete.isPending ? 'Completing...' : 'Complete'}</Button>
       </>}
     >
       <div className="space-y-4">
         <Field label="Handed over on" htmlFor="hc-on"><Input id="hc-on" type="date" max={todayInput()} value={on} onChange={(e) => setOn(e.target.value)} /></Field>
         {meters.length === 0
-          ? <p className="text-sm text-muted-foreground">No meters on this unit. Add one under Meter readings if water is billed here.</p>
+          ? <p className="text-sm text-muted-foreground">No meters on this unit, so no readings are needed.</p>
           : meters.map((m) => (
-            <Field key={m.id} label={`Reading on meter ${m.serial}`} htmlFor={`hc-${m.id}`} hint="Leave blank to skip">
+            <Field key={m.id} label={`Reading on meter ${m.serial}`} htmlFor={`hc-${m.id}`} hint={`Last reading ${num(m.last_reading)}. Leave blank to skip.`}
+              error={invalid(m) || undefined}>
               <Input id={`hc-${m.id}`} inputMode="decimal" value={readings[m.id] ?? ''} onChange={(e) => setReadings({ ...readings, [m.id]: e.target.value.replace(/[^\d.]/g, '') })} />
             </Field>
           ))}

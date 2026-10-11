@@ -51,7 +51,18 @@ export default function PriceListsPage() {
   };
 
   const setRow = (i: number, patch: Partial<Row>) => form && setForm({ ...form, rows: form.rows.map((r, j) => (j === i ? { ...r, ...patch } : r)) });
-  const valid = !!form && !!form.name.trim() && !!form.from && form.rows.length > 0 && form.rows.every((r) => r.unit_type.trim() && num(r.price) > 0);
+  // The API takes a missing or zero deposit as 20%, so a deposit must be above 0 and at most 100.
+  const rowProblem = (r: Row): string => {
+    if (!r.unit_type.trim()) return 'Name the unit type';
+    if (!(num(r.price) > 0)) return 'Give a price';
+    if (num(r.reservation_fee) >= num(r.price)) return 'The reservation fee must be below the price';
+    const dep = num(r.deposit_pct);
+    if (!(dep > 0 && dep <= 100)) return 'Deposit is a percentage above 0, up to 100';
+    const term = Number(r.max_term_months);
+    if (r.max_term_months && !(term >= 1 && term <= 240)) return 'Longest term is 1 to 240 months';
+    return '';
+  };
+  const valid = !!form && !!form.name.trim() && !!form.from && form.rows.length > 0 && form.rows.every((r) => !rowProblem(r));
 
   const submit = () => {
     if (!form || !valid) return;
@@ -137,6 +148,7 @@ export default function PriceListsPage() {
                   <Input aria-label="Deposit percent" inputMode="decimal" placeholder="Deposit %" value={r.deposit_pct} onChange={(e) => setRow(i, { deposit_pct: digits(e.target.value) })} />
                   <Input aria-label="Longest term in months" inputMode="numeric" placeholder="Months" value={r.max_term_months} onChange={(e) => setRow(i, { max_term_months: e.target.value.replace(/\D/g, '') })} />
                   <IconButton label="Remove this line" className="justify-self-end" disabled={form.rows.length === 1} onClick={() => setForm({ ...form, rows: form.rows.filter((_, j) => j !== i) })}><Trash2 /></IconButton>
+                  {(r.unit_type || r.price) && rowProblem(r) && <p className="col-span-full text-xs text-destructive" role="alert">{rowProblem(r)}</p>}
                 </div>
               ))}
               <Button size="sm" variant="outline" onClick={() => setForm({ ...form, rows: [...form.rows, { ...BLANK }] })}><Plus /> Add a unit type</Button>

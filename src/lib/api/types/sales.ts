@@ -114,6 +114,15 @@ export interface SaleContract extends Base {
   pending_plan?: PlanVersion | null;
   /** The unit's handover once booked. */
   handover?: Handover | null;
+  /** The unit's working meters while a fully paid unit waits for handover (detail view only). */
+  handover_meters?: HandoverMeter[];
+}
+
+export interface HandoverMeter {
+  id: string;
+  serial: string;
+  /** A handover reading may not be below this. */
+  last_reading: Money;
 }
 
 /** One version of a contract's payment plan (GET /sale-contracts/{id}/schedules). */
@@ -154,7 +163,7 @@ export interface Snag {
 }
 
 export interface ChecklistItem { item: string; ok: boolean; note?: string }
-export interface HandoverKey { label: string; count: number }
+export interface HandoverKey { item: string; count: number }
 
 export interface Handover extends Base {
   contract_id: string;

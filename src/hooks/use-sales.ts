@@ -2,7 +2,7 @@
 
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { toast } from 'sonner';
-import { salesApi, utilitiesApi } from '@/lib/api/operations';
+import { salesApi } from '@/lib/api/operations';
 import type { ContractInput, HandoverInput, PriceItemInput, RestructureInput, TitleStageInput } from '@/lib/api/types';
 import { qk } from '@/lib/query-keys';
 import { useAccess, useSlug } from './use-access';
@@ -198,18 +198,6 @@ export function useSetTitleStage(contractId: string) {
       toast.success('Title stage saved');
       refresh();
     },
-  });
-}
-
-/** Meters on one unit, for the handover readings (the property list is capped on the API). */
-export function useUnitMeters(propertyId: string, unitId: string, enabled: boolean) {
-  const slug = useSlug();
-  const { mod } = useAccess();
-  return useQuery({
-    queryKey: qk.meters(slug, propertyId),
-    queryFn: () => utilitiesApi.meters(slug, propertyId).then((r) => r.data ?? []),
-    enabled: enabled && !!propertyId && mod('utilities'),
-    select: (rows) => rows.filter((m) => m.unit_id === unitId),
   });
 }
 

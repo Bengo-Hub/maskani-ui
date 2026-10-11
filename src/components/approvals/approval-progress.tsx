@@ -19,6 +19,7 @@ const PERMISSION: Record<string, string> = {
   'maskani.billing.approve': 'someone who approves credits',
   'maskani.billing.verify': 'someone who verifies payments',
   'maskani.works.manage': 'someone who manages works',
+  'maskani.sales.manage': 'someone who manages sales',
 };
 
 /** Names who acts on a step: the role's name, or what the permission means. */

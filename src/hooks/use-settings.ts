@@ -273,7 +273,8 @@ export function useApprovals(f: { status: string; module: string; mine: boolean;
     qk.approvals(slug, `${f.status}:${f.module}:${f.mine}:${f.propertyId || 'all'}`),
     (cursor) => settingsApi.approvals(slug, { status: f.status || undefined, module: f.module || undefined, mine: f.mine,
       property_id: f.propertyId || undefined, cursor, limit: 24 }),
-    { enabled: can('billing.approve') || can('billing.verify') || can('settings.view') },
+    // The same rights the API admits to the inbox (GET /approvals).
+    { enabled: ['billing.approve', 'billing.verify', 'works.manage', 'sales.manage', 'settings.view'].some((p) => can(p)) },
   );
 }
 
@@ -285,7 +286,7 @@ export function useDecideApproval() {
     mutationFn: (v: { id: string; decision: 'approve' | 'reject'; comment?: string }) => settingsApi.decideApproval(slug, v.id, v.decision, v.comment),
     onSuccess: (r) => {
       toast.success(r.status === 'approved' ? 'Approved' : r.status === 'rejected' ? 'Rejected' : 'Approved; it moves to the next step');
-      for (const k of ['approvals', 'adjustments', 'manual-payments', 'work-orders']) void qc.invalidateQueries({ queryKey: [slug, k] });
+      for (const k of ['approvals', 'adjustments', 'manual-payments', 'work-orders', 'contracts']) void qc.invalidateQueries({ queryKey: [slug, k] });
       void qc.invalidateQueries({ queryKey: qk.accounts(slug) });
     },
   });

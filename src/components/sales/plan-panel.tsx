@@ -44,7 +44,10 @@ export function PlanPanel({ contract }: { contract: SaleContract }) {
 
   const proposed = plans.find((p) => p.status === 'proposed');
   const history = plans.filter((p) => p.status !== 'active');
-  const canPropose = manage && !proposed && (contract.status === 'active' || contract.status === 'in_default');
+  // What a new plan would cover: the active plan's lines not yet billed (the API sums the same lines).
+  const unbilled = (contract.instalments ?? []).filter((i) => i.status === 'scheduled').reduce((t, i) => t + num(i.amount), 0);
+  const canPropose = manage && !proposed && unbilled > 0 && (contract.status === 'active' || contract.status === 'in_default');
+  const termOk = (n?: number) => !!n && n >= 1 && n <= 240;
 
   const submit = () => {
     if (!form) return;
@@ -58,7 +61,7 @@ export function PlanPanel({ contract }: { contract: SaleContract }) {
   const takeCode = () => {
     if (!codeFor) return;
     setCodeError('');
-    accept.mutate({ planId: codeFor.id, code: code.trim() }, {
+    accept.mutate({ planId: codeFor.id, code }, {
       onSuccess: () => { setCodeFor(null); setCode(''); },
       onError: (e) => setCodeError(apiErrorMessage(e)),
     });
@@ -124,7 +127,7 @@ export function PlanPanel({ contract }: { contract: SaleContract }) {
         description="Covers what is not yet billed. It needs approval, then the buyer accepts it. Bills already sent stay as they are."
         footer={<>
           <Button variant="outline" onClick={() => setForm(null)}>Cancel</Button>
-          <Button onClick={submit} disabled={!form?.reason.trim() || !form?.first_due || restructure.isPending}>{restructure.isPending ? 'Sending...' : 'Send for approval'}</Button>
+          <Button onClick={submit} disabled={!form?.reason.trim() || !form?.first_due || (form.option === 'instalments' && !termOk(form.term_months)) || restructure.isPending}>{restructure.isPending ? 'Sending...' : 'Send for approval'}</Button>
         </>}
       >
         {form && (
@@ -154,7 +157,7 @@ export function PlanPanel({ contract }: { contract: SaleContract }) {
                 </Field>
               </>}
             </div>
-            <p className="rounded-lg bg-muted px-3 py-2 text-sm">Still to bill on the current plan: <span className="font-semibold tabular">{kes(num(contract.net_price) - num(contract.invoiced_total))}</span></p>
+            <p className="rounded-lg bg-muted px-3 py-2 text-sm">Not yet billed on the current plan: <span className="font-semibold tabular">{kes(unbilled)}</span></p>
             {error && <p className="text-sm text-destructive" role="alert">{error}</p>}
           </div>
         )}
@@ -165,14 +168,14 @@ export function PlanPanel({ contract }: { contract: SaleContract }) {
         onOpenChange={(o) => !o && setCodeFor(null)}
         size="sm"
         title="Buyer accepts at the office"
-        description="Send the buyer a code first. They read it back here; it lasts 5 minutes."
+        description="Send the buyer a code first. They read the 6 digits back here; a code lasts 5 minutes."
         footer={<>
           <Button variant="outline" onClick={() => setCodeFor(null)}>Cancel</Button>
-          <Button onClick={takeCode} disabled={code.trim().length < 4 || accept.isPending}>{accept.isPending ? 'Checking...' : 'Accept the plan'}</Button>
+          <Button onClick={takeCode} disabled={code.length !== 6 || accept.isPending}>{accept.isPending ? 'Checking...' : 'Accept the plan'}</Button>
         </>}
       >
         <Field label="Code" htmlFor="rs-code" error={codeError}>
-          <Input id="rs-code" inputMode="numeric" autoComplete="one-time-code" value={code} onChange={(e) => setCode(e.target.value.replace(/\D/g, '').slice(0, 8))} onKeyDown={(e) => e.key === 'Enter' && takeCode()} />
+          <Input id="rs-code" inputMode="numeric" autoComplete="one-time-code" value={code} maxLength={6} onChange={(e) => setCode(e.target.value.replace(/\D/g, '').slice(0, 6))} onKeyDown={(e) => e.key === 'Enter' && code.length === 6 && takeCode()} />
         </Field>
       </FormSheet>
     </Card>
