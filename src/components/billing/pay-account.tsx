@@ -23,6 +23,11 @@ const METHOD_OF: Record<string, ManualPaymentInput['method']> = {
   cash: 'cash', mpesa_manual: 'mpesa', bank: 'bank_transfer', bank_transfer: 'bank_transfer', cheque: 'cheque',
 };
 
+// The online modal offers online gateways only (PayHero's rails, Paystack, M-Pesa Daraja). Cash,
+// cheque and bank deposits are manual payments: they go through Record payment and wait for
+// someone else to verify them, so cash on delivery and complimentary never show here, even when
+// switched on in treasury (as subscriptions keep them off their checkout).
+const ONLINE_GATEWAYS = 'payhero,paystack,mpesa';
 
 /**
  * Pays a unit account. Online, maskani creates one `account_payment` intent (the paybill
@@ -190,6 +195,7 @@ export function PayAccount({
           onOpenChange={(o) => { if (!o) close(); }}
           paymentIntentId={intent.id}
           initiateUrl={intent.initiateUrl}
+          allowedMethods={ONLINE_GATEWAYS}
           tenantSlug={tenantSlug}
           amount={intent.amount}
           currency="KES"
