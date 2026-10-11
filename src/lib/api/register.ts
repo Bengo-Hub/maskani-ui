@@ -12,7 +12,7 @@ export interface PropertyInput {
   property_type?: string;
   use_case?: string;
   description?: string;
-  address?: string;
+  address_line?: string;
   area?: string;
   town?: string;
   county?: string;

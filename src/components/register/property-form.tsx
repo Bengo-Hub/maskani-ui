@@ -17,7 +17,7 @@ import type { Property } from '@/lib/api/types';
 import { titleCase } from '@/lib/utils';
 import { useAuthStore } from '@/store/auth';
 
-const EMPTY: PropertyInput = { code: '', name: '', property_type: 'estate', use_case: 'estate_developer', town: '', county: '', area: '', address: '', description: '' };
+const EMPTY: PropertyInput = { code: '', name: '', property_type: 'estate', use_case: 'estate_developer', town: '', county: '', area: '', address_line: '', description: '' };
 
 export function PropertyForm({ open, onOpenChange, property, onSaved }: {
   open: boolean;
@@ -43,7 +43,7 @@ export function PropertyForm({ open, onOpenChange, property, onSaved }: {
     setPicked(null);
     setForm(property ? {
       code: property.code, name: property.name, property_type: property.property_type ?? 'estate', use_case: property.use_case ?? 'estate_developer',
-      town: property.town ?? '', county: property.county ?? '', area: property.area ?? '', address: property.address ?? '', description: property.description ?? '',
+      town: property.town ?? '', county: property.county ?? '', area: property.area ?? '', address_line: property.address_line ?? '', description: property.description ?? '',
     } : EMPTY);
   }, [open, property]);
 
@@ -115,7 +115,7 @@ export function PropertyForm({ open, onOpenChange, property, onSaved }: {
           <Input id="p-county" value={form.county} onChange={(e) => set('county', e.target.value)} placeholder="Kajiado" />
         </Field>
         <Field label="Address" htmlFor="p-address">
-          <Input id="p-address" value={form.address} onChange={(e) => set('address', e.target.value)} />
+          <Input id="p-address" value={form.address_line} onChange={(e) => set('address_line', e.target.value)} />
         </Field>
         <Field label="Description" htmlFor="p-desc" className="sm:col-span-2">
           <RichTextField id="p-desc" value={form.description ?? ''} onChange={(v) => set('description', v)} placeholder="Shown on the marketplace listing as plain text" />

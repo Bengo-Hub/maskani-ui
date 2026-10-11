@@ -13,7 +13,7 @@ import { Field, NativeSelect } from '@/components/common/field';
 import { FormSheet } from '@/components/common/form-sheet';
 import type { ManualPayment, ManualPaymentInput, PayIntent, PayRequest } from '@/lib/api/types';
 import { TREASURY_UI_URL } from '@/lib/config';
-import { kes, num } from '@/lib/utils';
+import { kes, num, todayInput } from '@/lib/utils';
 
 /** The most one M-Pesa prompt can take; above it the payer gives a bank or cheque reference. */
 export const MPESA_PROMPT_LIMIT = 250_000;
@@ -23,7 +23,6 @@ const METHOD_OF: Record<string, ManualPaymentInput['method']> = {
   cash: 'cash', mpesa_manual: 'mpesa', bank: 'bank_transfer', bank_transfer: 'bank_transfer', cheque: 'cheque',
 };
 
-const today = () => new Date().toISOString().slice(0, 10);
 
 /**
  * Pays a unit account. Online, maskani creates one `account_payment` intent (the paybill
@@ -57,7 +56,7 @@ export function PayAccount({
   const [amount, setAmount] = useState('');
   const [busy, setBusy] = useState(false);
   const [intent, setIntent] = useState<{ id: string; amount: number } | null>(null);
-  const [manual, setManual] = useState({ method: 'bank_transfer' as ManualPaymentInput['method'], reference: '', paidOn: today() });
+  const [manual, setManual] = useState({ method: 'bank_transfer' as ManualPaymentInput['method'], reference: '', paidOn: todayInput() });
   // One idempotency key per Pay attempt, so a double tap never creates two intents.
   const keyRef = useRef('');
 
@@ -105,7 +104,8 @@ export function PayAccount({
     const method = METHOD_OF[input.method ?? ''] ?? 'cash';
     await submitManual(accountId, {
       amount: input.amount, method, reference: (input.reference ?? '').trim() || `CASH-${Date.now()}`,
-      paid_on: input.effectiveAt ? input.effectiveAt.slice(0, 10) : today(),
+      // The local calendar day: effectiveAt is UTC, so slicing it gives the day before between 00:00 and 03:00 in Nairobi.
+      paid_on: input.effectiveAt ? todayInput(new Date(input.effectiveAt)) : todayInput(),
     });
     toast.success('Recorded for review. It counts once someone else verifies it.');
     setRecordOpen(false);
@@ -122,7 +122,7 @@ export function PayAccount({
     <>
       <div className="flex flex-wrap gap-2">
         <Button size={size} className={size === 'lg' ? 'h-12 text-base' : undefined}
-          onClick={() => { setAmount(owing > 0 ? String(owing) : ''); setManual({ method: 'bank_transfer', reference: '', paidOn: today() }); setAskOpen(true); }}>
+          onClick={() => { setAmount(owing > 0 ? String(owing) : ''); setManual({ method: 'bank_transfer', reference: '', paidOn: todayInput() }); setAskOpen(true); }}>
           <Smartphone /> {label}
         </Button>
         {staff && submitManual && (
@@ -163,7 +163,7 @@ export function PayAccount({
                 <Input id="pay-ref" value={manual.reference} onChange={(e) => setManual({ ...manual, reference: e.target.value })} className="uppercase" />
               </Field>
               <Field label="Date paid" htmlFor="pay-date">
-                <Input id="pay-date" type="date" max={today()} value={manual.paidOn} onChange={(e) => setManual({ ...manual, paidOn: e.target.value })} />
+                <Input id="pay-date" type="date" max={todayInput()} value={manual.paidOn} onChange={(e) => setManual({ ...manual, paidOn: e.target.value })} />
               </Field>
             </div>
           )}
