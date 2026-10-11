@@ -171,7 +171,7 @@ export default function DashboardPage() {
         </div>
       )}
 
-      <PerformanceSection propertyId={propertyId} period={period} base={base} />
+      <PerformanceSection propertyId={propertyId} filters={filters} base={base} />
 
       {mod('billing') && arrears.length > 0 && (
         <Card className="mt-4">

@@ -29,7 +29,7 @@ function Bars({ items }: { items: { key: string; label: string; value: number; d
   );
 }
 
-/** Where the money billed comes from, last three complete months. */
+/** Where the money billed in the chosen months comes from. */
 export function RevenueMixCard({ data }: { data: Insights }) {
   const { data: charges = [] } = useChargeTypes();
   const names = useMemo(() => new Map(charges.map((c) => [c.code, c.name])), [charges]);
@@ -42,22 +42,22 @@ export function RevenueMixCard({ data }: { data: Insights }) {
     <Card>
       <CardHeader>
         <CardTitle>Revenue by charge</CardTitle>
-        <CardDescription>Billed over the last three complete months, {kes(total)} in all</CardDescription>
+        <CardDescription>Billed in the chosen months, {kes(total)} in all</CardDescription>
       </CardHeader>
       <CardContent>
-        {items.length ? <Bars items={items} /> : <p className="py-8 text-center text-sm text-muted-foreground">No bills in the last three months.</p>}
+        {items.length ? <Bars items={items} /> : <p className="py-8 text-center text-sm text-muted-foreground">No bills in these months.</p>}
       </CardContent>
     </Card>
   );
 }
 
-/** Blocks side by side: billing last month and what each owes now. */
+/** Blocks side by side: billing in the chosen months and what each owes now. */
 export function BlocksCard({ data, base }: { data: Insights; base: string }) {
   return (
     <Card>
       <CardHeader>
         <CardTitle>Blocks compared</CardTitle>
-        <CardDescription>Billed last month and owing now, per block</CardDescription>
+        <CardDescription>Billed in the chosen months and owing now, per block</CardDescription>
       </CardHeader>
       <CardContent className="p-0">
         {data.blocks.length ? (
@@ -71,7 +71,7 @@ export function BlocksCard({ data, base }: { data: Insights; base: string }) {
                 <tr key={b.block_id} className="border-b last:border-0">
                   <td className="px-4 py-2.5 sm:px-6"><Link className="hover:text-primary hover:underline" href={`${base}/units?block_id=${b.block_id}`}>{b.name}</Link></td>
                   <td className="px-2 py-2.5 text-right tabular">{b.units}</td>
-                  <td className="px-2 py-2.5 text-right tabular">{kes(b.billed_last_month)}</td>
+                  <td className="px-2 py-2.5 text-right tabular">{kes(b.billed)}</td>
                   <td className="px-4 py-2.5 text-right font-medium tabular sm:px-6">{kes(b.owing)}</td>
                 </tr>
               ))}
@@ -83,13 +83,13 @@ export function BlocksCard({ data, base }: { data: Insights; base: string }) {
   );
 }
 
-/** Maintenance performance by category over 90 days. */
+/** Maintenance performance by category for requests opened in the chosen months. */
 export function WorkCard({ data, base }: { data: Insights; base: string }) {
   return (
     <Card>
       <CardHeader>
-        <CardTitle>Maintenance, 90 days</CardTitle>
-        <CardDescription>Requests by category, how fast they close and how many broke their time limit</CardDescription>
+        <CardTitle>Maintenance</CardTitle>
+        <CardDescription>Requests opened in the chosen months by category, how fast they closed and how many broke their time limit</CardDescription>
       </CardHeader>
       <CardContent className="p-0">
         {data.work_by_category.length ? (
@@ -111,7 +111,7 @@ export function WorkCard({ data, base }: { data: Insights; base: string }) {
               ))}
             </tbody>
           </table>
-        ) : <p className="px-6 py-8 text-center text-sm text-muted-foreground">No requests in the last 90 days.</p>}
+        ) : <p className="px-6 py-8 text-center text-sm text-muted-foreground">No requests opened in these months.</p>}
       </CardContent>
     </Card>
   );

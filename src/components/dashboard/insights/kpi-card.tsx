@@ -32,11 +32,12 @@ function Compare({ label, value, before, kind }: { label: string; value: number;
 }
 
 /**
- * A headline figure with the two comparisons managers ask for first: last month and the same month
- * last year. Direction is said in words with an arrow, never by colour alone.
+ * A headline figure with the two comparisons managers ask for first: the months just before (last
+ * month for a single month) and the same months last year. Direction is said in words with an
+ * arrow, never by colour alone.
  */
 export function KpiCard({
-  icon: Icon, label, value, display, lastMonth, lastYear, kind = 'percent', compare = true, footnote, loading,
+  icon: Icon, label, value, display, previous, previousLabel = 'last month', lastYear, kind = 'percent', compare = true, footnote, loading,
 }: {
   /** False for positions with no history yet (days sales outstanding, occupancy). */
   compare?: boolean;
@@ -44,7 +45,8 @@ export function KpiCard({
   label: string;
   value: number;
   display: ReactNode;
-  lastMonth?: string | number;
+  previous?: string | number;
+  previousLabel?: string;
   lastYear?: string | number;
   kind?: DeltaKind;
   footnote?: ReactNode;
@@ -58,7 +60,7 @@ export function KpiCard({
       {loading ? <Skeleton className="h-8 w-28" /> : <p className="text-2xl font-semibold tabular tracking-tight">{display}</p>}
       {!loading && compare && (
         <div className="flex flex-col gap-0.5 text-xs">
-          <Compare label="last month" value={value} before={lastMonth} kind={kind} />
+          <Compare label={previousLabel} value={value} before={previous} kind={kind} />
           <Compare label="last year" value={value} before={lastYear} kind={kind} />
         </div>
       )}

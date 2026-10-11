@@ -5,34 +5,44 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { ExportButtons } from '@/components/common/export-buttons';
 import { useAccess, useSlug } from '@/hooks/use-access';
 import { useInsights } from '@/hooks/use-reports';
-import { insightsApi } from '@/lib/api/insights';
-import { kes, num, periodLabel } from '@/lib/utils';
+import { insightsApi, insightsParams } from '@/lib/api/insights';
+import type { DashboardFilters } from '@/lib/api/types';
+import { rangeLabel } from '../dashboard-filters';
+import { kes, num } from '@/lib/utils';
 import { BlocksCard, hours, RevenueMixCard, SalesCard, WorkCard } from './insights-breakdowns';
 import { ForecastCard, TrendCard } from './insights-charts';
 import { KpiCard } from './kpi-card';
 
 /**
- * The business view under the day-to-day tiles: how the estate is doing against last month and last
- * year, where it is heading, and where the money and the work come from. One API call
- * (/reports/insights), computed on the server from aggregates, so it stays fast as data grows.
+ * The business view under the day-to-day tiles, for the dashboard's filters: how the chosen months
+ * compare with the months before and the same months last year, where the estate is heading, and
+ * where the money and the work come from. One API call (/reports/insights), computed on the server
+ * from aggregates, so it stays fast as data grows.
  */
-export function PerformanceSection({ propertyId, period, base }: { propertyId: string; period: string; base: string }) {
+export function PerformanceSection({ propertyId, filters, base }: { propertyId: string; filters: DashboardFilters; base: string }) {
   const { mod } = useAccess();
   const slug = useSlug();
-  const { data, isLoading, isError } = useInsights(propertyId, period);
+  const { data, isLoading, isError } = useInsights(propertyId, filters);
   if (isError) return null;
   const k = data?.kpis;
-  const month = periodLabel(period);
+  const range = rangeLabel(filters);
+  const single = filters.from === filters.to;
+  const previousLabel = single ? 'last month' : 'the months before';
+  const narrowed = !!(filters.block_id || filters.fund);
+  const name = single ? `performance-${filters.to}` : `performance-${filters.from}-to-${filters.to}`;
 
   return (
     <section className="mt-8 space-y-4" aria-labelledby="performance-heading">
       <div className="flex flex-wrap items-end justify-between gap-3">
         <div>
           <h2 id="performance-heading" className="text-lg font-semibold">Performance and outlook</h2>
-          <p className="text-sm text-muted-foreground">{month} against last month and the same month last year, and what is coming in.</p>
+          <p className="text-sm text-muted-foreground">
+            {range} against {previousLabel} and the same {single ? 'month' : 'months'} last year, and what is coming in.
+            {narrowed && ' Narrowed to the chosen block or fund.'}
+          </p>
         </div>
-        <ExportButtons name={`performance-${period}`} title={`Performance, ${month}`} pdfLabel="Report PDF" perm="reports.export"
-          fetchFile={(format) => insightsApi.file(slug, { property_id: propertyId || undefined, period }, format)} />
+        <ExportButtons name={name} title={`Performance, ${range}`} pdfLabel="Report PDF" perm="reports.export"
+          fetchFile={(format) => insightsApi.file(slug, insightsParams(propertyId, filters), format)} />
       </div>
 
       <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-3">
@@ -40,11 +50,11 @@ export function PerformanceSection({ propertyId, period, base }: { propertyId: s
           <>
             <KpiCard icon={Gauge} label="Collection rate" kind="points" loading={isLoading}
               value={num(k?.collection_rate.value)} display={k?.collection_rate.value != null ? `${num(k.collection_rate.value).toFixed(1)}%` : 'No bills yet'}
-              lastMonth={k?.collection_rate.last_month} lastYear={k?.collection_rate.last_year} />
+              previous={k?.collection_rate.previous} previousLabel={previousLabel} lastYear={k?.collection_rate.last_year} />
             <KpiCard icon={Landmark} label="Collected" loading={isLoading} value={num(k?.collected.value)} display={kes(k?.collected.value)}
-              lastMonth={k?.collected.last_month} lastYear={k?.collected.last_year} />
+              previous={k?.collected.previous} previousLabel={previousLabel} lastYear={k?.collected.last_year} />
             <KpiCard icon={Receipt} label="Billed" loading={isLoading} value={num(k?.billed.value)} display={kes(k?.billed.value)}
-              lastMonth={k?.billed.last_month} lastYear={k?.billed.last_year} />
+              previous={k?.billed.previous} previousLabel={previousLabel} lastYear={k?.billed.last_year} />
             <KpiCard icon={Clock} label="Days to collect" compare={false} loading={isLoading} value={num(k?.days_sales_outstanding)}
               display={k?.days_sales_outstanding != null ? `${num(k.days_sales_outstanding)} days` : 'n/a'}
               footnote={<>What is owed now ({kes(k?.outstanding)}) over the last three months' average daily billing. Lower is better.</>} />

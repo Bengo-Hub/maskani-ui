@@ -1,6 +1,6 @@
 import { tenantBase as t } from '@/lib/config';
 import { apiClient } from './client';
-import type { ExportFormat, Money } from './types';
+import type { DashboardFilters, ExportFormat, Money } from './types';
 
 /** GET /reports/insights: trends, comparisons and forecasts for the staff dashboard. */
 
@@ -15,9 +15,10 @@ export interface MonthPoint {
   sales_value: Money;
 }
 
+/** A figure for the chosen months, with the same number of months just before and the same months a year earlier. */
 export interface Kpi {
   value: Money;
-  last_month?: Money;
+  previous?: Money;
   last_year?: Money;
 }
 
@@ -43,6 +44,8 @@ export interface ForecastRow {
 }
 
 export interface Insights {
+  from: string;
+  to: string;
   period: string;
   months: MonthPoint[];
   kpis: InsightKpis;
@@ -57,7 +60,7 @@ export interface Insights {
     contract_collected: Money;
   };
   revenue_mix: { charge_code: string; amount: Money }[];
-  blocks: { block_id: string; name: string; units: number; billed_last_month: Money; owing: Money }[];
+  blocks: { block_id: string; name: string; units: number; billed: Money; owing: Money }[];
   work_by_category: { category: string; opened: number; completed: number; breached: number; avg_resolve_hours?: Money }[];
 }
 
@@ -72,11 +75,18 @@ export interface RoleSummary {
   sales: { holds_expiring_3d: number; instalments_overdue: number; overdue_amount: Money; contracts_in_default: number };
 }
 
+/** The dashboard's filters, which insights follow. */
+export type InsightsParams = { property_id?: string; from: string; to: string; block_id?: string; fund?: string };
+
+export function insightsParams(propertyId: string, f: DashboardFilters): InsightsParams {
+  return { property_id: propertyId || undefined, from: f.from, to: f.to, block_id: f.block_id || undefined, fund: f.fund || undefined };
+}
+
 export const insightsApi = {
-  get: (slug: string, params: { property_id?: string; period?: string }) =>
+  get: (slug: string, params: InsightsParams) =>
     apiClient.get<Insights>(`${t(slug)}/reports/insights`, params, { suppressErrorToast: true }),
   /** The performance report behind the dashboard, as a document. */
-  file: (slug: string, params: { property_id?: string; period?: string }, format: ExportFormat) =>
+  file: (slug: string, params: InsightsParams, format: ExportFormat) =>
     apiClient.getBlob(`${t(slug)}/reports/insights/export`, `performance.${format}`, { ...params, format }),
   roleSummary: (slug: string, params: { property_id?: string }) =>
     apiClient.get<RoleSummary>(`${t(slug)}/reports/role-summary`, params, { suppressErrorToast: true }),
