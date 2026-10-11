@@ -26,6 +26,7 @@
 - [x] Pay screens: above KES 250,000 a bank or cheque reference goes to review; staff Record payment through the shared SettlementModal; pay instruction box for bank paybills
 - [x] Fund form: paybill account number format with a live preview
 - [x] Late charge settings, payment plans on the account collections panel, approval rules with ordered steps, central Approvals inbox (2026-10-10)
+- [x] Replace a meter from the reading round (`4bf1bfe`)
 - [ ] Gaps from the 2026-10-09 audit: see "Gaps found by the 2026-10-09 audit" in [README.md](README.md) (S2 line and wave 1c fixes)
 
 ## Rules to apply
