@@ -90,7 +90,7 @@ export interface WorkActionInput {
 }
 
 export const worksApi = {
-  workOrders: (slug: string, params: { property_id?: string; status?: string; priority?: string; overdue?: boolean; cursor?: string; limit?: number }) =>
+  workOrders: (slug: string, params: { property_id?: string; status?: string; priority?: string; source?: string; overdue?: boolean; cursor?: string; limit?: number }) =>
     apiClient.get<Page<WorkOrder>>(`${t(slug)}/work-orders`, params),
   workOrder: (slug: string, id: string) => apiClient.get<WorkOrder>(`${t(slug)}/work-orders/${id}`),
   create: (slug: string, body: WorkOrderInput) => apiClient.post<WorkOrder>(`${t(slug)}/work-orders`, body),

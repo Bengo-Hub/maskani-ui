@@ -31,8 +31,9 @@ function Works() {
   const propertyId = useSelectedPropertyId(slug);
   const [status, setStatus] = useState('');
   const [overdue, setOverdue] = useState(false);
+  const [source, setSource] = useState('');
   const [open, setOpen] = useState(false);
-  const list = useWorkOrders({ property_id: propertyId, status, overdue });
+  const list = useWorkOrders({ property_id: propertyId, status, source, overdue });
 
   // The mobile "New request" button links here with ?new=1.
   useEffect(() => {
@@ -49,6 +50,9 @@ function Works() {
         <div className="min-w-0">
           <p className="font-medium">{w.title}</p>
           <p className="text-xs text-muted-foreground">{w.number} · {titleCase(w.category)}{w.area ? ` · ${w.area}` : ''}</p>
+          {w.source === 'gate' && (
+            <p className="text-xs text-muted-foreground">Came in at the gate{w.metadata?.provider?.name ? `: ${w.metadata.provider.name}` : ''}</p>
+          )}
         </div>
       ),
     },
@@ -79,6 +83,14 @@ function Works() {
         <NativeSelect className="sm:w-48" value={overdue ? 'overdue' : 'all'} onChange={(e) => setOverdue(e.target.value === 'overdue')} aria-label="Due">
           <option value="all">All</option>
           <option value="overdue">Past response time</option>
+        </NativeSelect>
+        <NativeSelect className="sm:w-48" value={source} onChange={(e) => setSource(e.target.value)} aria-label="Raised by">
+          <option value="">Raised any way</option>
+          <option value="resident">By residents</option>
+          <option value="staff">By the office</option>
+          <option value="gate">At the gate</option>
+          <option value="schedule">Preventive plans</option>
+          <option value="inspection">Inspections</option>
         </NativeSelect>
       </div>
       <KeysetTable

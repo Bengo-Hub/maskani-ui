@@ -47,6 +47,8 @@ export interface WorkOrder extends Base {
   minutes_on_site?: number;
   status: WorkStatus;
   edges?: { events?: WorkOrderEvent[] };
+  /** Set on a work order booked by the guard as the provider came in (source gate). */
+  metadata?: { booked_at_gate?: boolean; gate_event_id?: string; provider?: { name?: string; phone?: string } } | null;
 }
 
 export interface VendorDocument extends Base {

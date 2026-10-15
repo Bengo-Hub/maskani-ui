@@ -8,14 +8,14 @@ import { qk } from '@/lib/query-keys';
 import { useAccess, useSlug } from './use-access';
 import { useKeysetList } from './use-keyset-list';
 
-export interface WorkFilters { property_id?: string; status?: string; priority?: string; overdue?: boolean }
+export interface WorkFilters { property_id?: string; status?: string; priority?: string; source?: string; overdue?: boolean }
 
 export function useWorkOrders(filters: WorkFilters) {
   const slug = useSlug();
   const { canAll } = useAccess();
   return useKeysetList(
     qk.workOrderList(slug, filters),
-    (cursor) => worksApi.workOrders(slug, { ...filters, property_id: filters.property_id || undefined, status: filters.status || undefined, priority: filters.priority || undefined, overdue: filters.overdue || undefined, cursor, limit: 50 }),
+    (cursor) => worksApi.workOrders(slug, { ...filters, property_id: filters.property_id || undefined, status: filters.status || undefined, priority: filters.priority || undefined, source: filters.source || undefined, overdue: filters.overdue || undefined, cursor, limit: 50 }),
     { enabled: canAll('maintenance', 'works.view') },
   );
 }

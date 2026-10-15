@@ -70,7 +70,13 @@ export default function WorkOrderPage({ params }: { params: Promise<{ id: string
                   {wo.sla_breached ? <AlertTriangle className="h-3.5 w-3.5" /> : <Clock className="h-3.5 w-3.5 text-muted-foreground" />}{fmtDateTime(wo.resolution_due_at) || 'No target'}
                 </dd>
               </div>
-              <div><dt className="text-xs text-muted-foreground">Source</dt><dd>{titleCase(wo.source)}</dd></div>
+              <div><dt className="text-xs text-muted-foreground">Source</dt><dd>{wo.source === 'gate' ? 'Booked at the gate' : titleCase(wo.source)}</dd></div>
+              {wo.source === 'gate' && wo.metadata?.provider?.name && (
+                <div>
+                  <dt className="text-xs text-muted-foreground">Provider let in</dt>
+                  <dd>{wo.metadata.provider.name}{wo.metadata.provider.phone ? `, ${wo.metadata.provider.phone}` : ''}{wo.responded_at ? ` at ${fmtDateTime(wo.responded_at)}` : ''}</dd>
+                </div>
+              )}
               {num(wo.quote_amount) > 0 && <div><dt className="text-xs text-muted-foreground">Quote</dt><dd>{kes(wo.quote_amount)} ({titleCase(wo.quote_status)})</dd></div>}
               {num(wo.cost_amount) > 0 && <div><dt className="text-xs text-muted-foreground">Cost</dt><dd>{kes(wo.cost_amount)}{wo.recharge ? ', billed to owner' : ''}</dd></div>}
             </dl>
