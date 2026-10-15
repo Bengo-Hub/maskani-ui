@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { FilePlus2, FileText, ShieldCheck } from 'lucide-react';
+import { FilePlus2, FileSignature, FileText, ShieldCheck } from 'lucide-react';
 import { toast } from 'sonner';
 import { extractErrorMessage, PdfPreview, useDocumentPreview } from '@bengo-hub/shared-ui-lib/documents';
 import { Button } from '@/components/ui/button';
@@ -14,6 +14,7 @@ import { useDocTemplates, useDocuments, useIssueDocument } from '@/hooks/use-doc
 import { documentsApi } from '@/lib/api/documents';
 import type { IssuedDocument } from '@/lib/api/types';
 import { fmtDate } from '@/lib/utils';
+import { SigningBadge, SigningSheet } from './signing-sheet';
 
 const INPUT_LABELS: Record<string, { label: string; type: string; hint?: string }> = {
   instalments: { label: 'Number of instalments', type: 'number' },
@@ -39,6 +40,7 @@ export function DocumentsPanel({ unitId, entityType, entityId, title = 'Document
   const { data: docs = [], isLoading } = useDocuments(unitId ? { unit_id: unitId } : { entity_type: entityType, entity_id: entityId });
   const { openPreview, previewProps } = useDocumentPreview({ onError: (m) => toast.error(m) });
   const [issuing, setIssuing] = useState(false);
+  const [signing, setSigning] = useState<IssuedDocument | null>(null);
   const canIssue = !!entityId && !!entityType && (can('documents.issue') || can('documents.manage'));
 
   const view = (d: IssuedDocument) =>
@@ -55,19 +57,25 @@ export function DocumentsPanel({ unitId, entityType, entityId, title = 'Document
       ) : docs.length ? (
         <ul className="divide-y">
           {docs.map((d) => (
-            <li key={d.id}>
-              <button type="button" onClick={() => view(d)} className="flex w-full cursor-pointer items-center gap-3 px-5 py-3 text-left hover:bg-muted/50">
+            <li key={d.id} className="flex items-center gap-2 pr-3 hover:bg-muted/50">
+              <button type="button" onClick={() => view(d)} className="flex min-w-0 flex-1 cursor-pointer items-center gap-3 py-3 pl-5 text-left">
                 <FileText className="h-5 w-5 shrink-0 text-muted-foreground" />
                 <span className="min-w-0 flex-1">
                   <span className="block truncate text-sm font-medium">{d.title}</span>
                   <span className="block text-xs text-muted-foreground">{d.number} · issued {fmtDate(d.issued_at ?? d.created_at)}</span>
                 </span>
+                <SigningBadge doc={d} />
                 {d.verification_code && (
                   <span className="hidden items-center gap-1 rounded-full bg-muted px-2 py-0.5 font-mono text-xs sm:flex" title="Verification code printed on the document">
                     <ShieldCheck className="h-3 w-3" /> {d.verification_code}
                   </span>
                 )}
               </button>
+              {d.needs_signature && (
+                <Button size="sm" variant="ghost" onClick={() => setSigning(d)} aria-label={`Signatures for ${d.title}`}>
+                  <FileSignature /> <span className="hidden sm:inline">Signatures</span>
+                </Button>
+              )}
             </li>
           ))}
         </ul>
@@ -78,6 +86,7 @@ export function DocumentsPanel({ unitId, entityType, entityId, title = 'Document
         <IssueSheet open={issuing} onOpenChange={setIssuing} entityType={entityType!} entityId={entityId!}
           onIssued={(d) => { setIssuing(false); view(d); }} />
       )}
+      {signing && <SigningSheet doc={docs.find((d) => d.id === signing.id) ?? signing} onClose={() => setSigning(null)} />}
       <PdfPreview {...previewProps} />
     </section>
   );

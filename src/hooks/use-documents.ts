@@ -3,6 +3,7 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { toast } from 'sonner';
 import { documentsApi } from '@/lib/api/documents';
+import type { IssuedDocument } from '@/lib/api/types';
 import { qk } from '@/lib/query-keys';
 import { useAccess, useSlug } from './use-access';
 
@@ -53,6 +54,42 @@ export function useIssueDocument() {
       void qc.invalidateQueries({ queryKey: qk.documents(slug) });
     },
   });
+}
+
+/** An agreement's acceptances and signed copies (office). */
+export function useDocumentSignatures(id: string | undefined) {
+  const slug = useSlug();
+  const { can } = useAccess();
+  return useQuery({
+    queryKey: [...qk.documents(slug), 'signatures', id ?? ''],
+    queryFn: () => documentsApi.signatures(slug, id!).then((r) => r.data ?? []),
+    enabled: !!id && canSee(can),
+  });
+}
+
+/** Signing an agreement: a code sent to the person's record and read back, or a signed paper
+ *  copy (office); the same code flow in the portal. Each step refreshes the document lists. */
+export function useSigning() {
+  const slug = useSlug();
+  const qc = useQueryClient();
+  const refresh = () => void qc.invalidateQueries({ queryKey: qk.documents(slug) });
+  const signedToast = (d: IssuedDocument) =>
+    toast.success(d.status === 'executed' ? `${d.title} is signed by everyone` : 'Accepted; waiting for the others named on it');
+  return {
+    sendCode: useMutation({
+      mutationFn: (v: { id: string; partyId?: string }) => (v.partyId ? documentsApi.sendCode(slug, v.id, v.partyId) : documentsApi.mySendCode(slug, v.id)),
+      onSuccess: () => toast.success('Code sent to the phone and email on record'),
+    }),
+    accept: useMutation({
+      mutationFn: (v: { id: string; code: string; partyId?: string }) =>
+        (v.partyId ? documentsApi.accept(slug, v.id, v.partyId, v.code) : documentsApi.myAccept(slug, v.id, v.code)),
+      onSuccess: (d) => { signedToast(d); refresh(); },
+    }),
+    signedCopy: useMutation({
+      mutationFn: (v: { id: string; keys: string[] }) => documentsApi.signedCopy(slug, v.id, v.keys),
+      onSuccess: (d) => { signedToast(d); refresh(); },
+    }),
+  };
 }
 
 /** Portal: documents addressed to the signed-in owner or resident. */

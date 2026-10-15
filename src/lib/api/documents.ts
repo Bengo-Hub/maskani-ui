@@ -1,6 +1,6 @@
 import { apiClient } from './client';
 import { API_URL, tenantBase as t } from '@/lib/config';
-import type { DocKind, DocTemplate, DocumentVerification, IssuedDocument } from './types';
+import type { DocKind, DocTemplate, DocumentSignature, DocumentVerification, IssuedDocument } from './types';
 
 /** Document templates, issuing and files (maskani-api docs module). */
 export const documentsApi = {
@@ -16,6 +16,13 @@ export const documentsApi = {
   file: (slug: string, id: string) => apiClient.getBlob(`${t(slug)}/documents/${id}/file`, 'document.pdf'),
   mine: (slug: string) => apiClient.get<{ data: IssuedDocument[] }>(`${t(slug)}/me/documents`),
   myFile: (slug: string, id: string) => apiClient.getBlob(`${t(slug)}/me/documents/${id}/file`, 'document.pdf'),
+  signatures: (slug: string, id: string) => apiClient.get<{ data: DocumentSignature[] }>(`${t(slug)}/documents/${id}/signatures`),
+  sendCode: (slug: string, id: string, partyId: string) => apiClient.post(`${t(slug)}/documents/${id}/send-code`, { party_id: partyId }),
+  accept: (slug: string, id: string, partyId: string, code: string) =>
+    apiClient.post<IssuedDocument>(`${t(slug)}/documents/${id}/accept`, { party_id: partyId, code }),
+  signedCopy: (slug: string, id: string, keys: string[]) => apiClient.post<IssuedDocument>(`${t(slug)}/documents/${id}/signed-copy`, { keys }),
+  mySendCode: (slug: string, id: string) => apiClient.post(`${t(slug)}/me/documents/${id}/send-code`, {}),
+  myAccept: (slug: string, id: string, code: string) => apiClient.post<IssuedDocument>(`${t(slug)}/me/documents/${id}/accept`, { code }),
 };
 
 /** The public check of a printed code: no sign-in, so a plain fetch. */

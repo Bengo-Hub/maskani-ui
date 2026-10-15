@@ -37,7 +37,25 @@ export interface IssuedDocument extends Base {
   verification_code?: string;
   status: 'draft' | 'issued' | 'partly_signed' | 'executed' | 'expired' | 'superseded';
   issued_at?: string;
+  executed_at?: string;
   template_version?: number;
+  /** An agreement: the people named accept it by code, or the office records a signed copy. */
+  needs_signature?: boolean;
+  /** Portal: the signed-in person has already accepted it. */
+  accepted_by_me?: boolean;
+}
+
+/** One acceptance by code or a recorded signed paper copy (GET /documents/{id}/signatures). */
+export interface DocumentSignature {
+  id: string;
+  document_id: string;
+  party_id?: string;
+  method: 'otp_acceptance' | 'wet_upload' | 'e_signature';
+  signed_at: string;
+  document_hash?: string;
+  ip?: string;
+  device?: { via?: string; user_agent?: string; recorded_by?: string };
+  scan_file_key?: string;
 }
 
 /** What the public verify check returns: nothing personal. */
