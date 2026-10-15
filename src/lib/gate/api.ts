@@ -40,6 +40,9 @@ export interface SyncResponse {
     passes: CachedPass[] | null;
     badges: { id: string; badge_number: string; name: string; role?: string; vendor_id: string; has_pin: boolean }[] | null;
     walk_in_policy?: WalkInPolicy;
+    /** Active vendors and the work order categories, for booking a job at the gate. */
+    vendors?: { id: string; name: string }[] | null;
+    work_categories?: { id: string; name: string }[] | null;
   };
 }
 

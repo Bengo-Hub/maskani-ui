@@ -23,6 +23,23 @@ export interface GateEventInput {
   /** An exit names the entry it closes: the server id, or the client id of an entry still queued. */
   entry_event_id?: string;
   entry_client_event_id?: string;
+  /** A service provider let in for a job: books a work order (source gate) once they are in. */
+  work_order?: WorkOrderAtGate;
+}
+
+/** The job a provider came for, for a unit or an estate area; no quote or cost is asked. */
+export interface WorkOrderAtGate {
+  title?: string;
+  category?: string;
+  description?: string;
+  area?: string;
+  vendor_id?: string;
+}
+
+/** Vendors and work categories the tablet keeps for the job picker. */
+export interface WorkOptions {
+  vendors: { id: string; name: string }[];
+  categories: { id: string; name: string }[];
 }
 
 export interface CachedPass {
@@ -113,6 +130,23 @@ export async function loadCache(device: GateDeviceCreds): Promise<{ passes: Cach
     return { passes: await open<CachedPass[]>(device.deviceKey, row.sealed), syncedAt: row.synced_at };
   } catch {
     return { passes: [], syncedAt: null };
+  }
+}
+
+export async function saveWorkOptions(device: GateDeviceCreds, options: WorkOptions): Promise<void> {
+  const d = gateDb();
+  if (!d) return;
+  await d.cache.put({ key: `work:${device.deviceId}`, synced_at: Date.now(), sealed: await seal(device.deviceKey, options) });
+}
+
+export async function loadWorkOptions(device: GateDeviceCreds): Promise<WorkOptions> {
+  const d = gateDb();
+  const row = d ? await d.cache.get(`work:${device.deviceId}`) : undefined;
+  if (!row) return { vendors: [], categories: [] };
+  try {
+    return await open<WorkOptions>(device.deviceKey, row.sealed);
+  } catch {
+    return { vendors: [], categories: [] };
   }
 }
 

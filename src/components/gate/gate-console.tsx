@@ -48,7 +48,7 @@ export function GateConsole({ gate, device }: { gate: Gate; device: GateDeviceCr
   const [exit, setExit] = useState(false);
   const [incident, setIncident] = useState(false);
   const [rejected, setRejected] = useState(false);
-  const { record, passes, online, pending, guard, signOff, walkInPolicy, localInside, sync } = gate;
+  const { record, passes, online, pending, guard, signOff, walkInPolicy, workOptions, localInside, sync } = gate;
   const anySheet = walkIn || exit || incident || scan;
   const inside = useInside(device, localInside, !anySheet);
 
@@ -186,7 +186,7 @@ export function GateConsole({ gate, device }: { gate: Gate; device: GateDeviceCr
       <FormSheet open={scan} onOpenChange={setScan} size="md" title="Scan the visitor's QR">
         {scan && <QrScanner onScan={(qr) => { setScan(false); void check({ qr }); }} />}
       </FormSheet>
-      <WalkInSheet open={walkIn} onOpenChange={setWalkIn} device={device} record={record} online={online} policy={walkInPolicy} />
+      <WalkInSheet open={walkIn} onOpenChange={setWalkIn} device={device} record={record} online={online} policy={walkInPolicy} work={workOptions} />
       <ExitSheet open={exit} onOpenChange={setExit} device={device} record={record} localInside={localInside} />
       <IncidentSheet open={incident} onOpenChange={setIncident} device={device} />
     </div>

@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useRef, useState } from 'react';
-import { BellRing, Check, DoorOpen, History, Loader2, MessageCircleQuestion, Search, ShieldAlert, X } from 'lucide-react';
+import { BellRing, Check, DoorOpen, History, Loader2, MessageCircleQuestion, Search, ShieldAlert, Wrench, X } from 'lucide-react';
 import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
@@ -12,29 +12,35 @@ import type { RecordGateEvent } from '@/hooks/use-gate';
 import { apiErrorMessage } from '@/lib/api/errors';
 import { gateDeviceApi, type VisitorMatch, type WalkInPolicy, type WalkInState } from '@/lib/gate/api';
 import type { GateDeviceCreds } from '@/lib/gate/device';
+import type { WorkOptions } from '@/lib/gate/queue';
 import { cn, fmtDateTime } from '@/lib/utils';
 
 type Phase = 'form' | 'waiting' | 'approved' | 'declined';
 const RING_GAP_MS = 30_000;
 const blank = { name: '', phone: '', unit: '', plate: '', idNumber: '', idSeen: false };
+const noJob = { on: false, category: 'general', vendor: '', what: '', area: '' };
 
 /**
  * A visitor without a pass. By default the guard lets them in and the host is told on their
  * phone; an estate that wants the host's say first sets "ask the host". While asking, the guard
  * can ring the host (a push that pops up on their phone, plus WhatsApp) or decide themselves on
  * the same walk-in, so one visit is one log line. Returning visitors are found as the guard types.
+ * A service provider here for a job (a resident's repair or estate work) books a work order once
+ * they are let in, so the office can follow up; no quote or cost is asked at the gate.
  */
-export function WalkInSheet({ open, onOpenChange, device, record, online, policy }: {
+export function WalkInSheet({ open, onOpenChange, device, record, online, policy, work }: {
   open: boolean;
   onOpenChange: (o: boolean) => void;
   device: GateDeviceCreds;
   record: RecordGateEvent;
   online: boolean;
   policy: WalkInPolicy;
+  work: WorkOptions;
 }) {
   const api = gateDeviceApi(device);
   const [units, setUnits] = useState<{ id: string; code: string }[]>([]);
   const [f, setF] = useState(blank);
+  const [job, setJob] = useState(noJob);
   const [q, setQ] = useState('');
   const [matches, setMatches] = useState<VisitorMatch[]>([]);
   const [looking, setLooking] = useState(false);
@@ -51,6 +57,7 @@ export function WalkInSheet({ open, onOpenChange, device, record, online, policy
     if (!open) return;
     setPhase('form');
     setF(blank);
+    setJob(noJob);
     setQ('');
     setMatches([]);
     setKnown(null);
@@ -102,15 +109,26 @@ export function WalkInSheet({ open, onOpenChange, device, record, online, policy
     vehicle_plate: f.plate.trim().toUpperCase() || undefined,
     id_number: f.idNumber.trim() || undefined,
     id_sighted: f.idSeen || !!f.idNumber.trim(),
+    work_order: job.on ? {
+      category: job.category || undefined,
+      vendor_id: job.vendor || undefined,
+      description: job.what.trim() || undefined,
+      area: f.unit ? undefined : job.area.trim() || undefined,
+    } : undefined,
   });
-  const ready = !!f.name.trim() && !!f.unit;
+  // A job for the estate (no unit) needs no host; any other walk-in is going to a unit.
+  const ready = !!f.name.trim() && (!!f.unit || job.on);
+  const canAsk = ready && !!f.unit;
   const unitCode = units.find((u) => u.id === f.unit)?.code;
 
   const letIn = async (note: string) => {
     setBusy(true);
     try {
       await record({ kind: 'entry', ...details(), notes: note });
-      toast.success(`${f.name.trim()} let in${unitCode ? ` to ${unitCode}` : ''}. The host has been told.`);
+      const booked = job.on ? ' The job is booked for the office.' : '';
+      toast.success(unitCode
+        ? `${f.name.trim()} let in to ${unitCode}. The host has been told.${booked}`
+        : `${f.name.trim()} let in.${booked}`);
       onOpenChange(false);
     } finally { setBusy(false); }
   };
@@ -172,13 +190,13 @@ export function WalkInSheet({ open, onOpenChange, device, record, online, policy
           <Button size="lg" variant="outline" className="h-12" disabled={!ready || busy} onClick={() => void letIn('Let in by the guard without asking the host')}>
             <DoorOpen /> Let in anyway
           </Button>
-          <Button size="lg" className="h-12" disabled={!ready || busy || !online} onClick={() => void ask()}>
+          <Button size="lg" className="h-12" disabled={!canAsk || busy || !online} onClick={() => void ask()}>
             <MessageCircleQuestion /> {online ? 'Ask the host' : 'Asking needs a connection'}
           </Button>
         </>
       ) : (
         <>
-          <Button size="lg" variant="outline" className="h-12" disabled={!ready || busy || !online} onClick={() => void ask()}>
+          <Button size="lg" variant="outline" className="h-12" disabled={!canAsk || busy || !online} onClick={() => void ask()}>
             <MessageCircleQuestion /> Ask the host first
           </Button>
           <Button size="lg" className="h-12 text-base" disabled={!ready || busy} onClick={() => void letIn('Walk-in let in by the guard')}>
@@ -256,9 +274,9 @@ export function WalkInSheet({ open, onOpenChange, device, record, online, policy
             <Field label="Phone" htmlFor="w-phone">
               <Input id="w-phone" type="tel" inputMode="tel" value={f.phone} onChange={(e) => setF({ ...f, phone: e.target.value })} className="h-12" autoComplete="off" />
             </Field>
-            <Field label="Visiting unit" htmlFor="w-unit" required>
+            <Field label="Visiting unit" htmlFor="w-unit" required={!job.on} hint={job.on ? 'Leave empty for estate work, such as the pump house or the gardens.' : undefined}>
               <NativeSelect id="w-unit" value={f.unit} onChange={(e) => setF({ ...f, unit: e.target.value })} className="h-12">
-                <option value="">Choose the unit</option>
+                <option value="">{job.on ? 'The estate (no unit)' : 'Choose the unit'}</option>
                 {units.map((u) => <option key={u.id} value={u.id}>{u.code}</option>)}
               </NativeSelect>
             </Field>
@@ -271,6 +289,43 @@ export function WalkInSheet({ open, onOpenChange, device, record, online, policy
             <label className="flex items-center gap-3 self-end rounded-lg border p-3 text-sm">
               <Checkbox checked={f.idSeen} onCheckedChange={(v) => setF({ ...f, idSeen: !!v })} /> I have seen their ID card
             </label>
+          </div>
+
+          <div className={cn('rounded-xl border', job.on && 'border-primary/40 bg-primary/5')}>
+            <label className="flex cursor-pointer items-center gap-3 p-3 text-sm">
+              <Checkbox checked={job.on} onCheckedChange={(v) => setJob({ ...job, on: !!v })} />
+              <Wrench className="h-4 w-4 text-primary" />
+              <span>
+                <span className="block font-medium">Here to do a job</span>
+                <span className="block text-xs text-muted-foreground">A plumber, technician or other provider. A work order is booked so the office can follow up.</span>
+              </span>
+            </label>
+            {job.on && (
+              <div className="grid grid-cols-1 gap-4 border-t p-3 sm:grid-cols-2">
+                <Field label="Kind of work" htmlFor="w-cat">
+                  <NativeSelect id="w-cat" value={job.category} onChange={(e) => setJob({ ...job, category: e.target.value })} className="h-12">
+                    {!work.categories.some((c) => c.id === 'general') && <option value="general">General service</option>}
+                    {work.categories.map((c) => <option key={c.id} value={c.id}>{c.name}</option>)}
+                  </NativeSelect>
+                </Field>
+                <Field label="Company" htmlFor="w-vendor" hint="Leave as not listed for a one-off provider; their name and phone are kept.">
+                  <NativeSelect id="w-vendor" value={job.vendor} onChange={(e) => setJob({ ...job, vendor: e.target.value })} className="h-12">
+                    <option value="">Not a listed vendor</option>
+                    {work.vendors.map((v) => <option key={v.id} value={v.id}>{v.name}</option>)}
+                  </NativeSelect>
+                </Field>
+                <Field label="What they will do" htmlFor="w-what" className="sm:col-span-2">
+                  <Input id="w-what" value={job.what} onChange={(e) => setJob({ ...job, what: e.target.value })} className="h-12"
+                    placeholder="For example, fix the kitchen sink" autoComplete="off" />
+                </Field>
+                {!f.unit && (
+                  <Field label="Where on the estate" htmlFor="w-area" className="sm:col-span-2">
+                    <Input id="w-area" value={job.area} onChange={(e) => setJob({ ...job, area: e.target.value })} className="h-12"
+                      placeholder="For example, pump house or block C stairs" autoComplete="off" />
+                  </Field>
+                )}
+              </div>
+            )}
           </div>
         </div>
       )}

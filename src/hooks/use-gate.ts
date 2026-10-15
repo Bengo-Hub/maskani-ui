@@ -4,7 +4,10 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import { isNetworkError } from '@/lib/api/errors';
 import { gateDeviceApi, type InsidePerson, type SignOnResult, type SyncResponse, type WalkInPolicy } from '@/lib/gate/api';
 import { getDevice, type GateDeviceCreds } from '@/lib/gate/device';
-import { enqueueEvent, flushGateQueue, getPendingGateCount, loadCache, saveCache, type CachedPass, type GateEventInput } from '@/lib/gate/queue';
+import {
+  enqueueEvent, flushGateQueue, getPendingGateCount, loadCache, loadWorkOptions, saveCache, saveWorkOptions,
+  type CachedPass, type GateEventInput, type WorkOptions,
+} from '@/lib/gate/queue';
 
 const SYNC_MS = 5 * 60 * 1000;
 const SHIFT_KEY = (slug: string) => `maskani-gate-shift:${slug}`;
@@ -32,6 +35,7 @@ export function useGate(slug: string) {
   const [online, setOnline] = useState(true);
   const [pending, setPending] = useState(0);
   const [walkInPolicy, setWalkInPolicy] = useState<WalkInPolicy>('guard_decides');
+  const [workOptions, setWorkOptions] = useState<WorkOptions>({ vendors: [], categories: [] });
   // Entries recorded while the queue could not be sent: the server's inside list does not have
   // them yet, so an exit names them by their client id.
   const [localInside, setLocalInside] = useState<LocalInside[]>([]);
@@ -49,6 +53,9 @@ export function useGate(slug: string) {
       await saveCache(d, list);
       setPasses(list);
       setBadges(res.cache.badges ?? []);
+      const work = { vendors: res.cache.vendors ?? [], categories: res.cache.work_categories ?? [] };
+      await saveWorkOptions(d, work);
+      setWorkOptions(work);
       setSyncedAt(Date.now());
       setOnline(true);
       setLocalInside([]);
@@ -73,6 +80,7 @@ export function useGate(slug: string) {
       if (raw) setGuard(JSON.parse(raw) as Guard);
       if (localStorage.getItem(POLICY_KEY(d.deviceId)) === 'ask_host') setWalkInPolicy('ask_host');
     } catch { /* storage blocked */ }
+    void loadWorkOptions(d).then(setWorkOptions);
     void loadCache(d).then(({ passes: cached, syncedAt: at }) => {
       setPasses(cached);
       setSyncedAt(at);
@@ -149,5 +157,5 @@ export function useGate(slug: string) {
     return full.client_event_id;
   }, [guard?.id, refreshPending]);
 
-  return { device, ready, guard, passes, badges, syncedAt, online, pending, walkInPolicy, localInside, sync, signOn, signOff, record };
+  return { device, ready, guard, passes, badges, syncedAt, online, pending, walkInPolicy, workOptions, localInside, sync, signOn, signOff, record };
 }
