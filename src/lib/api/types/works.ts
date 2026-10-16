@@ -97,4 +97,119 @@ export interface Vendor extends Base {
   expired_documents?: number;
   /** Older documents of a type uploaded again since; kept for the record, they no longer count. */
   replaced_documents?: string[];
+  /** Service contracts at the caller's properties (GET /vendors/{id}). */
+  contracts?: VendorContract[];
+  /** The payable supplier in treasury this vendor is paid as, when linked; its name is in metadata. */
+  treasury_vendor_id?: string | null;
+  metadata?: { treasury_vendor_name?: string } | null;
+}
+
+export type FeeBasis = 'fixed_monthly' | 'per_visit' | 'per_post' | 'rate_card';
+
+/** A vendor's service contract at one property: fee, SLA, service credits and renewal. */
+export interface VendorContract extends Base {
+  vendor_id: string;
+  property_id: string;
+  contract_number?: string;
+  service_category: string;
+  scope?: string;
+  fee_basis: FeeBasis;
+  fee_amount: Money;
+  sla?: { response_hours?: number; resolution_hours?: number; visits_per_month?: number } | null;
+  service_credits?: { breach: string; percent: number }[] | null;
+  starts_on: string;
+  ends_on?: string | null;
+  renewal_notice_days?: number;
+  auto_renew?: boolean;
+  budget_line_code?: string;
+  status: 'draft' | 'active' | 'expired' | 'terminated';
+}
+
+export interface VendorContractInput {
+  property_id: string;
+  contract_number?: string;
+  service_category: string;
+  scope?: string;
+  fee_basis: FeeBasis;
+  fee_amount: number;
+  sla?: { response_hours?: number; resolution_hours?: number; visits_per_month?: number };
+  service_credits?: { breach: string; percent: number }[];
+  starts_on: string;
+  ends_on?: string;
+  renewal_notice_days?: number;
+  auto_renew?: boolean;
+  budget_line_code?: string;
+}
+
+export type VisitFrequency = 'daily' | 'weekly' | 'monthly' | 'quarterly' | 'half_yearly';
+
+/** A visit plan under a contract: which days the vendor comes and what they check. */
+export interface ServiceSchedule extends Base {
+  contract_id: string;
+  property_id: string;
+  name: string;
+  frequency: VisitFrequency;
+  days?: number[];
+  time_window?: string;
+  zone?: string;
+  checklist?: { item: string }[] | null;
+  active: boolean;
+}
+
+export interface ServiceScheduleInput {
+  name: string;
+  frequency: VisitFrequency;
+  days?: number[];
+  time_window?: string;
+  zone?: string;
+  checklist?: { item: string }[];
+  active?: boolean;
+}
+
+export type VisitStatus = 'scheduled' | 'completed' | 'partial' | 'missed';
+
+export interface ServiceVisit extends Base {
+  schedule_id?: string | null;
+  contract_id: string;
+  vendor_id: string;
+  property_id: string;
+  due_at: string;
+  checked_in_at?: string | null;
+  checked_out_at?: string | null;
+  status: VisitStatus;
+  photos?: string[];
+  checklist_result?: { item: string; done?: boolean }[] | null;
+}
+
+export type MaintenanceFrequency = 'weekly' | 'monthly' | 'quarterly' | 'half_yearly' | 'annual';
+
+/** A preventive maintenance plan: a work order is raised a week before each due date. */
+export interface MaintenanceSchedule extends Base {
+  property_id: string;
+  asset_ref?: string;
+  title: string;
+  category: string;
+  frequency: MaintenanceFrequency;
+  next_due_at: string;
+  default_vendor_id?: string | null;
+  active: boolean;
+}
+
+export interface MaintenanceScheduleInput {
+  property_id: string;
+  asset_ref?: string;
+  title: string;
+  category: string;
+  frequency: MaintenanceFrequency;
+  next_due_at: string;
+  default_vendor_id?: string | null;
+  active?: boolean;
+}
+
+/** A payable supplier in treasury, for linking a vendor (GET /vendors/treasury-lookup). */
+export interface TreasurySupplier {
+  vendor_id?: string;
+  vendor_name: string;
+  balance_owed?: Money;
+  currency?: string;
 }

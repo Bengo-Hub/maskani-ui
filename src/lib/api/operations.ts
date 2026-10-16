@@ -2,7 +2,8 @@ import { apiClient } from './client';
 import { tenantBase as t } from '@/lib/config';
 import type {
   ApprovalRequest, ApprovalRule, ApprovalRuleInput, AuditEntry, PrivacyKind, PrivacyRequest, PrivacyStatus,
-  AvailabilityGroup, ContractInput, Dashboard, ErpEmployee, DashboardFilters, ExportFormat, GateDevice, GateDeviceView, GateEvent, GateEventKind, Incident,
+  AvailabilityGroup, ContractInput, Dashboard, ErpEmployee, MaintenanceSchedule, MaintenanceScheduleInput,
+  ServiceSchedule, ServiceScheduleInput, ServiceVisit, TreasurySupplier, VendorContract, VendorContractInput, DashboardFilters, ExportFormat, GateDevice, GateDeviceView, GateEvent, GateEventKind, Incident,
   InsidePerson, MediaUpload, Meter, MeterReading,
   Handover, HandoverInput, Instalment, Notice, NoticeDelivery, Page, PassInput, PlanVersion, PriceItemInput, PriceList, ReadingRound, Reservation, RestructureInput, SaleContract,
   TitleStage, TitleStageInput,
@@ -101,6 +102,33 @@ export const worksApi = {
   vendors: (slug: string, params: { cursor?: string; limit?: number; q?: string }) =>
     apiClient.get<Page<Vendor>>(`${t(slug)}/vendors`, params),
   vendor: (slug: string, id: string) => apiClient.get<Vendor>(`${t(slug)}/vendors/${id}`),
+  treasurySuppliers: (slug: string, search: string) =>
+    apiClient.get<{ data: TreasurySupplier[] }>(`${t(slug)}/vendors/treasury-lookup`, { search }),
+  linkTreasury: (slug: string, vendorId: string, body: { treasury_vendor_id: string; name: string }) =>
+    apiClient.put<Vendor>(`${t(slug)}/vendors/${vendorId}/treasury`, body),
+  createContract: (slug: string, vendorId: string, body: VendorContractInput) =>
+    apiClient.post<VendorContract>(`${t(slug)}/vendors/${vendorId}/contracts`, body),
+  updateContract: (slug: string, id: string, body: VendorContractInput) =>
+    apiClient.put<VendorContract>(`${t(slug)}/vendor-contracts/${id}`, body),
+  terminateContract: (slug: string, id: string, reason: string) =>
+    apiClient.post<VendorContract>(`${t(slug)}/vendor-contracts/${id}/terminate`, { reason }),
+  visitPlans: (slug: string, contractId: string) =>
+    apiClient.get<{ data: ServiceSchedule[] }>(`${t(slug)}/vendor-contracts/${contractId}/schedules`),
+  createVisitPlan: (slug: string, contractId: string, body: ServiceScheduleInput) =>
+    apiClient.post<ServiceSchedule>(`${t(slug)}/vendor-contracts/${contractId}/schedules`, body),
+  updateVisitPlan: (slug: string, id: string, body: ServiceScheduleInput) =>
+    apiClient.put<ServiceSchedule>(`${t(slug)}/service-schedules/${id}`, body),
+  /** Visits by due date; from and to are YYYY-MM-DD, at most 62 days apart. */
+  visits: (slug: string, params: { property_id: string; from: string; to: string; contract_id?: string; status?: string }) =>
+    apiClient.get<{ data: ServiceVisit[] }>(`${t(slug)}/service-visits`, params),
+  recordVisit: (slug: string, id: string, body: { status: 'completed' | 'partial'; photos?: string[]; checklist_result?: { item: string; done: boolean }[] }) =>
+    apiClient.post<ServiceVisit>(`${t(slug)}/service-visits/${id}/record`, body),
+  maintenancePlans: (slug: string, propertyId: string) =>
+    apiClient.get<{ data: MaintenanceSchedule[] }>(`${t(slug)}/maintenance-schedules`, { property_id: propertyId }),
+  createMaintenancePlan: (slug: string, body: MaintenanceScheduleInput) =>
+    apiClient.post<MaintenanceSchedule>(`${t(slug)}/maintenance-schedules`, body),
+  updateMaintenancePlan: (slug: string, id: string, body: MaintenanceScheduleInput) =>
+    apiClient.put<MaintenanceSchedule>(`${t(slug)}/maintenance-schedules/${id}`, body),
   /** Active ERP staff for the pickers; 403 feature_not_available when the plan has no ERP. */
   erpEmployees: (slug: string, q: string) =>
     apiClient.get<{ data: ErpEmployee[] }>(`${t(slug)}/erp/employees`, { q }),

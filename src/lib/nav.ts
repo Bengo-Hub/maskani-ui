@@ -104,6 +104,8 @@ export const NAV: NavGroup[] = [
     label: 'Operations',
     items: [
       { label: 'Work orders', path: '/works', icon: Wrench, modules: ['maintenance'], perms: ['works.view'] },
+      { label: 'Service visits', path: '/service-visits', icon: CalendarClock, modules: ['providers', 'maintenance'], perms: ['works.view', 'vendors.view'] },
+      { label: 'Preventive maintenance', path: '/maintenance-plans', icon: ListTree, modules: ['maintenance'], perms: ['works.view'] },
       { label: 'Vendors', path: '/vendors', icon: Truck, modules: ['providers', 'maintenance'], perms: ['vendors.view'] },
     ],
   },

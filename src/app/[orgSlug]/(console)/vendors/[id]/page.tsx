@@ -17,6 +17,8 @@ import { useAddVendorDocument, useVendor } from '@/hooks/use-works';
 import type { VendorDocument } from '@/lib/api/types';
 import { apiDate, daysUntil, fmtDate } from '@/lib/utils';
 import { ExpiryBadge } from '@/components/works/expiry-badge';
+import { VendorContracts } from '@/components/works/vendor-contracts';
+import { VendorTreasuryLink } from '@/components/works/vendor-treasury-link';
 
 /** Document columns; a document replaced by a newer one of its type reads "Replaced", never "Expired". */
 const docColumns = (replaced: Set<string>): DataTableColumn<VendorDocument>[] => [
@@ -67,6 +69,13 @@ export default function VendorPage({ params }: { params: Promise<{ id: string }>
         <Card>
           <CardHeader><CardTitle>Personnel</CardTitle></CardHeader>
           <CardContent><VendorPeople vendorId={v.id} people={v.personnel ?? []} manage={manage} /></CardContent>
+        </Card>
+        <Card>
+          <CardHeader><CardTitle>Service contracts and visit plans</CardTitle></CardHeader>
+          <CardContent><VendorContracts vendorId={v.id} contracts={v.contracts ?? []} manage={manage} /></CardContent>
+        </Card>
+        <Card>
+          <CardContent className="pt-6"><VendorTreasuryLink vendor={v} manage={manage} /></CardContent>
         </Card>
       </div>
       <FormSheet
