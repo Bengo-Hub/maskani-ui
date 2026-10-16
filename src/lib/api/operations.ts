@@ -2,7 +2,7 @@ import { apiClient } from './client';
 import { tenantBase as t } from '@/lib/config';
 import type {
   ApprovalRequest, ApprovalRule, ApprovalRuleInput, AuditEntry, PrivacyKind, PrivacyRequest, PrivacyStatus,
-  AvailabilityGroup, ContractInput, Dashboard, DashboardFilters, ExportFormat, GateDevice, GateDeviceView, GateEvent, GateEventKind, Incident,
+  AvailabilityGroup, ContractInput, Dashboard, ErpEmployee, DashboardFilters, ExportFormat, GateDevice, GateDeviceView, GateEvent, GateEventKind, Incident,
   InsidePerson, MediaUpload, Meter, MeterReading,
   Handover, HandoverInput, Instalment, Notice, NoticeDelivery, Page, PassInput, PlanVersion, PriceItemInput, PriceList, ReadingRound, Reservation, RestructureInput, SaleContract,
   TitleStage, TitleStageInput,
@@ -80,6 +80,8 @@ export interface WorkActionInput {
   action: WorkAction;
   vendor_id?: string;
   erp_employee_id?: string;
+  /** The name the ERP staff picker showed, kept on the work order. */
+  erp_employee_name?: string;
   assigned_user_id?: string;
   quote_amount?: number;
   cost_amount?: number;
@@ -99,6 +101,9 @@ export const worksApi = {
   vendors: (slug: string, params: { cursor?: string; limit?: number; q?: string }) =>
     apiClient.get<Page<Vendor>>(`${t(slug)}/vendors`, params),
   vendor: (slug: string, id: string) => apiClient.get<Vendor>(`${t(slug)}/vendors/${id}`),
+  /** Active ERP staff for the pickers; 403 feature_not_available when the plan has no ERP. */
+  erpEmployees: (slug: string, q: string) =>
+    apiClient.get<{ data: ErpEmployee[] }>(`${t(slug)}/erp/employees`, { q }),
   createVendor: (slug: string, body: Partial<Vendor>) => apiClient.post<Vendor>(`${t(slug)}/vendors`, body),
   addDocument: (slug: string, id: string, body: Partial<VendorDocument>) => apiClient.post<VendorDocument>(`${t(slug)}/vendors/${id}/documents`, body),
   addPersonnel: (slug: string, id: string, body: Partial<VendorPersonnel>) => apiClient.post<VendorPersonnel>(`${t(slug)}/vendors/${id}/personnel`, body),

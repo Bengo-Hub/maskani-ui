@@ -10,6 +10,7 @@ import { PhotoPicker, type PickedPhoto } from '@/components/common/photo-picker'
 import { useSlug } from '@/hooks/use-access';
 import { useVendors, useWorkAction } from '@/hooks/use-works';
 import type { WorkAction } from '@/lib/api/types';
+import { ErpStaffPicker } from './erp-staff-picker';
 
 const TITLES: Record<WorkAction, string> = {
   assign: 'Assign', quote: 'Record a quote', approve_quote: 'Approve the quote', reject_quote: 'Reject the quote', start: 'Start work',
@@ -22,22 +23,28 @@ export function WorkActionSheet({ workOrderId, action, onClose }: { workOrderId:
   const act = useWorkAction(workOrderId);
   const vendors = useVendors();
   const [vendorId, setVendorId] = useState('');
+  const [assignTo, setAssignTo] = useState<'vendor' | 'staff'>('vendor');
+  const [staff, setStaff] = useState<{ id: string; name: string } | null>(null);
   const [amount, setAmount] = useState('');
   const [minutes, setMinutes] = useState('');
   const [recharge, setRecharge] = useState(false);
   const [note, setNote] = useState('');
   const [photos, setPhotos] = useState<PickedPhoto[]>([]);
 
-  useEffect(() => { setVendorId(''); setAmount(''); setMinutes(''); setRecharge(false); setNote(''); setPhotos([]); }, [action]);
+  useEffect(() => {
+    setVendorId(''); setAssignTo('vendor'); setStaff(null); setAmount(''); setMinutes(''); setRecharge(false); setNote(''); setPhotos([]);
+  }, [action]);
 
   if (!action) return null;
-  const needsVendor = action === 'assign';
+  const isAssign = action === 'assign';
   const needsAmount = action === 'quote' || action === 'complete';
-  const valid = (!needsVendor || !!vendorId) && (action !== 'quote' || amount !== '') && (action !== 'reject_quote' || note.trim() !== '');
+  const assignee = assignTo === 'vendor' ? !!vendorId : !!staff;
+  const valid = (!isAssign || assignee) && (action !== 'quote' || amount !== '') && (action !== 'reject_quote' || note.trim() !== '');
 
   const submit = () => act.mutate({
     action,
-    ...(needsVendor ? { vendor_id: vendorId } : {}),
+    ...(isAssign && assignTo === 'vendor' ? { vendor_id: vendorId } : {}),
+    ...(isAssign && assignTo === 'staff' && staff ? { erp_employee_id: staff.id, erp_employee_name: staff.name } : {}),
     ...(action === 'quote' ? { quote_amount: Number(amount) } : {}),
     ...(action === 'complete' ? { cost_amount: amount ? Number(amount) : undefined, minutes_on_site: minutes ? Number(minutes) : undefined, recharge, photos: photos.map((p) => p.key) } : {}),
     note: note.trim() || undefined,
@@ -55,12 +62,26 @@ export function WorkActionSheet({ workOrderId, action, onClose }: { workOrderId:
       </>}
     >
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-        {needsVendor && (
+        {isAssign && (
+          <Field label="Assign to" htmlFor="wa-to" className="sm:col-span-2">
+            <NativeSelect id="wa-to" value={assignTo} onChange={(e) => setAssignTo(e.target.value as 'vendor' | 'staff')}>
+              <option value="vendor">A vendor</option>
+              <option value="staff">Our staff (from ERP)</option>
+            </NativeSelect>
+          </Field>
+        )}
+        {isAssign && assignTo === 'vendor' && (
           <Field label="Vendor" htmlFor="wa-vendor" required className="sm:col-span-2">
             <NativeSelect id="wa-vendor" value={vendorId} onChange={(e) => setVendorId(e.target.value)}>
               <option value="">Choose a vendor</option>
               {vendors.rows.map((v) => <option key={v.id} value={v.id}>{v.name}</option>)}
             </NativeSelect>
+          </Field>
+        )}
+        {isAssign && assignTo === 'staff' && (
+          <Field label="Staff member" htmlFor="wa-staff" required className="sm:col-span-2"
+            hint="Staff come from ERP, which comes with your plan. If your plan does not include ERP you are shown how to upgrade.">
+            <ErpStaffPicker id="wa-staff" value={staff?.id ?? ''} onChange={setStaff} />
           </Field>
         )}
         {needsAmount && (

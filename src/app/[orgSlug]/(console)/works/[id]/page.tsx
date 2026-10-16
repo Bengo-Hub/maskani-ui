@@ -70,6 +70,9 @@ export default function WorkOrderPage({ params }: { params: Promise<{ id: string
                   {wo.sla_breached ? <AlertTriangle className="h-3.5 w-3.5" /> : <Clock className="h-3.5 w-3.5 text-muted-foreground" />}{fmtDateTime(wo.resolution_due_at) || 'No target'}
                 </dd>
               </div>
+              {wo.assignee_kind === 'staff' && (
+                <div><dt className="text-xs text-muted-foreground">Assigned to</dt><dd>{wo.metadata?.erp_employee_name || 'A staff member'}</dd></div>
+              )}
               <div><dt className="text-xs text-muted-foreground">Source</dt><dd>{wo.source === 'gate' ? 'Booked at the gate' : titleCase(wo.source)}</dd></div>
               {wo.source === 'gate' && wo.metadata?.provider?.name && (
                 <div>

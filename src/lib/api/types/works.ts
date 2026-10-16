@@ -48,7 +48,11 @@ export interface WorkOrder extends Base {
   status: WorkStatus;
   edges?: { events?: WorkOrderEvent[] };
   /** Set on a work order booked by the guard as the provider came in (source gate). */
-  metadata?: { booked_at_gate?: boolean; gate_event_id?: string; provider?: { name?: string; phone?: string } } | null;
+  metadata?: {
+    booked_at_gate?: boolean; gate_event_id?: string; provider?: { name?: string; phone?: string };
+    /** The ERP staff member's name, kept when the work order was assigned to them. */
+    erp_employee_name?: string;
+  } | null;
 }
 
 export interface VendorDocument extends Base {
@@ -69,6 +73,14 @@ export interface VendorPersonnel extends Base {
   status?: string;
   property_ids?: string[];
   has_pin?: boolean;
+}
+
+/** An ERP staff member as the pickers show it (`GET /erp/employees`); the record stays in ERP. */
+export interface ErpEmployee {
+  id: string;
+  employee_number?: string;
+  name: string;
+  email?: string;
 }
 
 export interface Vendor extends Base {
