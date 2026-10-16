@@ -206,6 +206,56 @@ export interface MaintenanceScheduleInput {
   active?: boolean;
 }
 
+export type VendorInvoiceStatus = 'submitted' | 'approved' | 'rejected' | 'cancelled' | 'paid';
+
+/** A vendor's invoice as issued (amount includes VAT); approved ones become treasury bills. */
+export interface VendorInvoice extends Base {
+  vendor_id: string;
+  contract_id: string;
+  property_id: string;
+  invoice_number: string;
+  etims_number?: string;
+  invoice_date: string;
+  period_start: string;
+  period_end: string;
+  amount: Money;
+  vat_amount: Money;
+  attachments?: string[];
+  status: VendorInvoiceStatus;
+  decided_at?: string | null;
+  paid_at?: string | null;
+  metadata?: {
+    entered_by_name?: string; decision_note?: string; cancel_reason?: string;
+    treasury_bill_number?: string; treasury_bill_status?: string;
+  } | null;
+}
+
+export interface VendorInvoiceInput {
+  contract_id: string;
+  invoice_number: string;
+  etims_number?: string;
+  invoice_date: string;
+  period_start: string;
+  period_end: string;
+  amount: number;
+  vat_amount: number;
+  attachments?: string[];
+}
+
+/** An invoice beside its contract (GET /vendor-invoices/{id}/check). */
+export interface VendorInvoiceCheck {
+  fee_basis: FeeBasis;
+  fee_amount: Money;
+  months: number;
+  visits: Partial<Record<'scheduled' | 'completed' | 'partial' | 'missed', number>>;
+  credit_percent: Money;
+  credit_due: Money;
+  expected_amount: Money;
+  computed: boolean;
+  invoiced: Money;
+  difference: Money;
+}
+
 /** A payable supplier in treasury, for linking a vendor (GET /vendors/treasury-lookup). */
 export interface TreasurySupplier {
   vendor_id?: string;

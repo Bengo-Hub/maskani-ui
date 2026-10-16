@@ -122,7 +122,7 @@ export interface ApprovalRequest {
   submitted_by_name?: string;
   decided_at?: string;
   created_at: string;
-  metadata?: { label?: string; account_ref?: string; unit_code?: string; account_id?: string; work_order_id?: string; reason?: string; contract_id?: string };
+  metadata?: { label?: string; account_ref?: string; unit_code?: string; account_id?: string; work_order_id?: string; reason?: string; contract_id?: string; vendor_id?: string };
 }
 
 export type PrivacyKind = 'access' | 'correction' | 'deletion';

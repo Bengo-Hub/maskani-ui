@@ -3,7 +3,8 @@ import { tenantBase as t } from '@/lib/config';
 import type {
   ApprovalRequest, ApprovalRule, ApprovalRuleInput, AuditEntry, PrivacyKind, PrivacyRequest, PrivacyStatus,
   AvailabilityGroup, ContractInput, Dashboard, ErpEmployee, MaintenanceSchedule, MaintenanceScheduleInput,
-  ServiceSchedule, ServiceScheduleInput, ServiceVisit, TreasurySupplier, VendorContract, VendorContractInput, DashboardFilters, ExportFormat, GateDevice, GateDeviceView, GateEvent, GateEventKind, Incident,
+  ServiceSchedule, ServiceScheduleInput, ServiceVisit, TreasurySupplier, VendorContract, VendorContractInput,
+  VendorInvoice, VendorInvoiceCheck, VendorInvoiceInput, DashboardFilters, ExportFormat, GateDevice, GateDeviceView, GateEvent, GateEventKind, Incident,
   InsidePerson, MediaUpload, Meter, MeterReading,
   Handover, HandoverInput, Instalment, Notice, NoticeDelivery, Page, PassInput, PlanVersion, PriceItemInput, PriceList, ReadingRound, Reservation, RestructureInput, SaleContract,
   TitleStage, TitleStageInput,
@@ -129,6 +130,14 @@ export const worksApi = {
     apiClient.post<MaintenanceSchedule>(`${t(slug)}/maintenance-schedules`, body),
   updateMaintenancePlan: (slug: string, id: string, body: MaintenanceScheduleInput) =>
     apiClient.put<MaintenanceSchedule>(`${t(slug)}/maintenance-schedules/${id}`, body),
+  vendorInvoices: (slug: string, params: { vendor_id?: string; property_id?: string; status?: string }) =>
+    apiClient.get<{ data: VendorInvoice[] }>(`${t(slug)}/vendor-invoices`, params),
+  createVendorInvoice: (slug: string, body: VendorInvoiceInput) => apiClient.post<VendorInvoice>(`${t(slug)}/vendor-invoices`, body),
+  checkVendorInvoice: (slug: string, id: string) => apiClient.get<VendorInvoiceCheck>(`${t(slug)}/vendor-invoices/${id}/check`),
+  decideVendorInvoice: (slug: string, id: string, body: { decision: 'approve' | 'reject'; note?: string }) =>
+    apiClient.post<VendorInvoice>(`${t(slug)}/vendor-invoices/${id}/decide`, body),
+  cancelVendorInvoice: (slug: string, id: string, reason: string) =>
+    apiClient.post<VendorInvoice>(`${t(slug)}/vendor-invoices/${id}/cancel`, { reason }),
   /** Active ERP staff for the pickers; 403 feature_not_available when the plan has no ERP. */
   erpEmployees: (slug: string, q: string) =>
     apiClient.get<{ data: ErpEmployee[] }>(`${t(slug)}/erp/employees`, { q }),

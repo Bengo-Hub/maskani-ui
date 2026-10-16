@@ -21,6 +21,7 @@ const DEFAULT_NOTE: Partial<Record<ApprovalModule, string>> = {
   manual_payment: 'one verification by a property manager, caretaker or administrator',
   work_order_quote: 'one approval by someone who manages works',
   restructure: 'one approval by someone who manages sales',
+  vendor_bill: 'one approval by someone who manages vendors',
 };
 
 const EMPTY: ApprovalRuleInput = { module: 'credit_note', name: '', min_amount: 0, max_amount: null, steps: [{ name: '', approver_role: '' }], is_active: true };

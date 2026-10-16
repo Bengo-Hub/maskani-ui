@@ -3,7 +3,7 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { toast } from 'sonner';
 import { worksApi } from '@/lib/api/operations';
-import type { MaintenanceScheduleInput, ServiceScheduleInput, VendorContractInput } from '@/lib/api/types';
+import type { MaintenanceScheduleInput, ServiceScheduleInput, VendorContractInput, VendorInvoiceInput } from '@/lib/api/types';
 import { qk } from '@/lib/query-keys';
 import { useSlug } from './use-access';
 
@@ -70,6 +70,35 @@ export function useMaintenancePlans(propertyId: string) {
 export const useSaveMaintenancePlan = () => useInvalidating(
   (s, v: { id?: string; body: MaintenanceScheduleInput }) => (v.id ? worksApi.updateMaintenancePlan(s, v.id, v.body) : worksApi.createMaintenancePlan(s, v.body)),
   'Maintenance plan saved', (s) => [qk.maintenancePlans(s)],
+);
+
+const invoicesKey = (slug: string) => [slug, 'vendor-invoices'] as const;
+
+export function useVendorInvoices(vendorId: string) {
+  const slug = useSlug();
+  return useQuery({
+    queryKey: [...invoicesKey(slug), vendorId],
+    queryFn: () => worksApi.vendorInvoices(slug, { vendor_id: vendorId }),
+    enabled: !!vendorId,
+  });
+}
+
+export function useVendorInvoiceCheck(id: string) {
+  const slug = useSlug();
+  return useQuery({ queryKey: [...invoicesKey(slug), 'check', id], queryFn: () => worksApi.checkVendorInvoice(slug, id), enabled: !!id });
+}
+
+export const useCreateVendorInvoice = () => useInvalidating(
+  (s, v: VendorInvoiceInput) => worksApi.createVendorInvoice(s, v), 'Invoice recorded and sent for approval', (s) => [invoicesKey(s)],
+);
+
+export const useDecideVendorInvoice = () => useInvalidating(
+  (s, v: { id: string; decision: 'approve' | 'reject'; note?: string }) => worksApi.decideVendorInvoice(s, v.id, { decision: v.decision, note: v.note }),
+  'Decision saved', (s) => [invoicesKey(s), [s, 'approvals']],
+);
+
+export const useCancelVendorInvoice = () => useInvalidating(
+  (s, v: { id: string; reason: string }) => worksApi.cancelVendorInvoice(s, v.id, v.reason), 'Invoice cancelled', (s) => [invoicesKey(s), [s, 'approvals']],
 );
 
 export const useLinkTreasurySupplier = (vendorId: string) => useInvalidating(

@@ -1,6 +1,6 @@
 'use client';
 
-import { use, useMemo, useState } from 'react';
+import { Suspense, use, useMemo, useState } from 'react';
 import { Plus } from 'lucide-react';
 import { DataTable, type DataTableColumn } from '@bengo-hub/shared-ui-lib/data-table';
 import { Button } from '@/components/ui/button';
@@ -19,6 +19,7 @@ import { apiDate, daysUntil, fmtDate } from '@/lib/utils';
 import { ExpiryBadge } from '@/components/works/expiry-badge';
 import { VendorContracts } from '@/components/works/vendor-contracts';
 import { VendorTreasuryLink } from '@/components/works/vendor-treasury-link';
+import { VendorInvoices } from '@/components/works/vendor-invoices';
 
 /** Document columns; a document replaced by a newer one of its type reads "Replaced", never "Expired". */
 const docColumns = (replaced: Set<string>): DataTableColumn<VendorDocument>[] => [
@@ -76,6 +77,12 @@ export default function VendorPage({ params }: { params: Promise<{ id: string }>
         </Card>
         <Card>
           <CardContent className="pt-6"><VendorTreasuryLink vendor={v} manage={manage} /></CardContent>
+        </Card>
+        <Card>
+          <CardHeader><CardTitle>Invoices</CardTitle></CardHeader>
+          <CardContent>
+            <Suspense fallback={<Skeleton className="h-24" />}><VendorInvoices vendor={v} manage={manage} /></Suspense>
+          </CardContent>
         </Card>
       </div>
       <FormSheet

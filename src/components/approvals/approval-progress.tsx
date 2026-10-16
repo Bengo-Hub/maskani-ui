@@ -8,18 +8,19 @@ import { cn, fmtDate } from '@/lib/utils';
 /** Workflow names as staff know them. */
 export const APPROVAL_MODULE: Record<ApprovalModule, string> = {
   credit_note: 'Credit notes', adjustment: 'Waivers', manual_payment: 'Manual payments', work_order_quote: 'Work order quotes',
-  restructure: 'Plan restructures', vendor_bill: 'Vendor bills', refund: 'Refunds', deposit_deduction: 'Deposit deductions',
+  restructure: 'Plan restructures', vendor_bill: 'Vendor invoices', refund: 'Refunds', deposit_deduction: 'Deposit deductions',
   remittance: 'Remittances', write_off: 'Write-offs',
 };
 
 /** The workflows an estate can set rules for today (the rest arrive with their flows). */
-export const RULE_MODULES: ApprovalModule[] = ['credit_note', 'adjustment', 'manual_payment', 'work_order_quote', 'restructure'];
+export const RULE_MODULES: ApprovalModule[] = ['credit_note', 'adjustment', 'manual_payment', 'work_order_quote', 'restructure', 'vendor_bill'];
 
 const PERMISSION: Record<string, string> = {
   'maskani.billing.approve': 'someone who approves credits',
   'maskani.billing.verify': 'someone who verifies payments',
   'maskani.works.manage': 'someone who manages works',
   'maskani.sales.manage': 'someone who manages sales',
+  'maskani.vendors.manage': 'someone who manages vendors',
 };
 
 /** Names who acts on a step: the role's name, or what the permission means. */
