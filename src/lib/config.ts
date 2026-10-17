@@ -5,6 +5,8 @@ export const SSO_CLIENT_ID = process.env.NEXT_PUBLIC_SSO_CLIENT_ID || 'maskani-u
 export const AUTH_UI_URL = process.env.NEXT_PUBLIC_AUTH_UI_URL || 'https://accounts.codevertexafrica.com';
 export const TREASURY_UI_URL = process.env.NEXT_PUBLIC_TREASURY_UI_URL || 'https://books.codevertexafrica.com';
 export const SUBSCRIPTIONS_UI_URL = process.env.NEXT_PUBLIC_SUBSCRIPTIONS_UI_URL || 'https://pricing.codevertexafrica.com';
+/** Public bucket of the shared object storage (estate and unit photos). */
+export const MEDIA_URL = process.env.NEXT_PUBLIC_MEDIA_URL || 'https://media.codevertexafrica.com';
 /** maskani-commerce, the public marketplace of homes in Maskani-managed estates. */
 export const MARKETPLACE_URL = process.env.NEXT_PUBLIC_MARKETPLACE_URL || 'https://maskani.codevertexafrica.com';
 

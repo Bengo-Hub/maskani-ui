@@ -9,7 +9,7 @@ const nextConfig: NextConfig = {
   ...(process.env.SKIP_STANDALONE !== "true" && { output: "standalone" as const }),
   images: {
     remotePatterns: [
-      { protocol: "https", hostname: "maskaniapi.codevertexafrica.com", pathname: "/media/**" },
+      { protocol: "https", hostname: "media.codevertexafrica.com", pathname: "/maskani/**" },
       { protocol: "https", hostname: "sso.codevertexafrica.com" },
       { protocol: "https", hostname: "accounts.codevertexafrica.com" },
       { protocol: "http", hostname: "localhost", port: "4000", pathname: "/media/**" },
