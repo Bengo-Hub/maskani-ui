@@ -5,7 +5,7 @@ import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 import { Gauge, LayoutGrid, Plus, Wallet, Wrench, Lock } from 'lucide-react';
 import { MobileBottomNav, type MobileNavTab } from '@bengo-hub/shared-ui-lib/navigation';
-import { FeatureLock } from '@bengo-hub/shared-ui-lib/subscription';
+import { FeatureLock, PlanServiceLock } from '@bengo-hub/shared-ui-lib/subscription';
 import { AppSplash } from './app-splash';
 import { Header } from './header';
 import { useDefaultProperty } from '@/hooks/use-default-property';
@@ -42,6 +42,7 @@ function useStaffSession(slug: string) {
 }
 
 export function ConsoleShell({ children }: { children: ReactNode }) {
+  const planSession = useAuthStore((s) => s.session);
   const slug = useSlug();
   // Modules follow the selected property (its use case and switches), like a POS outlet.
   const propertyId = useSelectedPropertyId(slug);
@@ -88,6 +89,12 @@ export function ConsoleShell({ children }: { children: ReactNode }) {
         {/* The shell owns page padding; pages add only a max-w wrapper. min-h-0 lets it scroll. */}
         <main className="min-h-0 flex-1 overflow-y-auto">
           <div className="px-4 py-5 pb-[calc(5rem+env(safe-area-inset-bottom))] sm:px-6 sm:py-6 lg:px-8 lg:pb-8">
+            {/* A plan without maskani shows the upgrade card instead of a bare 403. */}
+            <PlanServiceLock
+              serviceTag="maskani"
+              accessToken={planSession?.accessToken}
+              upgradeBaseUrl={process.env.NEXT_PUBLIC_SUBSCRIPTIONS_UI_URL}
+            >
             {allowed ? children : readOnly && item?.modules ? (
               // A plan without the module still shows the upgrade path; FeatureLock passes its
               // children through when the plan covers it and the estate only switched it off.
@@ -104,6 +111,7 @@ export function ConsoleShell({ children }: { children: ReactNode }) {
                 action={<Link href={`${base}/dashboard`} className="text-sm font-medium text-primary hover:underline">Back to the dashboard</Link>}
               />
             )}
+            </PlanServiceLock>
           </div>
         </main>
       </div>
