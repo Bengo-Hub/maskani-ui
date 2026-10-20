@@ -3,12 +3,11 @@
 import { useState } from 'react';
 import { Menu, Moon, Sun } from 'lucide-react';
 import { useTheme } from 'next-themes';
-import { AppSwitcherTrigger, useVisibleServices } from '@bengo-hub/shared-ui-lib/app-switcher';
+import { AppSwitcherTrigger, serviceTagsFromAccessToken, useVisibleServices } from '@bengo-hub/shared-ui-lib/app-switcher';
 import { AccountPanel } from '@bengo-hub/shared-ui-lib/account-panel';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { IconButton, WithTooltip } from '@/components/common/icon-button';
 import { useSlug } from '@/hooks/use-access';
-import { useSubscription } from '@/providers/subscription-provider';
 import { AUTH_UI_URL, TREASURY_UI_URL } from '@/lib/config';
 import { initials } from '@/lib/utils';
 import { useAuthStore, hasPermission } from '@/store/auth';
@@ -29,14 +28,17 @@ export function Header({ title, onMenu }: { title?: string; onMenu: () => void }
   const slug = useSlug();
   const me = useAuthStore((s) => s.me);
   const logout = useAuthStore((s) => s.logout);
-  const { info } = useSubscription();
+  const session = useAuthStore((s) => s.session);
   const { resolvedTheme, setTheme } = useTheme();
   const [accountOpen, setAccountOpen] = useState(false);
   const services = useVisibleServices({
     orgSlug: slug,
     urls: SERVICE_URLS,
     canManageLinks: hasPermission(me, 'tenant.admin') || hasPermission(me, 'settings.manage'),
-    activeServiceTags: info?.activeProducts ?? null,
+    // Plan service tags from the access token (not product codes). A service outside the plan stays
+    // visible as "Not in your plan" with a link to the plans page, so tenants discover the suite.
+    activeServiceTags: serviceTagsFromAccessToken(session?.accessToken),
+    upgradeUrl: SERVICE_URLS.subscriptions ? `${SERVICE_URLS.subscriptions}/${slug}` : null,
   });
   const name = me?.user?.name || me?.email || 'Account';
 
