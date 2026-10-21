@@ -11,6 +11,7 @@ import { useSavePhotos } from '@/hooks/use-register';
 import { apiErrorMessage } from '@/lib/api/errors';
 import { publicPhotoUrl, uploadPhoto } from '@/lib/media';
 import { cn } from '@/lib/utils';
+import { MediaImage } from '@bengo-hub/shared-ui-lib/media';
 
 const MAX = 12;
 
@@ -90,8 +91,7 @@ export function PhotoGallery({ target, id, photos = [], canEdit, published }: {
           <ul className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4">
             {photos.map((k, i) => (
               <li key={k} className={cn('relative aspect-[4/3] overflow-hidden rounded-xl border bg-muted', i === 0 && 'ring-2 ring-primary')}>
-                {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img src={publicPhotoUrl(k)} alt={i === 0 ? 'Cover photo' : `Photo ${i + 1}`} loading="lazy" className="h-full w-full object-cover" />
+                <MediaImage src={publicPhotoUrl(k)} displayWidth={256} fit="cover" aspect={1} alt={i === 0 ? 'Cover photo' : `Photo ${i + 1}`} loading="lazy" className="h-full w-full object-cover" />
                 {i === 0 && <span className="absolute left-2 top-2 rounded-full bg-primary px-2 py-0.5 text-xs font-medium text-primary-foreground">Cover</span>}
                 {canEdit && (
                   <div className="absolute inset-x-0 bottom-0 flex justify-between gap-1 bg-gradient-to-t from-black/60 to-transparent p-1.5">

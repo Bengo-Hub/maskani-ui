@@ -10,6 +10,7 @@ import { useSlug } from '@/hooks/use-access';
 import { useSignedMedia } from '@/hooks/use-media';
 import { useIncident } from '@/hooks/use-security';
 import { fmtDateTime, titleCase } from '@/lib/utils';
+import { MediaImage } from '@bengo-hub/shared-ui-lib/media';
 
 /** Incident detail; the target of the incident alert deep link (security/incidents/{id}). */
 export default function IncidentDetailPage({ params }: { params: Promise<{ id: string }> }) {
@@ -34,7 +35,7 @@ export default function IncidentDetailPage({ params }: { params: Promise<{ id: s
           {photos.length > 0 && (
             <div className="grid grid-cols-2 gap-2 sm:grid-cols-3">
               {/* eslint-disable-next-line @next/next/no-img-element */}
-              {photos.map((u) => <img key={u} src={u} alt="Incident photo" className="aspect-square w-full rounded-lg object-cover" />)}
+              {photos.map((u) => <MediaImage key={u} src={u} displayWidth={320} alt="Incident photo" className="aspect-square w-full rounded-lg object-cover" />)}
             </div>
           )}
         </CardContent>

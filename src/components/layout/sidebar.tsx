@@ -14,6 +14,7 @@ import { navPathActive, visibleNav, type NavGroup, type NavItem } from '@/lib/na
 import { cn, estateName } from '@/lib/utils';
 import { useAuthStore } from '@/store/auth';
 import { useSelectedPropertyId } from '@/store/property';
+import { MediaImage } from '@bengo-hub/shared-ui-lib/media';
 
 const GROUPS_KEY = 'maskani-nav-closed-groups';
 
@@ -193,8 +194,7 @@ function Brand({ collapsed }: { collapsed: boolean }) {
     >
       {tenant?.logoUrl ? (
         // Tenant logos are hosted by auth-api on varied hosts, so a plain img.
-        // eslint-disable-next-line @next/next/no-img-element
-        <img src={tenant.logoUrl} alt={name || 'Logo'} className={cn('object-contain', collapsed ? 'h-9 w-9' : 'h-10 max-w-30')} />
+        <MediaImage src={tenant.logoUrl} displayWidth={160} loading="eager" alt={name || 'Logo'} className={cn('object-contain', collapsed ? 'h-9 w-9' : 'h-10 max-w-30')} />
       ) : collapsed ? (
         <Image src="/brand/maskani-icon.svg" alt="Maskani" width={30} height={30} />
       ) : (

@@ -4,6 +4,7 @@ import type { ReactNode } from 'react';
 import { ArrowLeft } from 'lucide-react';
 import { fraunces } from '@/lib/fonts';
 import { cn, estateName } from '@/lib/utils';
+import { MediaImage } from '@bengo-hub/shared-ui-lib/media';
 
 /**
  * Layout for the sign-in screens: the form on the left, a photo of estate life on the right (a short
@@ -41,8 +42,7 @@ export function AuthShell({ logoUrl, orgName, title, subtitle, back, children, f
             <div className="space-y-4">
               {logoUrl ? (
                 // Tenant logos are hosted by auth-api on varied hosts, so a plain img keeps next/image config simple.
-                // eslint-disable-next-line @next/next/no-img-element
-                <img src={logoUrl} alt={name ?? 'Estate logo'} className="h-14 max-w-[60%] object-contain" />
+                <MediaImage src={logoUrl} displayWidth={240} loading="eager" alt={name ?? 'Estate logo'} className="h-14 max-w-[60%] object-contain" />
               ) : null}
               <div className="space-y-2">
                 <h1 className="font-serif-soft text-[2rem] leading-tight">{title}</h1>

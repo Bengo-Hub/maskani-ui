@@ -14,6 +14,7 @@ import { useAccess, useSlug } from '@/hooks/use-access';
 import { useProperties } from '@/hooks/use-register';
 import { publicPhotoUrl } from '@/lib/media';
 import { titleCase } from '@/lib/utils';
+import { MediaImage } from '@bengo-hub/shared-ui-lib/media';
 
 export default function PropertiesPage() {
   const slug = useSlug();
@@ -44,8 +45,7 @@ export default function PropertiesPage() {
                 <Card className="h-full gap-3 overflow-hidden p-5 transition-colors group-hover:border-primary/40">
                   {p.photos?.[0] && (
                     <div className="-mx-5 -mt-5 aspect-[16/7] bg-muted">
-                      {/* eslint-disable-next-line @next/next/no-img-element */}
-                      <img src={publicPhotoUrl(p.photos[0])} alt="" loading="lazy" className="h-full w-full object-cover" />
+                      <MediaImage src={publicPhotoUrl(p.photos[0])} displayWidth={320} fit="cover" aspect={0.75} alt="" loading="lazy" className="h-full w-full object-cover" />
                     </div>
                   )}
                   <div className="flex items-start justify-between gap-3">

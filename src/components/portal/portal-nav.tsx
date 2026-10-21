@@ -6,6 +6,7 @@ import Link from 'next/link';
 import { ChevronDown, Lock, LogOut, UserRound, type LucideIcon } from 'lucide-react';
 import { AUTH_UI_URL } from '@/lib/config';
 import { cn, estateName, initials } from '@/lib/utils';
+import { MediaImage } from '@bengo-hub/shared-ui-lib/media';
 
 export interface PortalTab { key: string; label: string; hint: string; href: string; icon: LucideIcon; active: boolean }
 
@@ -16,8 +17,7 @@ export function PortalBrand({ logoUrl, orgName, href, compact }: { logoUrl?: str
     <Link href={href} className="flex min-w-0 items-center gap-3 rounded-xl focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-primary">
       {logoUrl ? (
         // Tenant logos come from any host and any shape: sized by height, never squeezed into a square.
-        // eslint-disable-next-line @next/next/no-img-element
-        <img src={logoUrl} alt="" className={cn('w-auto shrink-0 object-contain object-left', compact ? 'h-9 max-w-[7.5rem]' : 'h-14 max-w-[11rem]')} />
+        <MediaImage src={logoUrl} displayWidth={176} loading="eager" alt="" className={cn('w-auto shrink-0 object-contain object-left', compact ? 'h-9 max-w-[7.5rem]' : 'h-14 max-w-[11rem]')} />
       ) : (
         <span className={cn('flex shrink-0 items-center justify-center rounded-2xl bg-primary/10', compact ? 'h-9 w-9' : 'h-12 w-12')}>
           <Image src="/brand/maskani-icon.svg" alt="" width={compact ? 22 : 28} height={compact ? 22 : 28} />

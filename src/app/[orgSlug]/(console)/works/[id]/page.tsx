@@ -15,6 +15,7 @@ import { useWorkOrder } from '@/hooks/use-works';
 import type { WorkAction, WorkStatus } from '@/lib/api/types';
 import { label, WORK_STATUS } from '@/lib/labels';
 import { fmtDateTime, kes, num, titleCase } from '@/lib/utils';
+import { MediaImage } from '@bengo-hub/shared-ui-lib/media';
 
 /** Actions offered per status; the API remains the authority on transitions. */
 const NEXT: Partial<Record<WorkStatus, WorkAction[]>> = {
@@ -83,8 +84,8 @@ export default function WorkOrderPage({ params }: { params: Promise<{ id: string
               {num(wo.quote_amount) > 0 && <div><dt className="text-xs text-muted-foreground">Quote</dt><dd>{kes(wo.quote_amount)} ({titleCase(wo.quote_status)})</dd></div>}
               {num(wo.cost_amount) > 0 && <div><dt className="text-xs text-muted-foreground">Cost</dt><dd>{kes(wo.cost_amount)}{wo.recharge ? ', billed to owner' : ''}</dd></div>}
             </dl>
-            {before.length > 0 && <div><p className="mb-2 text-xs text-muted-foreground">Before</p><div className="grid grid-cols-3 gap-2">{before.map((u) => <img key={u} src={u} alt="" className="aspect-square rounded-lg object-cover" />)}</div></div>}
-            {after.length > 0 && <div><p className="mb-2 text-xs text-muted-foreground">After</p><div className="grid grid-cols-3 gap-2">{after.map((u) => <img key={u} src={u} alt="" className="aspect-square rounded-lg object-cover" />)}</div></div>}
+            {before.length > 0 && <div><p className="mb-2 text-xs text-muted-foreground">Before</p><div className="grid grid-cols-3 gap-2">{before.map((u) => <MediaImage key={u} src={u} displayWidth={256} alt="" className="aspect-square rounded-lg object-cover" />)}</div></div>}
+            {after.length > 0 && <div><p className="mb-2 text-xs text-muted-foreground">After</p><div className="grid grid-cols-3 gap-2">{after.map((u) => <MediaImage key={u} src={u} displayWidth={256} alt="" className="aspect-square rounded-lg object-cover" />)}</div></div>}
           </CardContent>
         </Card>
         <Card>

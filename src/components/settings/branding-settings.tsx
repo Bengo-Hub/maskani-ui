@@ -5,6 +5,7 @@ import { useTenantBranding } from '@bengo-hub/shared-ui-lib/tenant';
 import { buttonVariants } from '@/components/ui/button';
 import { AUTH_UI_URL } from '@/lib/config';
 import { cn, estateName } from '@/lib/utils';
+import { MediaImage } from '@bengo-hub/shared-ui-lib/media';
 
 function Swatch({ label, color }: { label: string; color?: string | null }) {
   return (
@@ -42,7 +43,7 @@ export function BrandingSettings() {
           <div className="grid h-24 w-40 place-items-center rounded-2xl border bg-background p-3">
             {tenant?.logoUrl
               // eslint-disable-next-line @next/next/no-img-element
-              ? <img src={tenant.logoUrl} alt={name || 'Logo'} className="max-h-full max-w-full object-contain" />
+              ? <MediaImage src={tenant.logoUrl} displayWidth={160} alt={name || 'Logo'} className="max-h-full max-w-full object-contain" />
               : <span className="text-xs text-muted-foreground">No logo set</span>}
           </div>
           <div className="grid gap-4 sm:grid-cols-2">
