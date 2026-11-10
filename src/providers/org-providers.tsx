@@ -13,7 +13,8 @@ import { apiClient } from '@/lib/api/client';
 import { apiErrorMessage } from '@/lib/api/errors';
 import { SSO_URL, SUBSCRIPTIONS_UI_URL } from '@/lib/config';
 import { kes } from '@/lib/utils';
-import { useAuthStore } from '@/store/auth';
+import { AUTH_STORAGE_KEY, useAuthStore } from '@/store/auth';
+import { watchSessionAcrossTabs } from '@bengo-hub/shared-ui-lib/auth';
 import { MaskaniSubscriptionProvider } from './subscription-provider';
 import { useMaskaniStream } from '@/hooks/use-maskani-stream';
 import { getPendingGateCount, flushGateQueue } from '@/lib/gate/queue';
@@ -84,6 +85,19 @@ function ClientCallbacks({ slug, onLimit }: { slug: string; onLimit: (info: Limi
       apiClient.setOn401(null);
     };
   }, [slug, router, onLimit]);
+
+  // Another tab renewed or replaced the session: load it here and point the API client at the
+  // new token, so this tab neither sends a rotated-away token nor writes its stale copy back.
+  useEffect(
+    () =>
+      watchSessionAcrossTabs(AUTH_STORAGE_KEY, () => {
+        void Promise.resolve(useAuthStore.persist.rehydrate()).then(() => {
+          const token = useAuthStore.getState().session?.accessToken;
+          if (token) apiClient.setAccessToken(token);
+        });
+      }),
+    [],
+  );
   return null;
 }
 

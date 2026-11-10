@@ -38,7 +38,8 @@ interface AuthState {
   clearLocal: () => void;
 }
 
-const STORAGE_KEY = 'maskani-auth';
+/** The persisted store key; also names the cross-tab refresh lock and the storage watcher. */
+export const AUTH_STORAGE_KEY = 'maskani-auth';
 
 function applyToClient(session: Session | null, me: MaskaniMe | null) {
   apiClient.setAccessToken(session?.accessToken ?? null);
@@ -157,7 +158,7 @@ export const useAuthStore = create<AuthState>()(
       },
     }),
     {
-      name: STORAGE_KEY,
+      name: AUTH_STORAGE_KEY,
       storage: createJSONStorage(() => localStorage),
       partialize: (s) => ({ session: s.session, me: s.me }),
     },

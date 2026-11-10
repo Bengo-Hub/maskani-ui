@@ -55,8 +55,9 @@ class ApiClient {
     if (config?.headers?.['X-Device-Key']) return Promise.reject(error);
 
     if (status === 401 && this.accessToken && config && !config._retried) {
+      const sent = String(config.headers?.Authorization ?? '').replace(/^Bearer\s+/i, '');
       const { refreshAccessToken } = await import('@/lib/auth/token-refresh');
-      const result = await refreshAccessToken();
+      const result = await refreshAccessToken(sent || this.accessToken);
       if ('token' in result) {
         this.accessToken = result.token;
         config._retried = true;
