@@ -21,6 +21,10 @@ ARG NEXT_PUBLIC_AUTH_UI_URL=https://accounts.codevertexafrica.com
 ARG NEXT_PUBLIC_TREASURY_UI_URL=https://books.codevertexafrica.com
 ARG NEXT_PUBLIC_SUBSCRIPTIONS_UI_URL=https://pricing.codevertexafrica.com
 ARG NEXT_PUBLIC_APP_URL=https://maskaniapp.codevertexafrica.com
+# Sign-in keeps tokens out of browser storage on *.codevertexafrica.com (sso cookie session, fleet
+# plan G11); a tenant's custom domain keeps stored tokens. "false" goes back to stored tokens.
+ARG NEXT_PUBLIC_COOKIE_SESSION=true
+ENV NEXT_PUBLIC_COOKIE_SESSION=$NEXT_PUBLIC_COOKIE_SESSION
 ENV NEXT_PUBLIC_API_URL=$NEXT_PUBLIC_API_URL \
     NEXT_PUBLIC_SSO_URL=$NEXT_PUBLIC_SSO_URL \
     NEXT_PUBLIC_SSO_CLIENT_ID=$NEXT_PUBLIC_SSO_CLIENT_ID \

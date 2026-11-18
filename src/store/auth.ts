@@ -9,6 +9,8 @@ import {
   buildAuthorizeUrl, buildLogoutUrl, exchangeCodeForTokens, revokeServerSession, type TokenPair,
 } from '@/lib/auth/api';
 import { consumeState, consumeVerifier, generateCodeChallenge, generateCodeVerifier, generateState, storeState, storeVerifier } from '@/lib/auth/pkce';
+import { cookieMode } from '@/lib/auth/session-mode';
+import { scrubStoredSession } from '@bengo-hub/shared-ui-lib/auth';
 
 export type SessionKind = 'staff' | 'portal';
 
@@ -22,8 +24,16 @@ export interface Session {
 
 type Status = 'idle' | 'loading' | 'authenticated' | 'unauthenticated';
 
+/** Who is signed in, without any token: what the cookie session persists in place of `session`. */
+export interface SignedIn {
+  kind: SessionKind;
+  tenantSlug: string;
+}
+
 interface AuthState {
   session: Session | null;
+  /** Cookie session only: the kind and tenant of the sign-in, kept across reloads. */
+  signedIn: SignedIn | null;
   me: MaskaniMe | null;
   status: Status;
   setSession: (s: Session | null) => void;
@@ -41,6 +51,18 @@ interface AuthState {
 /** The persisted store key; also names the cross-tab refresh lock and the storage watcher. */
 export const AUTH_STORAGE_KEY = 'maskani-auth';
 
+// Cookie session (fleet plan G11): tokens an earlier build stored are dropped before the store
+// loads; from here on only the profile and who signed in are persisted.
+if (cookieMode()) scrubStoredSession(AUTH_STORAGE_KEY);
+
+/** Cookie session: once the browser is back online, gets the token a reload offline could not. */
+function refreshWhenOnline() {
+  if (typeof window === 'undefined') return;
+  window.addEventListener('online', () => {
+    void import('@/lib/auth/cookie-session').then(({ getCookieSession }) => getCookieSession().refresh());
+  }, { once: true });
+}
+
 function applyToClient(session: Session | null, me: MaskaniMe | null) {
   apiClient.setAccessToken(session?.accessToken ?? null);
   apiClient.setTenantInfo(me?.tenant_id ?? null, me?.tenant_slug ?? session?.tenantSlug ?? null);
@@ -54,6 +76,7 @@ export const useAuthStore = create<AuthState>()(
   persist(
     (set, get) => ({
       session: null,
+      signedIn: null,
       me: null,
       status: 'idle',
 
@@ -63,6 +86,22 @@ export const useAuthStore = create<AuthState>()(
       },
 
       signIn: async (slug, pair, kind) => {
+        if (cookieMode() && pair.refresh_token) {
+          // The refresh token goes into auth-api's HttpOnly cookie and is dropped here; the store
+          // holds only the in-memory access token the cookie session hands back. A new sign-in
+          // replaces whoever was stored, so it is not taken for a user switch.
+          set({ signedIn: { kind, tenantSlug: slug }, session: null, me: null, status: 'loading' });
+          const { getCookieSession } = await import('@/lib/auth/cookie-session');
+          const started = await getCookieSession().start(pair.refresh_token);
+          if (!('token' in started) || !get().session) {
+            get().clearLocal();
+            throw new Error('Sign-in failed. Please try again.');
+          }
+          const me = await meApi.me(slug);
+          set({ me, status: 'authenticated' });
+          applyToClient(get().session, me);
+          return me;
+        }
         const session: Session = {
           accessToken: pair.access_token,
           refreshToken: pair.refresh_token,
@@ -79,6 +118,43 @@ export const useAuthStore = create<AuthState>()(
       },
 
       restore: async (slug) => {
+        if (cookieMode()) {
+          // No token is stored: a known sign-in for this tenant gets its first token through the
+          // sso cookie (or keeps the one this tab already holds).
+          const info = get().session ?? get().signedIn;
+          if (!info || info.tenantSlug !== slug) {
+            set({ status: 'unauthenticated' });
+            return false;
+          }
+          applyToClient(get().session, get().me);
+          if (!get().session) {
+            const { getCookieSession } = await import('@/lib/auth/cookie-session');
+            const renewed = await getCookieSession().refresh();
+            if ('rejected' in renewed) {
+              get().clearLocal();
+              return false;
+            }
+            if ('transient' in renewed) {
+              // Offline or weak wifi: paint from the persisted profile, as before, and get a token
+              // once the browser is back online.
+              refreshWhenOnline();
+              set({ status: 'authenticated' });
+              return true;
+            }
+          }
+          if (get().me) {
+            set({ status: 'authenticated' });
+            void get().refreshMe(slug);
+            return true;
+          }
+          set({ status: 'loading' });
+          try {
+            await get().refreshMe(slug);
+            return get().status === 'authenticated';
+          } catch {
+            return false;
+          }
+        }
         const { session } = get();
         if (!session || session.tenantSlug !== slug) {
           set({ status: 'unauthenticated' });
@@ -141,8 +217,14 @@ export const useAuthStore = create<AuthState>()(
 
       logout: async (slug) => {
         const { session } = get();
-        const kind = session?.kind ?? 'staff';
-        await revokeServerSession(session?.accessToken);
+        const kind = session?.kind ?? get().signedIn?.kind ?? 'staff';
+        if (cookieMode()) {
+          // Revokes the session, clears the sso cookie and signs the other tabs out.
+          const { getCookieSession } = await import('@/lib/auth/cookie-session');
+          await getCookieSession().end();
+        } else {
+          await revokeServerSession(session?.accessToken);
+        }
         get().clearLocal();
         try { sessionStorage.clear(); } catch { /* storage may be blocked */ }
         if (kind === 'portal') {
@@ -153,14 +235,17 @@ export const useAuthStore = create<AuthState>()(
       },
 
       clearLocal: () => {
-        set({ session: null, me: null, status: 'unauthenticated' });
+        set({ session: null, signedIn: null, me: null, status: 'unauthenticated' });
         applyToClient(null, null);
       },
     }),
     {
       name: AUTH_STORAGE_KEY,
       storage: createJSONStorage(() => localStorage),
-      partialize: (s) => ({ session: s.session, me: s.me }),
+      // The cookie session persists the profile and who signed in; the access token stays in memory.
+      partialize: (s) => (cookieMode()
+        ? { me: s.me, signedIn: s.session ? { kind: s.session.kind, tenantSlug: s.session.tenantSlug } : s.signedIn }
+        : { session: s.session, me: s.me }),
     },
   ),
 );

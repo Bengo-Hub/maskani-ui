@@ -15,6 +15,7 @@ import { SSO_URL, SUBSCRIPTIONS_UI_URL } from '@/lib/config';
 import { kes } from '@/lib/utils';
 import { AUTH_STORAGE_KEY, useAuthStore } from '@/store/auth';
 import { watchSessionAcrossTabs } from '@bengo-hub/shared-ui-lib/auth';
+import { cookieMode } from '@/lib/auth/session-mode';
 import { MaskaniSubscriptionProvider } from './subscription-provider';
 import { useMaskaniStream } from '@/hooks/use-maskani-stream';
 import { getPendingGateCount, flushGateQueue } from '@/lib/gate/queue';
@@ -73,7 +74,8 @@ function ClientCallbacks({ slug, onLimit }: { slug: string; onLimit: (info: Limi
       else toast.warning('Your plan limit has been reached.');
     });
     apiClient.setOn401(() => {
-      const kind = useAuthStore.getState().session?.kind;
+      const { session, signedIn } = useAuthStore.getState();
+      const kind = (session ?? signedIn)?.kind;
       useAuthStore.getState().clearLocal();
       toast.info('Your session ended. Please sign in again.');
       router.replace(kind === 'portal' ? `/${slug}/portal/sign-in` : `/${slug}/login`);
@@ -88,9 +90,10 @@ function ClientCallbacks({ slug, onLimit }: { slug: string; onLimit: (info: Limi
 
   // Another tab renewed or replaced the session: load it here and point the API client at the
   // new token, so this tab neither sends a rotated-away token nor writes its stale copy back.
+  // The cookie session stores no token; its BroadcastChannel shares new tokens instead.
   useEffect(
     () =>
-      watchSessionAcrossTabs(AUTH_STORAGE_KEY, () => {
+      cookieMode() ? undefined : watchSessionAcrossTabs(AUTH_STORAGE_KEY, () => {
         void Promise.resolve(useAuthStore.persist.rehydrate()).then(() => {
           const token = useAuthStore.getState().session?.accessToken;
           if (token) apiClient.setAccessToken(token);

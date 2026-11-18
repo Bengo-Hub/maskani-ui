@@ -11,7 +11,7 @@
   },
   "dependencies": {
     "@base-ui/react": "^1.8.0",
-    "@bengo-hub/shared-ui-lib": "github:Bengo-Hub/shared-ui-lib#v0.1.143",
+    "@bengo-hub/shared-ui-lib": "github:Bengo-Hub/shared-ui-lib#v0.1.151",
     "@hookform/resolvers": "^5.9.1",
     "@tanstack/react-query": "^5.104.1",
     "axios": "^1.20.0",
@@ -20,7 +20,7 @@
     "date-fns": "^4.4.0",
     "dexie": "^4.4.6",
     "lucide-react": "^0.577.0",
-    "next": "16.4.0",
+    "next": "16.4.6",
     "next-themes": "^0.4.6",
     "qrcode": "^1.5.4",
     "react": "19.3.0",
@@ -40,7 +40,7 @@
     "@types/react": "^19",
     "@types/react-dom": "^19",
     "eslint": "^9",
-    "eslint-config-next": "16.4.0",
+    "eslint-config-next": "16.4.6",
     "sharp": "^0.35.5",
     "tailwindcss": "^4.3.3",
     "typescript": "5.9.3"

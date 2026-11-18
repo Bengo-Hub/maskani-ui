@@ -1,6 +1,7 @@
 import { createSessionRefresher, type RefreshOutcome } from '@bengo-hub/shared-ui-lib/auth';
 import { AUTH_STORAGE_KEY, useAuthStore, type Session } from '@/store/auth';
 import { refreshTokens } from '@/lib/auth/api';
+import { cookieMode } from '@/lib/auth/session-mode';
 
 /**
  * `token`: a fresh access token. `rejected`: auth-api refused the refresh token (sign out).
@@ -30,6 +31,11 @@ const refreshSession = createSessionRefresher<RefreshableSession>({
 });
 
 /** Pass the access token the server just rejected when it is known. */
-export function refreshAccessToken(failedToken?: string | null): Promise<RefreshResult> {
+export async function refreshAccessToken(failedToken?: string | null): Promise<RefreshResult> {
+  // The cookie session refreshes through auth-api's HttpOnly cookie (lib/auth/cookie-session.ts).
+  if (cookieMode()) {
+    const { getCookieSession } = await import('@/lib/auth/cookie-session');
+    return getCookieSession().refresh(failedToken);
+  }
   return refreshSession(failedToken);
 }

@@ -24,8 +24,8 @@ export default function TenantHome() {
     void restore(slug).then((ok) => {
       if (!alive) return;
       if (ok) {
-        const { session, me } = useAuthStore.getState();
-        const portal = session?.kind === 'portal' || (me?.is_portal_user && !me?.is_staff);
+        const { session, signedIn, me } = useAuthStore.getState();
+        const portal = (session ?? signedIn)?.kind === 'portal' || (me?.is_portal_user && !me?.is_staff);
         router.replace(`/${slug}/${portal ? 'portal' : 'dashboard'}`);
       } else {
         setChecked(true);

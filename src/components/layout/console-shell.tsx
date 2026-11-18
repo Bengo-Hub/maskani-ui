@@ -23,7 +23,8 @@ function useStaffSession(slug: string) {
   const router = useRouter();
   const pathname = usePathname() ?? '';
   const status = useAuthStore((s) => s.status);
-  const session = useAuthStore((s) => s.session);
+  // signedIn: with the cookie session a tab that reloaded offline has no token, only the sign-in.
+  const kind = useAuthStore((s) => (s.session ?? s.signedIn)?.kind);
   const restore = useAuthStore((s) => s.restore);
 
   useEffect(() => {
@@ -33,12 +34,12 @@ function useStaffSession(slug: string) {
   useEffect(() => {
     if (status === 'unauthenticated') {
       router.replace(`/${slug}/login?return_to=${encodeURIComponent(pathname)}`);
-    } else if (status === 'authenticated' && session?.kind === 'portal') {
+    } else if (status === 'authenticated' && kind === 'portal') {
       router.replace(`/${slug}/portal`);
     }
-  }, [status, session?.kind, slug, pathname, router]);
+  }, [status, kind, slug, pathname, router]);
 
-  return status === 'authenticated' && session?.kind !== 'portal';
+  return status === 'authenticated' && kind !== 'portal';
 }
 
 export function ConsoleShell({ children }: { children: ReactNode }) {
