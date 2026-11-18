@@ -3,7 +3,8 @@
 import { useEffect, useState } from 'react';
 import Image from 'next/image';
 import { PwaInstallPrompt } from '@bengo-hub/shared-ui-lib/offline';
-import { useTenantBranding } from '@bengo-hub/shared-ui-lib/tenant';
+import { serviceBrandingFor, useTenantBranding } from '@bengo-hub/shared-ui-lib/tenant';
+import { serviceAppName } from '@bengo-hub/shared-ui-lib/branding';
 
 const MIN_VISIBLE_MS = 900;
 const FADE_MS = 300;
@@ -32,11 +33,11 @@ export function PwaLaunchSplash() {
   );
 }
 
-/** Shared install prompt, named "{tenant first word} Maskani" so several installed apps stay distinct. */
+/** Shared install prompt, named by the shared rule (shared-ui-lib branding): the tenant's own
+ *  Maskani name (Accounts > Branding) else "<brand word> Maskani" ("The Urban Maskani"). */
 export function MaskaniInstallPrompt() {
   const { tenant } = useTenantBranding();
-  const first = tenant?.orgName?.trim().split(/\s+/)[0];
-  const appName = first ? `${first} Maskani` : 'Maskani';
+  const appName = serviceAppName(tenant?.orgName, 'Maskani', undefined, serviceBrandingFor(tenant, 'maskani'));
   return (
     <PwaInstallPrompt
       appName={appName}

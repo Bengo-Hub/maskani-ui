@@ -1,10 +1,15 @@
 import { type NextRequest, NextResponse } from 'next/server';
+import {
+  serviceBrandingEntry,
+  serviceFullName,
+  serviceShortName,
+  type ServiceBrandingEntry,
+} from '@bengo-hub/shared-ui-lib/branding';
 
 const AUTH_API_BASE = process.env.NEXT_PUBLIC_SSO_URL || 'https://sso.codevertexafrica.com';
 const SERVICE_KEY = 'maskani'; // entry in tenant metadata.service_branding (Accounts > Branding)
 const DEFAULT_THEME = '#6E1A5A';
 
-interface ServiceBrandingEntry { name?: string; short_name?: string; tagline?: string; theme_color?: string; icon_url?: string }
 interface TenantResponse { name?: string; logo_url?: string; brand_colors?: { primary?: string }; metadata?: Record<string, unknown> }
 
 async function fetchTenant(slug: string): Promise<TenantResponse | null> {
@@ -14,13 +19,6 @@ async function fetchTenant(slug: string): Promise<TenantResponse | null> {
   } catch {
     return null;
   }
-}
-
-function serviceEntry(metadata?: Record<string, unknown>): ServiceBrandingEntry {
-  const all = metadata?.service_branding;
-  if (!all || typeof all !== 'object') return {};
-  const entry = (all as Record<string, unknown>)[SERVICE_KEY];
-  return entry && typeof entry === 'object' ? (entry as ServiceBrandingEntry) : {};
 }
 
 function iconMime(url: string): string | undefined {
@@ -44,17 +42,18 @@ const BUNDLED_ICONS = [
 export async function GET(_req: NextRequest, { params }: { params: Promise<{ orgSlug: string }> }) {
   const { orgSlug } = await params;
   const tenant = await fetchTenant(orgSlug);
-  const entry = serviceEntry(tenant?.metadata);
+  const entry: ServiceBrandingEntry = serviceBrandingEntry(tenant?.metadata, SERVICE_KEY) ?? {};
   const business = tenant?.name ?? orgSlug;
-  const first = business.trim().split(/\s+/)[0] || 'Maskani';
   const iconUrl = entry.icon_url;
   const iconType = iconUrl ? iconMime(iconUrl) : undefined;
   const shortcut = [{ src: '/icons/icon-192.png', sizes: '192x192', type: 'image/png' }];
 
   const manifest = {
     id: `/${orgSlug}/`,
-    name: entry.name || `${business} Maskani`,
-    short_name: entry.short_name || `${first} Maskani`,
+    // Shared naming rule (shared-ui-lib branding): the tenant's own app name wins, else
+    // "<Business> Maskani" with a "<brand word> Maskani" home-screen label.
+    name: serviceFullName(business, 'Maskani', orgSlug, entry),
+    short_name: serviceShortName(business, 'Maskani', orgSlug, entry),
     description: entry.tagline || 'Estate bills, payments, visitors and requests.',
     start_url: `/${orgSlug}/`,
     scope: `/${orgSlug}/`,
